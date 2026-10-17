@@ -49,6 +49,14 @@ const nodes = {
     state.write("</details>");
     state.closeBlock(node);
   },
+  callout(state: MarkdownSerializerState, node: Node) {
+    const emoji = escapeHtml(String(node.attrs.emoji ?? ""));
+    state.write(`<div data-callout="${emoji}">`);
+    state.write("\n\n");
+    state.renderContent(node);
+    state.write("</div>");
+    state.closeBlock(node);
+  },
   pageMention(state: MarkdownSerializerState, node: Node) {
     const label = String(node.attrs.label ?? "").replace(/[[\]]/g, "");
     const pageId = String(node.attrs.pageId ?? "");
@@ -94,6 +102,9 @@ const marks = {
   code: pickMark("code"),
   link: pickMark("link"),
   underline: { open: "<u>", close: "</u>", mixable: true, expelEnclosingWhitespace: true },
+  textColor: { open: "", close: "", mixable: true },
+  bgColor: { open: "", close: "", mixable: true },
+  commentAnchor: { open: "", close: "", mixable: true },
 };
 
 const serializer = new MarkdownSerializer(nodes, marks);

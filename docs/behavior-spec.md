@@ -230,5 +230,17 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Known limitations.** No multi-block selection (single top-level block per operation), no cross-Pagegrove drop targets (blocks reorder within one document only), no drag handle at nested list-item level (drags move the whole list), no "Turn into" preview icons.
 
+## 17. M7.2 spec: selection format bar, colors, and callouts (Pagegrove — C, informed by A-web)
+
+**Selection format bar.** Selecting text opens a floating bar above the selection: Bold, Italic, Underline, Strikethrough, Code (each `aria-pressed` while active), then two swatches (Text color, Background color), and — when the page has comments enabled — the "Comment" action (the bar replaces the old standalone comment pill; commenting keeps its exact behavior). The bar is clamped into the viewport, re-anchors on scroll, and hides when the selection collapses, the editor blurs, or the selection sits in a code block. Buttons `mousedown`-guard so the selection survives every interaction.
+
+**Colors.** Each swatch opens a 10-cell palette (Default + gray, brown, orange, yellow, green, blue, purple, pink, red) rendered in both light and dark schemes from theme variables. Picking the color of the active selection toggles it off; Default clears the mark. Text color and background color are inline marks (`data-text-color`, `data-bg-color`) that coexist with every other mark and persist through save/reload, Yjs, LAN sync, and sync bundles.
+
+**Callouts.** `/callout` (aliases note, info, tip) inserts a callout block — an emoji badge (default 💡, click to change through the emoji picker) beside editable block content. Callouts are regular top-level blocks for the gutter: they hover, drag, duplicate, delete, and can be "Turn into" targets both ways. Markdown export writes callouts as `<div data-callout="💡">…</div>` blocks; colors have no markdown representation and export as plain text.
+
+**Export fix.** Markdown export previously threw when a document contained marks it did not know (this affected comment anchors on export); unknown inline marks now serialize as plain text, so any styled document exports cleanly.
+
+**Known limitations.** No "last used color" shortcuts, no comment highlight color inside the bar (Notion shows the comment color chip), no per-block callout background color choice (callouts use the neutral surface color), and the bar does not appear inside code blocks by design.
+
 
 

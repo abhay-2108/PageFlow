@@ -16,8 +16,11 @@ import { BRAND } from "../../../shared/brand";
 import { BlockTools } from "./blocks/extension";
 import { CommentAnchor } from "./comments/CommentAnchor";
 import { CommentTools } from "./comments/extension";
+import { Callout } from "./extensions/Callout";
 import { KeyboardShortcuts } from "./extensions/KeyboardShortcuts";
 import { Toggle } from "./extensions/Toggle";
+import { FormatTools } from "./format/extension";
+import { BgColor, TextColor } from "./format/marks";
 import { MentionCommand } from "./mention/extension";
 import { PageMention } from "./mention/PageMention";
 import { SlashCommand } from "./slash/extension";
@@ -53,6 +56,9 @@ export function buildExtensions(
     TableHeader,
     TableCell,
     Toggle,
+    Callout,
+    TextColor,
+    BgColor,
     PageMention,
     Placeholder.configure({ placeholder: BRAND.empty.editorPlaceholder }),
     KeyboardShortcuts,
@@ -62,6 +68,7 @@ export function buildExtensions(
     CommentTools,
     TableTools,
     BlockTools,
+    FormatTools,
   ];
   if (collaboration) {
     extensions.push(Collaboration.configure({ document: collaboration.document }));

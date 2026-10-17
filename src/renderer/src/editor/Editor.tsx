@@ -5,9 +5,9 @@ import type { WebrtcProvider } from "y-webrtc";
 import type { TipTapDocument } from "../../../shared/types";
 import { getApi } from "../lib/api";
 import { colorFor, session, type DocBinding } from "../lib/session";
-import { CommentBubble } from "./comments/CommentBubble";
 import { BlockGutter } from "./blocks/BlockGutter";
 import { buildExtensions } from "./editorExtensions";
+import { SelectionBubble } from "./format/SelectionBubble";
 import { MentionMenu } from "./mention/MentionMenu";
 import { SlashMenu } from "./slash/SlashMenu";
 import { TableBar } from "./table/TableBar";
@@ -114,7 +114,7 @@ export function Editor({
       <MentionMenu />
       <TableBar />
       <BlockGutter />
-      {onCommentRequest ? <CommentBubble onRequest={onCommentRequest} /> : null}
+      <SelectionBubble onCommentRequest={onCommentRequest} />
     </div>
   );
 }

@@ -86,6 +86,15 @@ export const slashItems: SlashItem[] = [
     },
   },
   {
+    id: "callout",
+    title: "Callout",
+    aliases: ["note", "info", "tip"],
+    hint: "Make it stand out",
+    run: (editor, range) => {
+      replaceBlock(editor, range).insertCalloutBlock().run();
+    },
+  },
+  {
     id: "table",
     title: "Table",
     aliases: ["grid", "database"],

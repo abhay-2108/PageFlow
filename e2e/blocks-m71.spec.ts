@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { openApp, removeWorkspace, setPageTitle } from "./helpers";
 
-function blockTexts(page: import("@playwright/test").Page) {
+function blockTexts(page: Page) {
   return page.locator(".pg-editor > *").allTextContents();
 }
 

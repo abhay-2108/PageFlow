@@ -13,6 +13,7 @@ const TURN_OPTIONS: { target: TurnTarget; label: string }[] = [
   { target: "numbered", label: "Numbered list" },
   { target: "todo", label: "To-do list" },
   { target: "toggle", label: "Toggle" },
+  { target: "callout", label: "Callout" },
   { target: "quote", label: "Quote" },
   { target: "code", label: "Code" },
 ];

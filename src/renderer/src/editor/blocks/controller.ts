@@ -7,6 +7,7 @@ export type TurnTarget =
   | "numbered"
   | "todo"
   | "toggle"
+  | "callout"
   | "quote"
   | "code";
 

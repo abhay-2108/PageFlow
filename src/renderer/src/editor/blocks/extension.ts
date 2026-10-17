@@ -44,7 +44,7 @@ function extractInline(node: PMNode): Fragment | null {
     const textblock = item?.firstChild;
     return textblock ? textblock.content : null;
   }
-  if (name === "toggle") {
+  if (name === "toggle" || name === "callout") {
     const textblock = node.firstChild;
     return textblock && textblock.isTextblock ? textblock.content : null;
   }
@@ -96,6 +96,8 @@ function buildReplacement(editor: Editor, node: PMNode, target: TurnTarget): PMN
       );
     case "toggle":
       return typeOf("toggle").create({ collapsed: false }, paragraph(content));
+    case "callout":
+      return typeOf("callout").create({ emoji: "💡" }, paragraph(content));
     case "quote":
       return typeOf("blockquote").create(null, paragraph(content));
     case "code":
@@ -124,6 +126,8 @@ function currentKind(node: PMNode): TurnTarget | null {
       return "todo";
     case "toggle":
       return "toggle";
+    case "callout":
+      return "callout";
     case "blockquote":
       return "quote";
     case "codeBlock":

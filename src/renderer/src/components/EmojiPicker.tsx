@@ -82,9 +82,10 @@ export interface EmojiPickerProps {
   onPick: (emoji: string) => void;
   onRemove: () => void;
   onClose: () => void;
+  label?: string;
 }
 
-export function EmojiPicker({ current, onPick, onRemove, onClose }: EmojiPickerProps) {
+export function EmojiPicker({ current, onPick, onRemove, onClose, label }: EmojiPickerProps) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -107,7 +108,7 @@ export function EmojiPicker({ current, onPick, onRemove, onClose }: EmojiPickerP
   }, [onClose]);
 
   return (
-    <div className="emoji-picker" ref={ref} role="dialog" aria-label="Page icon">
+    <div className="emoji-picker" ref={ref} role="dialog" aria-label={label ?? "Page icon"}>
       <div className="emoji-picker__scroll">
         {EMOJI_GROUPS.map((group) => (
           <div key={group.label} className="emoji-picker__group">
