@@ -19,6 +19,7 @@ import {
   searchInputSchema,
   setPageCoverInputSchema,
   setPageIconInputSchema,
+  setPageViewInputSchema,
   updateDocInputSchema,
 } from "../shared/schemas";
 import type { PageMeta } from "../shared/types";
@@ -110,6 +111,11 @@ export function registerIpc(db: WorkspaceDb): void {
     return guarded(db, () => db.setPageCover(id, cover));
   });
 
+  ipcMain.handle("pg:pages:set-view", (_event, raw: unknown) => {
+    const { id, view } = parse(setPageViewInputSchema, raw);
+    return guarded(db, () => db.setPageView(id, view));
+  });
+
   ipcMain.handle("pg:pages:trash", (_event, raw: unknown) => {
     const { id } = parse(getPageInputSchema, raw);
     guarded(db, () => db.trashPage(id));
@@ -176,7 +182,12 @@ export function registerIpc(db: WorkspaceDb): void {
     const { entries } = parse(applyMetaInputSchema, raw);
     guarded(db, () =>
       db.upsertMetaEntries(
-        entries.map((entry) => ({ ...entry, icon: entry.icon ?? null, cover: entry.cover ?? null })),
+        entries.map((entry) => ({
+          ...entry,
+          icon: entry.icon ?? null,
+          cover: entry.cover ?? null,
+          view: entry.view ?? "doc",
+        })),
       ),
     );
   });

@@ -11,6 +11,7 @@ import type {
   NewPageInput,
   PageMeta,
   PageRecord,
+  PageViewMode,
   SearchHit,
   TipTapDocument,
 } from "../shared/types";
@@ -39,6 +40,8 @@ const api: PagegroveApi = {
       ipcRenderer.invoke("pg:pages:set-icon", { id, icon }) as Promise<PageMeta>,
     setCover: (id: string, cover: CoverId | null) =>
       ipcRenderer.invoke("pg:pages:set-cover", { id, cover }) as Promise<PageMeta>,
+    setView: (id: string, view: PageViewMode) =>
+      ipcRenderer.invoke("pg:pages:set-view", { id, view }) as Promise<PageMeta>,
     trash: (id: string) => ipcRenderer.invoke("pg:pages:trash", { id }) as Promise<boolean>,
     restore: (id: string) => ipcRenderer.invoke("pg:pages:restore", { id }) as Promise<boolean>,
     backlinks: (id: string) => ipcRenderer.invoke("pg:pages:backlinks", { id }) as Promise<BacklinkHit[]>,

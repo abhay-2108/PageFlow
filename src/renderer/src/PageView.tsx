@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import type { BacklinkHit, CommentThread, PageRecord, TipTapDocument } from "../../shared/types";
+import type {
+  BacklinkHit,
+  CommentThread,
+  PageRecord,
+  PageViewMode,
+  TipTapDocument,
+} from "../../shared/types";
 import type { CoverId } from "../../shared/covers";
 import { BRAND } from "../../shared/brand";
 import { Editor } from "./editor/Editor";
 import { commentTools } from "./editor/comments/controller";
+import { ChildrenTable } from "./components/ChildrenTable";
 import { CoverPicker } from "./components/CoverPicker";
 import { EmojiPicker } from "./components/EmojiPicker";
 import { getApi } from "./lib/api";
@@ -17,6 +24,7 @@ export interface PageViewProps {
   autoFocusEditor: boolean;
   onIconChange: (icon: string | null) => void;
   onCoverChange: (cover: CoverId | null) => void;
+  onViewChange: (view: PageViewMode) => void;
   onOpenPage: (id: string) => void;
 }
 
@@ -28,6 +36,7 @@ export function PageView({
   autoFocusEditor,
   onIconChange,
   onCoverChange,
+  onViewChange,
   onOpenPage,
 }: PageViewProps) {
   const api = getApi();
@@ -43,6 +52,7 @@ export function PageView({
   const displayTitle = record.meta.title.length > 0 ? record.meta.title : BRAND.empty.untitled;
   const icon = record.meta.icon;
   const cover = (record.meta.cover ?? null) as CoverId | null;
+  const view: PageViewMode = record.meta.view === "table" ? "table" : "doc";
 
   useEffect(() => {
     let cancelled = false;
@@ -251,14 +261,34 @@ export function PageView({
           >
             {cover ? "Change cover" : "Add cover"}
           </button>
-          <button
-            type="button"
-            className="page__meta-btn"
-            aria-label="Comments"
-            onClick={() => setCommentsOpen((open) => !open)}
-          >
-            {openThreads.length > 0 ? `Comments (${openThreads.length})` : "Comments"}
-          </button>
+          <div className="page__view-toggle" role="group" aria-label="Page view">
+            <button
+              type="button"
+              className={view === "doc" ? "page__view-btn page__view-btn--active" : "page__view-btn"}
+              aria-pressed={view === "doc"}
+              onClick={() => onViewChange("doc")}
+            >
+              Document
+            </button>
+            <button
+              type="button"
+              className={view === "table" ? "page__view-btn page__view-btn--active" : "page__view-btn"}
+              aria-pressed={view === "table"}
+              onClick={() => onViewChange("table")}
+            >
+              Table
+            </button>
+          </div>
+          {view === "doc" ? (
+            <button
+              type="button"
+              className="page__meta-btn"
+              aria-label="Comments"
+              onClick={() => setCommentsOpen((open) => !open)}
+            >
+              {openThreads.length > 0 ? `Comments (${openThreads.length})` : "Comments"}
+            </button>
+          ) : null}
         </div>
         {picker === "icon" ? (
           <EmojiPicker
@@ -299,16 +329,20 @@ export function PageView({
         autoComplete="off"
         data-page-title={displayTitle}
       />
-      <Editor
-        key={`${record.meta.id}:${editorEpoch}`}
-        pageId={record.meta.id}
-        onDocChange={onDocChange}
-        autoFocus={autoFocusEditor}
-        onOpenPage={onOpenPage}
-        onCommentRequest={handleCommentRequest}
-        onCommentClick={handleCommentClick}
-      />
-      {backlinks.length > 0 ? (
+      {view === "table" ? (
+        <ChildrenTable parentId={record.meta.id} refreshKey={editorEpoch} onOpenPage={onOpenPage} />
+      ) : (
+        <Editor
+          key={`${record.meta.id}:${editorEpoch}`}
+          pageId={record.meta.id}
+          onDocChange={onDocChange}
+          autoFocus={autoFocusEditor}
+          onOpenPage={onOpenPage}
+          onCommentRequest={handleCommentRequest}
+          onCommentClick={handleCommentClick}
+        />
+      )}
+      {view === "doc" && backlinks.length > 0 ? (
         <section className="page__backlinks" aria-label="Linked from">
           <h2 className="page__backlinks-title">Linked from</h2>
           <ul className="page__backlinks-list">
@@ -330,7 +364,7 @@ export function PageView({
           </ul>
         </section>
       ) : null}
-      {commentsOpen ? (
+      {view === "doc" && commentsOpen ? (
         <aside className="comments-panel" aria-label="Comments">
           <div className="comments-panel__head">
             <h2 className="comments-panel__title">Comments</h2>

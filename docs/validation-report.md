@@ -105,3 +105,51 @@ pnpm dist            # NSIS + portable installers in release/
 ```
 
 Note for first packaged build on a fresh machine: electron-builder extracts its `winCodeSign` tooling into `%LOCALAPPDATA%\electron-builder\Cache`; on Windows without Developer Mode this needs the symlink workaround used here (extract `winCodeSign-2.6.0.7z` excluding the `darwin` folder) or admin rights.
+
+## 6. M6 addendum — feature expansion (drag/icons/covers, mentions, comments, tables, page views)
+
+Date: 2026-10-18
+Scope: `m6.1` (`f55f4eb`), `m6.2` (`23ae615`), `m6.3` (`f2044aa`), `m6.4-slice1` (`c88534c`), `m6.4` (final M6 tag).
+Informed by the deep-RE addendum (`docs/behavior-spec.md` §10, `docs/rea/facts-editor.json`) — behaviors only, original implementation throughout.
+
+**Verdict: PASS.** All gates green at M6.4; no new security findings.
+
+| Gate | Result at M6.4 |
+|---|---|
+| Typecheck | Clean (node + web) |
+| Lint | Clean |
+| Unit tests | 30/30 (rank, tree, doc-text, sync — incl. new page-view diff test) |
+| Build | 374 modules, renderer 1,907.86 kB |
+| E2E | 16 tests / 15 specs green (packaged.spec retried once under machine load — same pre-existing flake class as M5) |
+
+E2E inventory added in M6:
+
+| Spec | Covers |
+|---|---|
+| `pages-m61.spec.ts` | tree drag-and-drop (reorder, nest, root drop), icon/cover persistence |
+| `mentions-m62.spec.ts` | @mention chip insert + backlink list + reload, chip navigation |
+| `comments-m63.spec.ts` | anchored comments — create/reply/reload/mark click, resolve/reopen/delete with anchor pruning |
+| `tables-m64.spec.ts` | table insert via slash, Tab typing + Tab-appended row, toolbar ops, GFM markdown export, reload persistence |
+| `views-m64.spec.ts` | page table view — subpage rows, row navigation, view persists across reload, toggle back |
+
+**Security deltas (M6).** No new network surface: comments and the table view are workspace-local; migration v5 adds one column (`view`) and every new IPC handler (`pg:pages:set-view`, `pg:comments:*`) validates through zod at the same boundary as M5. Sync bundles gained `view`; legacy bundles without it normalize to `doc` on import. Tiptap packages pinned uniformly to 2.27.3 (table extensions from the same release line); no new advisories beyond the accepted M5 finding.
+
+**Known limitations added in M6** (cross-referenced in `docs/behavior-spec.md`):
+
+1. Comments are workspace-local — LAN sessions/sync bundles do not carry threads; foreign anchors are pruned on open (§13).
+2. Tables: no merged cells, no column-width resize, no colors, no column types; row/column edits via toolbar only (§14).
+3. Table view is read-only, lists direct children only, no sorting/filtering/custom properties (§15).
+4. Backlink list can be stale while a page stays open after other pages start/stop mentioning it (§12).
+5. Markdown serializer unit tests still absent (MEDIUM carried from M5); table/list serializer output covered via e2e export assertions.
+6. Flake pair under machine contention: `packaged.spec.ts` (occasionally now) and `multiplayer.spec.ts` test 2 — both pass on retry with `retries: 1`; no product impact observed.
+
+Reproduce:
+
+```powershell
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+npx playwright test
+```
+

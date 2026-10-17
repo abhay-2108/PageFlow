@@ -204,7 +204,17 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Markdown export.** Tables serialize to GitHub-flavored pipe tables: header row, `| --- |` separator, one line per row. Cell text is plain inline text (no nested block syntax). Reload and sync: tables are ordinary document nodes — they survive save/reload (Yjs replay verified) and travel with the doc over LAN sync and sync bundles.
 
-**Known limitations.** No merged cells, no column-width dragging (`resizable: false`), no cell background colors, no column types. Those belong to the database-lite slice that follows (M6.4 slice 2).
+**Known limitations.** No merged cells, no column-width dragging (`resizable: false`), no cell background colors, no column types. Rows/columns are added and removed through the toolbar only.
+
+## 15. M6.4 spec (slice 2): page table view (Pagegrove — C, informed by A-web)
+
+**View mode per page.** Every page carries a view mode — `doc` (default) or `table` — stored on the page row (`view` column, migration v5) and travelling in `PageMeta`, so it follows the page over LAN meta sync and sync bundles (legacy bundles without the field normalize to `doc`).
+
+**Toggle.** The page actions row shows a segmented "Page view" control with Document and Table buttons (`aria-pressed` on the active one). Switching is immediate and persisted; title, icon, and cover remain editable in both views.
+
+**Table view.** Instead of the document editor, the page renders a table of its direct subpages in manual (rank) order: a Name column (page icon when set + title; clicking a row opens that page) and an Updated column (relative time). Empty pages show "No pages inside yet." The document editor is not mounted in table view, so the Comments action and the backlinks section are hidden there (they belong to the document).
+
+**Known limitations.** The table view is read-only (no inline rename, no sorting/filtering, no custom properties, no per-row menus) and lists direct children only, not deeper descendants. Those remain out of scope for M6.
 
 
 

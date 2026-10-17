@@ -1926,4 +1926,124 @@ body {
   }
 }
 
+.page__view-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--pg-border);
+  border-radius: 8px;
+  background: var(--pg-surface);
+}
+
+.page__view-btn {
+  appearance: none;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pg-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 4px 10px;
+}
+
+.page__view-btn:hover {
+  background: var(--pg-hover);
+  color: var(--pg-text);
+}
+
+.page__view-btn--active {
+  background: var(--pg-accent);
+  color: var(--pg-accent-contrast);
+}
+
+.page__view-btn--active:hover {
+  background: var(--pg-accent);
+  color: var(--pg-accent-contrast);
+}
+
+.pg-children-table-wrap {
+  margin: 18px auto 40px;
+  width: min(700px, calc(100% - 96px));
+}
+
+.pg-children-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--pg-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--pg-surface);
+}
+
+.pg-children-table th {
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--pg-text-muted);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pg-border);
+}
+
+.pg-children-table th:last-child {
+  width: 140px;
+}
+
+.pg-children-table td {
+  padding: 0;
+  border-bottom: 1px solid var(--pg-border);
+  font-size: 0.9rem;
+}
+
+.pg-children-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pg-children-table tbody tr:hover {
+  background: var(--pg-hover);
+}
+
+.pg-children-table__open {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--pg-text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.pg-children-table__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.pg-children-table__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pg-children-table__updated {
+  padding: 10px 12px;
+  color: var(--pg-text-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.pg-children-table__empty {
+  margin: 28px auto 40px;
+  width: min(700px, calc(100% - 96px));
+  color: var(--pg-text-muted);
+  font-size: 0.9rem;
+}
+
 

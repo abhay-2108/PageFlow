@@ -63,6 +63,13 @@ export const setPageCoverInputSchema = z.object({
   cover: pageCoverSchema,
 });
 
+export const pageViewSchema = z.enum(["doc", "table"]);
+
+export const setPageViewInputSchema = z.object({
+  id: pageIdSchema,
+  view: pageViewSchema,
+});
+
 export const searchInputSchema = z.object({
   query: z.string().max(200),
 });
@@ -87,6 +94,7 @@ export const metaEntrySchema = z.object({
   rank: z.number(),
   icon: pageIconSchema.optional(),
   cover: pageCoverSchema.optional(),
+  view: pageViewSchema.optional(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
   deletedAt: z.number().int().nullable(),

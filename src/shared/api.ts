@@ -9,6 +9,7 @@ import type {
   NewPageInput,
   PageMeta,
   PageRecord,
+  PageViewMode,
   SearchHit,
   TipTapDocument,
 } from "./types";
@@ -33,6 +34,7 @@ export interface PagegroveApi {
     move(input: MovePageInput): Promise<PageMeta>;
     setIcon(id: string, icon: string | null): Promise<PageMeta>;
     setCover(id: string, cover: CoverId | null): Promise<PageMeta>;
+    setView(id: string, view: PageViewMode): Promise<PageMeta>;
     trash(id: string): Promise<boolean>;
     restore(id: string): Promise<boolean>;
     backlinks(id: string): Promise<BacklinkHit[]>;

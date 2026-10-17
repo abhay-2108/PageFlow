@@ -16,6 +16,8 @@ export interface TipTapDocument {
   content?: TipTapNode[];
 }
 
+export type PageViewMode = "doc" | "table";
+
 export interface PageMeta {
   id: string;
   parentId: string | null;
@@ -23,6 +25,7 @@ export interface PageMeta {
   rank: number;
   icon: string | null;
   cover: string | null;
+  view: PageViewMode;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { BRAND } from "../../shared/brand";
 import type { CoverId } from "../../shared/covers";
 import { childrenOf } from "../../shared/tree";
-import type { PageMeta, PageRecord, TipTapDocument } from "../../shared/types";
+import type { PageMeta, PageRecord, PageViewMode, TipTapDocument } from "../../shared/types";
 import { EmptyWorkspace } from "./EmptyWorkspace";
 import { PageView } from "./PageView";
 import { CommandPalette, type PaletteAction } from "./components/CommandPalette";
@@ -294,6 +294,18 @@ export default function App() {
     [api, applyMetaUpdate],
   );
 
+  const setPageView = useCallback(
+    async (id: string, view: PageViewMode) => {
+      try {
+        const meta = await api.pages.setView(id, view);
+        applyMetaUpdate(meta);
+      } catch {
+        setToast({ message: "Could not switch the page view." });
+      }
+    },
+    [api, applyMetaUpdate],
+  );
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n") {
@@ -471,6 +483,9 @@ export default function App() {
             }}
             onCoverChange={(cover) => {
               void setPageCover(activeRecord.meta.id, cover);
+            }}
+            onViewChange={(view) => {
+              void setPageView(activeRecord.meta.id, view);
             }}
             onOpenPage={(id) => {
               void selectPage(id);

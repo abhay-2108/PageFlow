@@ -17,6 +17,7 @@ import type {
   NewPageInput,
   PageMeta,
   PageRecord,
+  PageViewMode,
   SearchHit,
   TipTapDocument,
 } from "../../shared/types";
@@ -31,6 +32,7 @@ interface PageRow {
   rank: number;
   icon: string | null;
   cover: string | null;
+  view: string;
   doc: string;
   text: string;
   created_at: number;
@@ -58,7 +60,7 @@ interface CommentMessageRow {
 const SNAPSHOT_DEBOUNCE_MS = 1500;
 
 const SELECT_COLUMNS =
-  "rowid, id, parent_id, title, rank, icon, cover, doc, text, created_at, updated_at, deleted_at";
+  "rowid, id, parent_id, title, rank, icon, cover, view, doc, text, created_at, updated_at, deleted_at";
 
 function toMeta(row: PageRow): PageMeta {
   return {
@@ -68,6 +70,7 @@ function toMeta(row: PageRow): PageMeta {
     rank: row.rank,
     icon: row.icon,
     cover: row.cover,
+    view: row.view === "table" ? "table" : "doc",
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -155,6 +158,12 @@ export class WorkspaceDb {
         CREATE INDEX IF NOT EXISTS idx_comment_messages_thread ON comment_messages(thread_id);
       `);
       this.db.pragma("user_version = 4");
+    }
+    if (version < 5) {
+      this.db.exec(`
+        ALTER TABLE pages ADD COLUMN view TEXT NOT NULL DEFAULT 'doc';
+      `);
+      this.db.pragma("user_version = 5");
     }
   }
 
@@ -379,6 +388,19 @@ export class WorkspaceDb {
       }
       const now = Date.now();
       this.db.prepare("UPDATE pages SET cover = ?, updated_at = ? WHERE id = ?").run(cover, now, id);
+      this.scheduleSnapshot(id);
+      return this.metaById(id);
+    })();
+  }
+
+  setPageView(id: string, view: PageViewMode): PageMeta {
+    return this.db.transaction(() => {
+      const row = this.rowById(id);
+      if (!row || row.deleted_at !== null) {
+        throw new Error("Page not found");
+      }
+      const now = Date.now();
+      this.db.prepare("UPDATE pages SET view = ?, updated_at = ? WHERE id = ?").run(view, now, id);
       this.scheduleSnapshot(id);
       return this.metaById(id);
     })();
@@ -623,11 +645,11 @@ export class WorkspaceDb {
     }
     const ordered = sortEntriesByDepth(entries);
     const insertRow = this.db.prepare(
-      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, doc, text, created_at, updated_at, deleted_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`,
+      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, doc, text, created_at, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`,
     );
     const updateRow = this.db.prepare(
-      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, icon = ?, cover = ?, created_at = ?, updated_at = ?, deleted_at = ?
+      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, icon = ?, cover = ?, view = ?, created_at = ?, updated_at = ?, deleted_at = ?
        WHERE id = ?`,
     );
     let applied = 0;
@@ -636,6 +658,7 @@ export class WorkspaceDb {
       for (const entry of ordered) {
         const icon = entry.icon ?? null;
         const cover = entry.cover ?? null;
+        const view = entry.view ?? "doc";
         const row = this.rowById(entry.id);
         if (!row) {
           try {
@@ -646,6 +669,7 @@ export class WorkspaceDb {
               entry.rank,
               icon,
               cover,
+              view,
               JSON.stringify(EMPTY_DOC),
               entry.createdAt,
               entry.updatedAt,
@@ -665,6 +689,7 @@ export class WorkspaceDb {
             entry.rank,
             icon,
             cover,
+            view,
             entry.createdAt,
             entry.updatedAt,
             entry.deletedAt,

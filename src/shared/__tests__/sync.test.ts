@@ -10,6 +10,7 @@ function meta(partial: Partial<PageMeta> & { id: string }): PageMeta {
     rank: 0,
     icon: null,
     cover: null,
+    view: "doc",
     createdAt: 0,
     updatedAt: 0,
     deletedAt: null,
@@ -73,6 +74,12 @@ describe("meta helpers", () => {
     );
     const current = new Map<string, PageMeta>([["a", meta({ id: "a", icon: "🌱" })]]);
     expect(metaDiff(current, [meta({ id: "a", icon: "🔥" })])).toHaveLength(1);
+  });
+
+  it("treats a view change as a change", () => {
+    expect(entriesEqual(meta({ id: "a", view: "table" }), meta({ id: "a" }))).toBe(false);
+    const current = new Map<string, PageMeta>([["a", meta({ id: "a" })]]);
+    expect(metaDiff(current, [meta({ id: "a", view: "table" })])).toHaveLength(1);
   });
 
   it("diffs against a current map", () => {

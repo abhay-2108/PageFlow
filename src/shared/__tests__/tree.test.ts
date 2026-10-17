@@ -10,6 +10,7 @@ function page(id: string, parentId: string | null, rank: number): PageMeta {
     title: id,
     icon: null,
     cover: null,
+    view: "doc",
     createdAt: 0,
     updatedAt: 0,
     deletedAt: null,
