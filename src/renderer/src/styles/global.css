@@ -2714,4 +2714,177 @@ body.pg-block-dragging {
   color: var(--pg-text);
 }
 
+.pg-db-th {
+  white-space: nowrap;
+}
+
+.pg-db-header-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pg-db-header-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  border-radius: 5px;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 2px 6px;
+}
+
+.pg-db-header-btn:hover {
+  background: var(--pg-hover);
+}
+
+.pg-db-header-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 60;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.pg-db-add-btn {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--pg-text-muted);
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+}
+
+.pg-db-add-btn:hover {
+  background: var(--pg-hover);
+  color: var(--pg-text);
+}
+
+.pg-db-cell {
+  padding: 4px 8px;
+}
+
+.pg-db-input,
+.pg-db-date {
+  width: 100%;
+  min-width: 90px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--pg-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 4px 6px;
+}
+
+.pg-db-input:hover,
+.pg-db-date:hover {
+  border-color: var(--pg-border);
+}
+
+.pg-db-input:focus,
+.pg-db-date:focus {
+  outline: none;
+  border-color: var(--pg-accent);
+  background: var(--pg-surface);
+}
+
+.pg-db-check {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--pg-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--pg-accent-contrast);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.pg-db-check--on {
+  background: var(--pg-accent);
+  border-color: var(--pg-accent);
+}
+
+.pg-db-chip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.pg-db-chip {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  background: var(--pg-hover-strong);
+  color: var(--pg-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 3px 10px;
+}
+
+.pg-db-chip--empty {
+  background: transparent;
+  color: var(--pg-text-faint);
+}
+
+.pg-db-chip--empty:hover {
+  background: var(--pg-hover);
+}
+
+.pg-db-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 60;
+}
+
+.pg-db-rename {
+  width: 110px;
+  border: 1px solid var(--pg-accent);
+  border-radius: 5px;
+  background: var(--pg-surface);
+  color: var(--pg-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 2px 6px;
+}
+
+.pg-db-rename:focus {
+  outline: none;
+}
+
+.pg-db-newrow-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  border-radius: 5px;
+  color: var(--pg-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 5px 8px;
+  text-align: left;
+  width: 100%;
+}
+
+.pg-db-newrow-btn:hover {
+  background: var(--pg-hover);
+  color: var(--pg-text);
+}
+
 

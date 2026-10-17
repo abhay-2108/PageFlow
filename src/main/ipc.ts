@@ -20,8 +20,10 @@ import {
   renamePageInputSchema,
   searchInputSchema,
   setPageCoverInputSchema,
-  setPageIconInputSchema,
   setPageFavoriteInputSchema,
+  setPageFieldInputSchema,
+  setPageIconInputSchema,
+  setPagePropertiesInputSchema,
   setPageViewInputSchema,
   updateDocInputSchema,
 } from "../shared/schemas";
@@ -143,6 +145,16 @@ export function registerIpc(db: WorkspaceDb): void {
     return guarded(db, () => db.duplicatePage(id));
   });
 
+  ipcMain.handle("pg:pages:set-properties", (_event, raw: unknown) => {
+    const { id, properties } = parse(setPagePropertiesInputSchema, raw);
+    return guarded(db, () => db.setPageProperties(id, properties));
+  });
+
+  ipcMain.handle("pg:pages:set-field", (_event, raw: unknown) => {
+    const { id, propId, value } = parse(setPageFieldInputSchema, raw);
+    return guarded(db, () => db.setPageField(id, propId, value));
+  });
+
   ipcMain.handle("pg:pages:trash", (_event, raw: unknown) => {
     const { id } = parse(getPageInputSchema, raw);
     guarded(db, () => db.trashPage(id));
@@ -215,6 +227,8 @@ export function registerIpc(db: WorkspaceDb): void {
           cover: entry.cover ?? null,
           view: entry.view ?? "doc",
           favorite: entry.favorite === true,
+          properties: entry.properties ?? [],
+          fields: entry.fields ?? {},
         })),
       ),
     );

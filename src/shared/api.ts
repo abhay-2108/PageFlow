@@ -1,3 +1,4 @@
+import type { PropertyDef, PropertyValue } from "./database";
 import type {
   AssetImportResult,
   BacklinkHit,
@@ -37,6 +38,8 @@ export interface PagegroveApi {
     setView(id: string, view: PageViewMode): Promise<PageMeta>;
     setFavorite(id: string, favorite: boolean): Promise<PageMeta>;
     duplicate(id: string): Promise<PageMeta>;
+    setProperties(id: string, properties: PropertyDef[]): Promise<PageMeta>;
+    setField(id: string, propId: string, value: PropertyValue): Promise<PageMeta>;
     trash(id: string): Promise<boolean>;
     restore(id: string): Promise<boolean>;
     backlinks(id: string): Promise<BacklinkHit[]>;

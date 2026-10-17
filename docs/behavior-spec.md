@@ -262,5 +262,17 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Known limitations.** Favorites cannot be manually reordered; the `pagegrove://` link scheme is for reference only (not clickable outside the app); duplicate does not copy comments.
 
+## 20. M7.5 spec: database properties and cells (Pagegrove — C, informed by A-web)
+
+**Databases.** Every page in Table view is a database hub: its subpages are rows. Properties are defined on the hub itself and both the schema and the per-row values ride on page metadata, so they persist through reload, LAN sync, and sync bundles, and a deep duplicate copies the schema and all values. Six property types ship: text, number, select, multi-select, date, and checkbox, alongside the built-in Name and Updated columns.
+
+**Property management.** The "Add property" (+) header button appends a column by type (default name is the type label). Each column header opens a menu with Rename (inline input) and Delete property. Changing a property's type after creation is not supported (delete and re-add instead).
+
+**Cells.** Text and number cells are inline inputs that commit on blur or Enter; date cells use a native date input; checkbox cells toggle on click; select and multi-select cells open a popover with an option search that doubles as a creator ("Create \"...\"" or Enter adds the option to the schema and picks it in one step). Picking the active value in a single-select clears it; multi-select toggles values. A "+ New row" footer row creates a subpage in place without leaving the hub.
+
+**Markdown export.** Databases export exactly as before — rows are still pages, so each row exports its own document; property values have no markdown representation.
+
+**Known limitations.** No sorting, filtering, or per-view configuration; no property type changes after creation; no select option colors, formulas, relations, or rollups; the table lists direct children only.
+
 
 

@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { PagegroveApi } from "../shared/api";
+import type { PropertyDef, PropertyValue } from "../shared/database";
 import type {
   AssetImportResult,
   BacklinkHit,
@@ -46,6 +47,10 @@ const api: PagegroveApi = {
       ipcRenderer.invoke("pg:pages:set-favorite", { id, favorite }) as Promise<PageMeta>,
     duplicate: (id: string) =>
       ipcRenderer.invoke("pg:pages:duplicate", { id }) as Promise<PageMeta>,
+    setProperties: (id: string, properties: PropertyDef[]) =>
+      ipcRenderer.invoke("pg:pages:set-properties", { id, properties }) as Promise<PageMeta>,
+    setField: (id: string, propId: string, value: PropertyValue) =>
+      ipcRenderer.invoke("pg:pages:set-field", { id, propId, value }) as Promise<PageMeta>,
     trash: (id: string) => ipcRenderer.invoke("pg:pages:trash", { id }) as Promise<boolean>,
     restore: (id: string) => ipcRenderer.invoke("pg:pages:restore", { id }) as Promise<boolean>,
     backlinks: (id: string) => ipcRenderer.invoke("pg:pages:backlinks", { id }) as Promise<BacklinkHit[]>,

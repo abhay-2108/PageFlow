@@ -12,6 +12,8 @@ function page(id: string, parentId: string | null, rank: number): PageMeta {
     cover: null,
     view: "doc",
     favorite: false,
+    properties: [],
+    fields: {},
     createdAt: 0,
     updatedAt: 0,
     deletedAt: null,

@@ -73,6 +73,41 @@ export const setPageViewInputSchema = z.object({
   view: pageViewSchema,
 });
 
+export const propertyTypeSchema = z.enum([
+  "text",
+  "number",
+  "select",
+  "multi_select",
+  "date",
+  "checkbox",
+]);
+
+export const propertyDefSchema = z.object({
+  id: z.string().min(1).max(64),
+  name: z.string().max(200),
+  type: propertyTypeSchema,
+  options: z.array(z.string().max(200)).max(200),
+});
+
+export const propertyValueSchema = z.union([
+  z.string().max(2000),
+  z.number(),
+  z.boolean(),
+  z.array(z.string().max(200)).max(200),
+  z.null(),
+]);
+
+export const setPagePropertiesInputSchema = z.object({
+  id: pageIdSchema,
+  properties: z.array(propertyDefSchema).max(50),
+});
+
+export const setPageFieldInputSchema = z.object({
+  id: pageIdSchema,
+  propId: z.string().min(1).max(64),
+  value: propertyValueSchema,
+});
+
 export const setPageFavoriteInputSchema = z.object({
   id: pageIdSchema,
   favorite: z.boolean(),
@@ -104,6 +139,8 @@ export const metaEntrySchema = z.object({
   cover: pageCoverSchema.optional(),
   view: pageViewSchema.optional(),
   favorite: z.boolean().optional(),
+  properties: z.array(propertyDefSchema).max(50).optional(),
+  fields: z.record(z.string(), propertyValueSchema).optional(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
   deletedAt: z.number().int().nullable(),

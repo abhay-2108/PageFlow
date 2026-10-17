@@ -2,6 +2,8 @@ import { mkdirSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import Database from "better-sqlite3";
+import { parseFields, parseProperties } from "../../shared/database";
+import type { PropertyDef, PropertyValue } from "../../shared/database";
 import { extractDocText } from "../../shared/doc-text";
 import { sortEntriesByDepth } from "../../shared/meta";
 import { needsRebalance, rankAppend, rankBetween, rebalancedRanks } from "../../shared/rank";
@@ -34,6 +36,8 @@ interface PageRow {
   cover: string | null;
   view: string;
   favorite: number;
+  properties: string;
+  fields: string;
   doc: string;
   text: string;
   created_at: number;
@@ -61,7 +65,7 @@ interface CommentMessageRow {
 const SNAPSHOT_DEBOUNCE_MS = 1500;
 
 const SELECT_COLUMNS =
-  "rowid, id, parent_id, title, rank, icon, cover, view, favorite, doc, text, created_at, updated_at, deleted_at";
+  "rowid, id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, doc, text, created_at, updated_at, deleted_at";
 
 function toMeta(row: PageRow): PageMeta {
   return {
@@ -73,6 +77,8 @@ function toMeta(row: PageRow): PageMeta {
     cover: row.cover,
     view: row.view === "table" ? "table" : "doc",
     favorite: row.favorite !== 0,
+    properties: parseProperties(row.properties),
+    fields: parseFields(row.fields),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -172,6 +178,13 @@ export class WorkspaceDb {
         ALTER TABLE pages ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0;
       `);
       this.db.pragma("user_version = 6");
+    }
+    if (version < 7) {
+      this.db.exec(`
+        ALTER TABLE pages ADD COLUMN properties TEXT NOT NULL DEFAULT '[]';
+        ALTER TABLE pages ADD COLUMN fields TEXT NOT NULL DEFAULT '{}';
+      `);
+      this.db.pragma("user_version = 7");
     }
   }
 
@@ -428,6 +441,42 @@ export class WorkspaceDb {
     })();
   }
 
+  setPageProperties(id: string, properties: PropertyDef[]): PageMeta {
+    return this.db.transaction(() => {
+      const row = this.rowById(id);
+      if (!row || row.deleted_at !== null) {
+        throw new Error("Page not found");
+      }
+      const now = Date.now();
+      this.db
+        .prepare("UPDATE pages SET properties = ?, updated_at = ? WHERE id = ?")
+        .run(JSON.stringify(properties), now, id);
+      this.scheduleSnapshot(id);
+      return this.metaById(id);
+    })();
+  }
+
+  setPageField(id: string, propId: string, value: PropertyValue): PageMeta {
+    return this.db.transaction(() => {
+      const row = this.rowById(id);
+      if (!row || row.deleted_at !== null) {
+        throw new Error("Page not found");
+      }
+      const fields = parseFields(row.fields);
+      if (value === null || (Array.isArray(value) && value.length === 0)) {
+        delete fields[propId];
+      } else {
+        fields[propId] = value;
+      }
+      const now = Date.now();
+      this.db
+        .prepare("UPDATE pages SET fields = ?, updated_at = ? WHERE id = ?")
+        .run(JSON.stringify(fields), now, id);
+      this.scheduleSnapshot(id);
+      return this.metaById(id);
+    })();
+  }
+
   duplicatePage(id: string): PageMeta {
     return this.db.transaction(() => {
       const source = this.rowById(id);
@@ -440,8 +489,8 @@ export class WorkspaceDb {
       const rank = rankBetween(source.rank, nextSibling ? nextSibling.rank : null);
       const now = Date.now();
       const insertRow = this.db.prepare(
-        `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, doc, text, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+        `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, doc, text, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)`,
       );
       const clone = (row: PageRow, parentId: string | null, childRank: number, title: string): string => {
         const cloneId = randomUUID();
@@ -453,6 +502,8 @@ export class WorkspaceDb {
           row.icon,
           row.cover,
           row.view,
+          row.properties,
+          row.fields,
           row.doc,
           row.text,
           now,
@@ -713,11 +764,11 @@ export class WorkspaceDb {
     }
     const ordered = sortEntriesByDepth(entries);
     const insertRow = this.db.prepare(
-      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, doc, text, created_at, updated_at, deleted_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`,
+      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, doc, text, created_at, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`,
     );
     const updateRow = this.db.prepare(
-      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, icon = ?, cover = ?, view = ?, favorite = ?, created_at = ?, updated_at = ?, deleted_at = ?
+      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, icon = ?, cover = ?, view = ?, favorite = ?, properties = ?, fields = ?, created_at = ?, updated_at = ?, deleted_at = ?
        WHERE id = ?`,
     );
     let applied = 0;
@@ -728,6 +779,8 @@ export class WorkspaceDb {
         const cover = entry.cover ?? null;
         const view = entry.view ?? "doc";
         const favorite = entry.favorite === true ? 1 : 0;
+        const properties = JSON.stringify(entry.properties ?? []);
+        const fields = JSON.stringify(entry.fields ?? {});
         const row = this.rowById(entry.id);
         if (!row) {
           try {
@@ -740,6 +793,8 @@ export class WorkspaceDb {
               cover,
               view,
               favorite,
+              properties,
+              fields,
               JSON.stringify(EMPTY_DOC),
               entry.createdAt,
               entry.updatedAt,
@@ -761,6 +816,8 @@ export class WorkspaceDb {
             cover,
             view,
             favorite,
+            properties,
+            fields,
             entry.createdAt,
             entry.updatedAt,
             entry.deletedAt,

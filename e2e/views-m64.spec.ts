@@ -31,7 +31,7 @@ test("table view lists subpages, opens rows, and persists", async () => {
     const table = page.locator(".pg-children-table");
     await expect(table).toBeVisible();
     await expect(page.locator(".pg-editor")).toHaveCount(0);
-    await expect(table.locator("tbody tr")).toHaveCount(2);
+    await expect(table.locator(".pg-db-row")).toHaveCount(2);
     await expect(table.locator(".pg-children-table__title")).toHaveText(["Notes", "Ideas"]);
 
     await table.getByRole("button", { name: "Notes" }).click();
@@ -46,7 +46,7 @@ test("table view lists subpages, opens rows, and persists", async () => {
     await page.waitForSelector(".shell");
     await expect(page.getByLabel("Page title")).toHaveValue("Hub");
     await expect(page.locator(".pg-children-table")).toBeVisible();
-    await expect(page.locator(".pg-children-table tbody tr")).toHaveCount(2);
+    await expect(page.locator(".pg-children-table .pg-db-row")).toHaveCount(2);
 
     await page
       .getByRole("group", { name: "Page view" })

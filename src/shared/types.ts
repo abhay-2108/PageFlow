@@ -1,3 +1,5 @@
+import type { PropertyDef, PropertyFields } from "./database";
+
 export interface TipTapMark {
   type: string;
   attrs?: Record<string, unknown>;
@@ -27,6 +29,8 @@ export interface PageMeta {
   cover: string | null;
   view: PageViewMode;
   favorite: boolean;
+  properties: PropertyDef[];
+  fields: PropertyFields;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;
