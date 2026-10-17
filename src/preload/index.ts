@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { PagegroveApi } from "../shared/api";
+import type { CoverId } from "../shared/covers";
 import type {
   MovePageInput,
   NewPageInput,
@@ -29,6 +30,10 @@ const api: PagegroveApi = {
     updateDoc: (id: string, doc: TipTapDocument) =>
       ipcRenderer.invoke("pg:pages:update-doc", { id, doc }) as Promise<PageMeta>,
     move: (input: MovePageInput) => ipcRenderer.invoke("pg:pages:move", input) as Promise<PageMeta>,
+    setIcon: (id: string, icon: string | null) =>
+      ipcRenderer.invoke("pg:pages:set-icon", { id, icon }) as Promise<PageMeta>,
+    setCover: (id: string, cover: CoverId | null) =>
+      ipcRenderer.invoke("pg:pages:set-cover", { id, cover }) as Promise<PageMeta>,
     trash: (id: string) => ipcRenderer.invoke("pg:pages:trash", { id }) as Promise<boolean>,
     restore: (id: string) => ipcRenderer.invoke("pg:pages:restore", { id }) as Promise<boolean>,
   },

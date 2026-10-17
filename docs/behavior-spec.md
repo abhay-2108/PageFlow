@@ -1,6 +1,6 @@
 # Pagegrove — Interaction & Behavior Spec (M0)
 
-Status: v1, derived 2026-10-17. Owner: Pagegrove. Clean-room: this document contains **no Notion code, assets, or user-facing copy**. All Pagegrove UI strings below are original drafts.
+Status: v1, derived 2026-10-17. v2 addendum (M6), derived 2026-10-18. Owner: Pagegrove. Clean-room: this document contains **no Notion code, assets, or user-facing copy**. All Pagegrove UI strings below are original drafts.
 
 ## 0. Sources & evidence hierarchy
 
@@ -151,3 +151,27 @@ Shows 8 rows initially, scrolls beyond.
 ## 9. Non-goals (M1–M5)
 
 No accounts, no telemetry, no cloud sync, no mobile. LAN sync only (M3), all local-first. No Notion assets, code, or copy — behaviors reimagined, strings original (this document).
+
+## 10. Deep-RE addendum: web bundle (M6)
+
+Because the local machine's Notion install has been used, the web-app bundle now exists in the local Chromium cache and is analyzable statically (Notion still never launched by us). Evidence tier **A-web**:
+
+| Artifact | Contents |
+| --- | --- |
+| `docs/rea/cache-extract/chunk-001..045.js` | 45 JS chunks (20.3 MiB) recovered from `%APPDATA%\Notion\Partitions\notion\Cache\Cache_Data` via `scripts/extract-cache-bundle.mjs`; no sourcemaps |
+| `docs/rea/evidence-webapp-batch-{1,2,3}.json` | REA 6.5.0 static analysis of the chunks in 3 size-balanced batches (`scripts/split-cache-batches.mjs`; single run exceeds REA's result budget); bundler identified as rspack |
+| `docs/rea/facts-editor.json` | 203,081 string literals tokenized (`scripts/extract-editor-facts.mjs`), grouped into 1,954 feature-evidence strings across shortcuts/icons/drag/mentions/comments/database |
+
+What A-web confirms (feature existence + naming only; no copy is reused): a drag system (`Draggable`, `IsDraggingContext`, `is-dragging`, `move_pages`, "Move block to different page"), page "move to" flows (`moveTo`, `move_to_menu_open`), emoji icons and covers (`pageCovers`, `customEmoji`, `LazyEmojiMenu`, per-language emoji catalogs), `link_to_page`/page-mention machinery, comment threads (`threadId`, `create comment` flows), and inline database/view/property update APIs (`create-database`, `update-database-views`). Shortcut strings like `mod+…` and locale catalogs confirm internationalization depth that Pagegrove does not attempt.
+
+Still unknown (A-web limits): exact interaction geometry (drop zones, indicator styling), animation timings, emoji picker layout, and all user-facing copy. Those remain **C (ours)** in §11.
+
+## 11. M6.1 spec: tree drag-and-drop + page icons/covers (Pagegrove — C, informed by A-web)
+
+**Tree drag-and-drop.** Every tree row is draggable (except while inline-renaming). Drop intent by vertical thirds of the hovered row: top third = insert before, bottom third = insert after, middle = nest as first child (expands the target). A dedicated "Move to top level" drop target appears below the tree during a drag; dropping there re-parents to root end. Invalid targets (self, own subtree) are never highlighted and drops are rejected. On drop, ordering uses fractional ranks with automatic rebalance when gaps collapse (`src/shared/rank.ts`); moves are transactional and cycle-checked at the DB layer (`movePage`), and the moved page's new parent auto-expands. Visual language: accent insert-line for before/after, accent ring + hover fill for nest.
+
+**Page icons.** Emoji only (curated offline set, six categories, no network). One icon per page, stored as `icon TEXT` on the page row (migration v3), shown at 44px above the title and at 14px in the tree row. Picker: "Add icon"/"Change icon" hover action opens a grouped emoji grid; "Remove icon" clears. Picked emoji render inside a button with `data-page-icon` for testing.
+
+**Page covers.** A curated set of 8 gradient covers (`src/shared/covers.ts`), no image uploads in M6.1. Cover renders as a 176px banner above the icon/title; hover reveals "Change cover"/"Remove". Cover id persists as `cover TEXT`; unknown ids render nothing (forward compatibility).
+
+**Sync & persistence.** Icon/cover travel in `PageMeta` (LAN meta room diffing via `entriesEqual` covers them; sync bundles carry them; legacy bundles without the fields normalize to `null`). All four operations (move, set/clear icon, set/clear cover) bump `updated_at` and schedule snapshot writes like rename does.

@@ -5,6 +5,8 @@ export function entriesEqual(a: PageMeta, b: PageMeta): boolean {
     a.title === b.title &&
     a.parentId === b.parentId &&
     a.rank === b.rank &&
+    (a.icon ?? null) === (b.icon ?? null) &&
+    (a.cover ?? null) === (b.cover ?? null) &&
     a.createdAt === b.createdAt &&
     a.updatedAt === b.updatedAt &&
     a.deletedAt === b.deletedAt

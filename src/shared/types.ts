@@ -21,6 +21,8 @@ export interface PageMeta {
   parentId: string | null;
   title: string;
   rank: number;
+  icon: string | null;
+  cover: string | null;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;

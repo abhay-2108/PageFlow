@@ -16,6 +16,8 @@ interface PageRow {
   parent_id: string | null;
   title: string;
   rank: number;
+  icon: string | null;
+  cover: string | null;
   doc: string;
   text: string;
   created_at: number;
@@ -26,7 +28,7 @@ interface PageRow {
 const SNAPSHOT_DEBOUNCE_MS = 1500;
 
 const SELECT_COLUMNS =
-  "rowid, id, parent_id, title, rank, doc, text, created_at, updated_at, deleted_at";
+  "rowid, id, parent_id, title, rank, icon, cover, doc, text, created_at, updated_at, deleted_at";
 
 function toMeta(row: PageRow): PageMeta {
   return {
@@ -34,6 +36,8 @@ function toMeta(row: PageRow): PageMeta {
     parentId: row.parent_id,
     title: row.title,
     rank: row.rank,
+    icon: row.icon,
+    cover: row.cover,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -92,6 +96,13 @@ export class WorkspaceDb {
         CREATE INDEX IF NOT EXISTS idx_yupdates_page ON yupdates(page_id, seq);
       `);
       this.db.pragma("user_version = 2");
+    }
+    if (version < 3) {
+      this.db.exec(`
+        ALTER TABLE pages ADD COLUMN icon TEXT;
+        ALTER TABLE pages ADD COLUMN cover TEXT;
+      `);
+      this.db.pragma("user_version = 3");
     }
   }
 
@@ -295,6 +306,32 @@ export class WorkspaceDb {
     })();
   }
 
+  setPageIcon(id: string, icon: string | null): PageMeta {
+    return this.db.transaction(() => {
+      const row = this.rowById(id);
+      if (!row || row.deleted_at !== null) {
+        throw new Error("Page not found");
+      }
+      const now = Date.now();
+      this.db.prepare("UPDATE pages SET icon = ?, updated_at = ? WHERE id = ?").run(icon, now, id);
+      this.scheduleSnapshot(id);
+      return this.metaById(id);
+    })();
+  }
+
+  setPageCover(id: string, cover: string | null): PageMeta {
+    return this.db.transaction(() => {
+      const row = this.rowById(id);
+      if (!row || row.deleted_at !== null) {
+        throw new Error("Page not found");
+      }
+      const now = Date.now();
+      this.db.prepare("UPDATE pages SET cover = ?, updated_at = ? WHERE id = ?").run(cover, now, id);
+      this.scheduleSnapshot(id);
+      return this.metaById(id);
+    })();
+  }
+
   trashPage(id: string): void {
     this.db.transaction(() => {
       const row = this.rowById(id);
@@ -392,17 +429,19 @@ export class WorkspaceDb {
     }
     const ordered = sortEntriesByDepth(entries);
     const insertRow = this.db.prepare(
-      `INSERT INTO pages (id, parent_id, title, rank, doc, text, created_at, updated_at, deleted_at)
-       VALUES (?, ?, ?, ?, ?, '', ?, ?, ?)`,
+      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, doc, text, created_at, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`,
     );
     const updateRow = this.db.prepare(
-      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, created_at = ?, updated_at = ?, deleted_at = ?
+      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, icon = ?, cover = ?, created_at = ?, updated_at = ?, deleted_at = ?
        WHERE id = ?`,
     );
     let applied = 0;
     this.db.transaction(() => {
       this.db.pragma("defer_foreign_keys = ON");
       for (const entry of ordered) {
+        const icon = entry.icon ?? null;
+        const cover = entry.cover ?? null;
         const row = this.rowById(entry.id);
         if (!row) {
           try {
@@ -411,6 +450,8 @@ export class WorkspaceDb {
               entry.parentId,
               entry.title,
               entry.rank,
+              icon,
+              cover,
               JSON.stringify(EMPTY_DOC),
               entry.createdAt,
               entry.updatedAt,
@@ -428,6 +469,8 @@ export class WorkspaceDb {
             entry.parentId,
             entry.title,
             entry.rank,
+            icon,
+            cover,
             entry.createdAt,
             entry.updatedAt,
             entry.deletedAt,

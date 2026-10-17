@@ -8,6 +8,8 @@ function page(id: string, parentId: string | null, rank: number): PageMeta {
     parentId,
     rank,
     title: id,
+    icon: null,
+    cover: null,
     createdAt: 0,
     updatedAt: 0,
     deletedAt: null,

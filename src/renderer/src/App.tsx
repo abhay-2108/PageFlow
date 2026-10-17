@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { BRAND } from "../../shared/brand";
+import type { CoverId } from "../../shared/covers";
 import { childrenOf } from "../../shared/tree";
 import type { PageMeta, PageRecord, TipTapDocument } from "../../shared/types";
 import { EmptyWorkspace } from "./EmptyWorkspace";
@@ -245,6 +246,54 @@ export default function App() {
     [api, refreshLists],
   );
 
+  const applyMetaUpdate = useCallback((meta: PageMeta) => {
+    setPages((prev) => prev.map((page) => (page.id === meta.id ? meta : page)));
+    setActiveRecord((prev) =>
+      prev && prev.meta.id === meta.id ? { ...prev, meta } : prev,
+    );
+  }, []);
+
+  const movePage = useCallback(
+    async (id: string, parentId: string | null, beforeId: string | null) => {
+      try {
+        flushSave();
+        flushRename();
+        await api.pages.move({ id, parentId, beforeId });
+        if (parentId !== null) {
+          setExpanded((prev) => new Set(prev).add(parentId));
+        }
+        await refreshLists();
+      } catch {
+        setToast({ message: "Could not move that page." });
+      }
+    },
+    [api, flushRename, flushSave, refreshLists],
+  );
+
+  const setPageIcon = useCallback(
+    async (id: string, icon: string | null) => {
+      try {
+        const meta = await api.pages.setIcon(id, icon);
+        applyMetaUpdate(meta);
+      } catch {
+        setToast({ message: "Could not update the page icon." });
+      }
+    },
+    [api, applyMetaUpdate],
+  );
+
+  const setPageCover = useCallback(
+    async (id: string, cover: CoverId | null) => {
+      try {
+        const meta = await api.pages.setCover(id, cover);
+        applyMetaUpdate(meta);
+      } catch {
+        setToast({ message: "Could not update the page cover." });
+      }
+    },
+    [api, applyMetaUpdate],
+  );
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n") {
@@ -395,6 +444,9 @@ export default function App() {
         onRestore={(id) => {
           void restorePage(id);
         }}
+        onMove={(id, parentId, beforeId) => {
+          void movePage(id, parentId, beforeId);
+        }}
       />
       <div className="app__scroll">
         {!loading && pages.length === 0 ? (
@@ -414,6 +466,12 @@ export default function App() {
             }}
             onTitleChange={(title) => queueRename(activeRecord.meta.id, title)}
             autoFocusEditor={focusPageId !== null && focusPageId === activeRecord.meta.id}
+            onIconChange={(icon) => {
+              void setPageIcon(activeRecord.meta.id, icon);
+            }}
+            onCoverChange={(cover) => {
+              void setPageCover(activeRecord.meta.id, cover);
+            }}
           />
         ) : null}
       </div>

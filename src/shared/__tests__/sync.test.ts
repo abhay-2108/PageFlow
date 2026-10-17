@@ -8,6 +8,8 @@ function meta(partial: Partial<PageMeta> & { id: string }): PageMeta {
     parentId: null,
     title: "",
     rank: 0,
+    icon: null,
+    cover: null,
     createdAt: 0,
     updatedAt: 0,
     deletedAt: null,
@@ -61,6 +63,16 @@ describe("meta helpers", () => {
   it("detects equal entries", () => {
     expect(entriesEqual(meta({ id: "a" }), meta({ id: "a" }))).toBe(true);
     expect(entriesEqual(meta({ id: "a", title: "x" }), meta({ id: "a" }))).toBe(false);
+  });
+
+  it("treats icon and cover differences as changes", () => {
+    expect(entriesEqual(meta({ id: "a", icon: "🌱" }), meta({ id: "a" }))).toBe(false);
+    expect(entriesEqual(meta({ id: "a", cover: "sunrise" }), meta({ id: "a" }))).toBe(false);
+    expect(entriesEqual(meta({ id: "a", icon: "🌱", cover: "sage" }), meta({ id: "a", icon: "🌱", cover: "sage" }))).toBe(
+      true,
+    );
+    const current = new Map<string, PageMeta>([["a", meta({ id: "a", icon: "🌱" })]]);
+    expect(metaDiff(current, [meta({ id: "a", icon: "🔥" })])).toHaveLength(1);
   });
 
   it("diffs against a current map", () => {

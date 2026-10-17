@@ -1,3 +1,4 @@
+import type { CoverId } from "./covers";
 import type {
   MovePageInput,
   NewPageInput,
@@ -25,6 +26,8 @@ export interface PagegroveApi {
     rename(id: string, title: string): Promise<PageMeta>;
     updateDoc(id: string, doc: TipTapDocument): Promise<PageMeta>;
     move(input: MovePageInput): Promise<PageMeta>;
+    setIcon(id: string, icon: string | null): Promise<PageMeta>;
+    setCover(id: string, cover: CoverId | null): Promise<PageMeta>;
     trash(id: string): Promise<boolean>;
     restore(id: string): Promise<boolean>;
   };

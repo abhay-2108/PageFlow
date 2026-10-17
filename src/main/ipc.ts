@@ -13,6 +13,8 @@ import {
   movePageInputSchema,
   renamePageInputSchema,
   searchInputSchema,
+  setPageCoverInputSchema,
+  setPageIconInputSchema,
   updateDocInputSchema,
 } from "../shared/schemas";
 import type { PageMeta } from "../shared/types";
@@ -94,6 +96,16 @@ export function registerIpc(db: WorkspaceDb): void {
     return guarded(db, () => db.movePage(input));
   });
 
+  ipcMain.handle("pg:pages:set-icon", (_event, raw: unknown) => {
+    const { id, icon } = parse(setPageIconInputSchema, raw);
+    return guarded(db, () => db.setPageIcon(id, icon));
+  });
+
+  ipcMain.handle("pg:pages:set-cover", (_event, raw: unknown) => {
+    const { id, cover } = parse(setPageCoverInputSchema, raw);
+    return guarded(db, () => db.setPageCover(id, cover));
+  });
+
   ipcMain.handle("pg:pages:trash", (_event, raw: unknown) => {
     const { id } = parse(getPageInputSchema, raw);
     guarded(db, () => db.trashPage(id));
@@ -128,7 +140,11 @@ export function registerIpc(db: WorkspaceDb): void {
 
   ipcMain.handle("pg:sync:apply-meta", (_event, raw: unknown) => {
     const { entries } = parse(applyMetaInputSchema, raw);
-    guarded(db, () => db.upsertMetaEntries(entries));
+    guarded(db, () =>
+      db.upsertMetaEntries(
+        entries.map((entry) => ({ ...entry, icon: entry.icon ?? null, cover: entry.cover ?? null })),
+      ),
+    );
   });
 
   ipcMain.handle("pg:sync:export-bundle", async () => {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { COVER_IDS } from "./covers";
 import type { TipTapNode } from "./types";
 
 const markSchema = z.object({
@@ -48,6 +49,20 @@ export const movePageInputSchema = z.object({
   beforeId: pageIdSchema.nullable(),
 });
 
+export const pageIconSchema = z.string().min(1).max(16).nullable();
+
+export const pageCoverSchema = z.enum(COVER_IDS).nullable();
+
+export const setPageIconInputSchema = z.object({
+  id: pageIdSchema,
+  icon: pageIconSchema,
+});
+
+export const setPageCoverInputSchema = z.object({
+  id: pageIdSchema,
+  cover: pageCoverSchema,
+});
+
 export const searchInputSchema = z.object({
   query: z.string().max(200),
 });
@@ -70,6 +85,8 @@ export const metaEntrySchema = z.object({
   parentId: pageIdSchema.nullable(),
   title: z.string().max(500),
   rank: z.number(),
+  icon: pageIconSchema.optional(),
+  cover: pageCoverSchema.optional(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
   deletedAt: z.number().int().nullable(),

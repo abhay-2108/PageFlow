@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MouseEvent as ReactMouseEvent } from "react";
+import type { DragEvent as ReactDragEvent, MouseEvent as ReactMouseEvent } from "react";
 import { BRAND, searchNoResults } from "../../../shared/brand";
+import { isDescendant } from "../../../shared/tree";
 import type { PageMeta, SearchHit } from "../../../shared/types";
 import { getApi } from "../lib/api";
 import { SessionPanel } from "./SessionPanel";
@@ -11,6 +12,25 @@ interface MenuState {
   y: number;
 }
 
+type DropZone = "before" | "after" | "into";
+
+interface DropHint {
+  id: string;
+  zone: DropZone;
+}
+
+function zoneFromEvent(event: ReactDragEvent<HTMLElement>): DropZone {
+  const rect = event.currentTarget.getBoundingClientRect();
+  const edge = Math.min(12, rect.height * 0.3);
+  if (event.clientY <= rect.top + edge) {
+    return "before";
+  }
+  if (event.clientY >= rect.bottom - edge) {
+    return "after";
+  }
+  return "into";
+}
+
 interface TreeRowProps {
   page: PageMeta;
   depth: number;
@@ -18,6 +38,9 @@ interface TreeRowProps {
   activeId: string | null;
   expanded: Set<string>;
   editingId: string | null;
+  dragId: string | null;
+  dropHint: DropHint | null;
+  dragging: boolean;
   onToggleExpanded: (id: string) => void;
   onSelect: (id: string) => void;
   onStartRename: (id: string) => void;
@@ -25,6 +48,10 @@ interface TreeRowProps {
   onCancelRename: () => void;
   onCreateChild: (parentId: string) => void;
   onOpenMenu: (event: ReactMouseEvent, id: string) => void;
+  onDragStartRow: (id: string) => void;
+  onDragEndRow: () => void;
+  onDragOverRow: (event: ReactDragEvent<HTMLElement>, id: string) => void;
+  onDropRow: (event: ReactDragEvent<HTMLElement>, id: string) => void;
 }
 
 function TreeRow(props: TreeRowProps) {
@@ -35,6 +62,9 @@ function TreeRow(props: TreeRowProps) {
     activeId,
     expanded,
     editingId,
+    dragId,
+    dropHint,
+    dragging,
     onToggleExpanded,
     onSelect,
     onStartRename,
@@ -42,6 +72,10 @@ function TreeRow(props: TreeRowProps) {
     onCancelRename,
     onCreateChild,
     onOpenMenu,
+    onDragStartRow,
+    onDragEndRow,
+    onDragOverRow,
+    onDropRow,
   } = props;
 
   const children = childrenMap.get(page.id) ?? [];
@@ -49,13 +83,40 @@ function TreeRow(props: TreeRowProps) {
   const isExpanded = expanded.has(page.id);
   const isActive = page.id === activeId;
   const isEditing = editingId === page.id;
+  const isDragged = dragId === page.id;
+  const hint = dropHint && dropHint.id === page.id ? dropHint.zone : null;
   const label = page.title.length > 0 ? page.title : BRAND.empty.untitled;
+
+  const classNames = ["tree-row"];
+  if (isActive) {
+    classNames.push("tree-row--active");
+  }
+  if (isDragged) {
+    classNames.push("tree-row--dragging");
+  }
+  if (hint === "before") {
+    classNames.push("tree-row--drop-before");
+  } else if (hint === "after") {
+    classNames.push("tree-row--drop-after");
+  } else if (hint === "into") {
+    classNames.push("tree-row--drop-into");
+  }
 
   return (
     <li className="tree-item">
       <div
-        className={isActive ? "tree-row tree-row--active" : "tree-row"}
+        className={classNames.join(" ")}
         style={{ paddingLeft: `${6 + depth * 14}px` }}
+        data-page-row={page.id}
+        draggable={!isEditing}
+        onDragStart={(event) => {
+          event.dataTransfer.setData("text/plain", page.id);
+          event.dataTransfer.effectAllowed = "move";
+          onDragStartRow(page.id);
+        }}
+        onDragEnd={onDragEndRow}
+        onDragOver={(event) => onDragOverRow(event, page.id)}
+        onDrop={(event) => onDropRow(event, page.id)}
       >
         {hasChildren ? (
           <button
@@ -86,10 +147,15 @@ function TreeRow(props: TreeRowProps) {
             onDoubleClick={() => onStartRename(page.id)}
             onContextMenu={(event) => onOpenMenu(event, page.id)}
           >
-            {label}
+            {page.icon ? (
+              <span className="tree-row__icon" aria-hidden="true">
+                {page.icon}
+              </span>
+            ) : null}
+            <span className="tree-row__label">{label}</span>
           </button>
         )}
-        {!isEditing ? (
+        {!isEditing && !dragging ? (
           <span className="tree-row__actions">
             <button
               type="button"
@@ -179,6 +245,7 @@ export interface SidebarProps {
   onRename: (id: string, title: string) => void;
   onTrash: (id: string) => void;
   onRestore: (id: string) => void;
+  onMove: (id: string, parentId: string | null, beforeId: string | null) => void;
 }
 
 export function Sidebar(props: SidebarProps) {
@@ -194,6 +261,7 @@ export function Sidebar(props: SidebarProps) {
     onRename,
     onTrash,
     onRestore,
+    onMove,
   } = props;
 
   const api = getApi();
@@ -202,6 +270,9 @@ export function Sidebar(props: SidebarProps) {
   const [trashOpen, setTrashOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[] | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropHint, setDropHint] = useState<DropHint | null>(null);
+  const [rootHint, setRootHint] = useState(false);
 
   const childrenMap = useMemo(() => {
     const map = new Map<string | null, PageMeta[]>();
@@ -254,6 +325,93 @@ export function Sidebar(props: SidebarProps) {
     const x = Math.min(event.clientX, window.innerWidth - 200);
     const y = Math.min(event.clientY, window.innerHeight - 140);
     setMenu({ id, x, y });
+  };
+
+  const isValidDrop = (draggedId: string, target: PageMeta, zone: DropZone): boolean => {
+    if (target.id === draggedId) {
+      return false;
+    }
+    if (zone === "into") {
+      return !isDescendant(pages, draggedId, target.id);
+    }
+    const parent = target.parentId;
+    if (parent === null) {
+      return true;
+    }
+    return parent !== draggedId && !isDescendant(pages, draggedId, parent);
+  };
+
+  const clearDrag = () => {
+    setDragId(null);
+    setDropHint(null);
+    setRootHint(false);
+  };
+
+  const handleDragStartRow = (id: string) => {
+    setDragId(id);
+    setDropHint(null);
+  };
+
+  const handleDragOverRow = (event: ReactDragEvent<HTMLElement>, targetId: string) => {
+    if (!dragId || dragId === targetId) {
+      return;
+    }
+    const target = pages.find((page) => page.id === targetId);
+    if (!target) {
+      return;
+    }
+    const zone = zoneFromEvent(event);
+    if (!isValidDrop(dragId, target, zone)) {
+      setDropHint(null);
+      return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setRootHint(false);
+    setDropHint({ id: targetId, zone });
+  };
+
+  const handleDropRow = (event: ReactDragEvent<HTMLElement>, targetId: string) => {
+    event.preventDefault();
+    const dragged = dragId ?? event.dataTransfer.getData("text/plain");
+    const target = pages.find((page) => page.id === targetId);
+    const zone = zoneFromEvent(event);
+    clearDrag();
+    if (!dragged || !target || !isValidDrop(dragged, target, zone)) {
+      return;
+    }
+    if (zone === "into") {
+      onMove(dragged, target.id, null);
+      return;
+    }
+    const parentId = target.parentId;
+    if (zone === "before") {
+      onMove(dragged, parentId, target.id);
+      return;
+    }
+    const siblings = (childrenMap.get(parentId) ?? []).filter((sibling) => sibling.id !== dragged);
+    const index = siblings.findIndex((sibling) => sibling.id === target.id);
+    const next = index >= 0 ? (siblings[index + 1] ?? null) : null;
+    onMove(dragged, parentId, next ? next.id : null);
+  };
+
+  const handleDragOverRoot = (event: ReactDragEvent<HTMLElement>) => {
+    if (!dragId) {
+      return;
+    }
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDropHint(null);
+    setRootHint(true);
+  };
+
+  const handleDropRoot = (event: ReactDragEvent<HTMLElement>) => {
+    event.preventDefault();
+    const dragged = dragId ?? event.dataTransfer.getData("text/plain");
+    clearDrag();
+    if (dragged) {
+      onMove(dragged, null, null);
+    }
   };
 
   const rootPages = childrenMap.get(null) ?? [];
@@ -336,6 +494,9 @@ export function Sidebar(props: SidebarProps) {
                     activeId={activeId}
                     expanded={expanded}
                     editingId={editingId}
+                    dragId={dragId}
+                    dropHint={dropHint}
+                    dragging={dragId !== null}
                     onToggleExpanded={onToggleExpanded}
                     onSelect={onSelect}
                     onStartRename={setEditingId}
@@ -346,9 +507,23 @@ export function Sidebar(props: SidebarProps) {
                     onCancelRename={() => setEditingId(null)}
                     onCreateChild={(parentId) => onCreate(parentId)}
                     onOpenMenu={openMenu}
+                    onDragStartRow={handleDragStartRow}
+                    onDragEndRow={clearDrag}
+                    onDragOverRow={handleDragOverRow}
+                    onDropRow={handleDropRow}
                   />
                 ))}
               </ul>
+            ) : null}
+            {dragId !== null ? (
+              <div
+                className={rootHint ? "tree-dropzone tree-dropzone--active" : "tree-dropzone"}
+                data-drop-root="true"
+                onDragOver={handleDragOverRoot}
+                onDrop={handleDropRoot}
+              >
+                Move to top level
+              </div>
             ) : null}
           </div>
         </>
