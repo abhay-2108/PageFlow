@@ -96,6 +96,30 @@ export const applyMetaInputSchema = z.object({
   entries: z.array(metaEntrySchema).max(2000),
 });
 
+export const commentThreadIdSchema = z.uuid();
+
+export const createCommentThreadInputSchema = z.object({
+  pageId: pageIdSchema,
+  quote: z.string().max(500),
+  body: z.string().min(1).max(5000),
+  author: z.string().min(1).max(100),
+});
+
+export const commentReplyInputSchema = z.object({
+  threadId: commentThreadIdSchema,
+  body: z.string().min(1).max(5000),
+  author: z.string().min(1).max(100),
+});
+
+export const commentResolveInputSchema = z.object({
+  threadId: commentThreadIdSchema,
+  resolved: z.boolean(),
+});
+
+export const commentDeleteInputSchema = z.object({
+  threadId: commentThreadIdSchema,
+});
+
 export const exportMarkdownInputSchema = z.object({
   title: z.string().max(200),
   markdown: z.string().max(5_000_000),

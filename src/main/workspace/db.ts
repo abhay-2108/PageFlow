@@ -8,7 +8,12 @@ import { needsRebalance, rankAppend, rankBetween, rebalancedRanks } from "../../
 import { isDescendant } from "../../shared/tree";
 import type {
   BacklinkHit,
+  CommentMessage,
+  CommentReplyInput,
+  CommentResolveInput,
+  CommentThread,
   MovePageInput,
+  NewCommentThreadInput,
   NewPageInput,
   PageMeta,
   PageRecord,
@@ -31,6 +36,23 @@ interface PageRow {
   created_at: number;
   updated_at: number;
   deleted_at: number | null;
+}
+
+interface CommentThreadRow {
+  id: string;
+  page_id: string;
+  quote: string;
+  resolved: number;
+  created_at: number;
+  updated_at: number;
+}
+
+interface CommentMessageRow {
+  id: string;
+  thread_id: string;
+  author: string;
+  body: string;
+  created_at: number;
 }
 
 const SNAPSHOT_DEBOUNCE_MS = 1500;
@@ -111,6 +133,28 @@ export class WorkspaceDb {
         ALTER TABLE pages ADD COLUMN cover TEXT;
       `);
       this.db.pragma("user_version = 3");
+    }
+    if (version < 4) {
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS comment_threads (
+          id TEXT PRIMARY KEY,
+          page_id TEXT NOT NULL REFERENCES pages(id) ON DELETE CASCADE,
+          quote TEXT NOT NULL DEFAULT '',
+          resolved INTEGER NOT NULL DEFAULT 0,
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_comment_threads_page ON comment_threads(page_id);
+        CREATE TABLE IF NOT EXISTS comment_messages (
+          id TEXT PRIMARY KEY,
+          thread_id TEXT NOT NULL REFERENCES comment_threads(id) ON DELETE CASCADE,
+          author TEXT NOT NULL,
+          body TEXT NOT NULL,
+          created_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_comment_messages_thread ON comment_messages(thread_id);
+      `);
+      this.db.pragma("user_version = 4");
     }
   }
 
@@ -418,6 +462,128 @@ export class WorkspaceDb {
       title: row.title,
       path: this.pathTitles(metas, row.id),
     }));
+  }
+
+  createCommentThread(input: NewCommentThreadInput): CommentThread {
+    const id = randomUUID();
+    const now = Date.now();
+    const insertThread = this.db.prepare(
+      `INSERT INTO comment_threads (id, page_id, quote, resolved, created_at, updated_at)
+       VALUES (?, ?, ?, 0, ?, ?)`,
+    );
+    const insertMessage = this.db.prepare(
+      `INSERT INTO comment_messages (id, thread_id, author, body, created_at) VALUES (?, ?, ?, ?, ?)`,
+    );
+    const tx = this.db.transaction(() => {
+      insertThread.run(id, input.pageId, input.quote, now, now);
+      insertMessage.run(randomUUID(), id, input.author, input.body, now);
+    });
+    tx();
+    return this.commentThreadById(id);
+  }
+
+  addCommentMessage(input: CommentReplyInput): CommentThread {
+    const now = Date.now();
+    const tx = this.db.transaction(() => {
+      this.db
+        .prepare(
+          `INSERT INTO comment_messages (id, thread_id, author, body, created_at) VALUES (?, ?, ?, ?, ?)`,
+        )
+        .run(randomUUID(), input.threadId, input.author, input.body, now);
+      this.db
+        .prepare(`UPDATE comment_threads SET updated_at = ? WHERE id = ?`)
+        .run(now, input.threadId);
+    });
+    tx();
+    return this.commentThreadById(input.threadId);
+  }
+
+  listCommentThreads(pageId: string): CommentThread[] {
+    const threads = this.db
+      .prepare(
+        `SELECT id, page_id, quote, resolved, created_at, updated_at FROM comment_threads
+         WHERE page_id = ? ORDER BY created_at ASC`,
+      )
+      .all(pageId) as CommentThreadRow[];
+    if (threads.length === 0) {
+      return [];
+    }
+    const placeholders = threads.map(() => "?").join(", ");
+    const messages = this.db
+      .prepare(
+        `SELECT id, thread_id, author, body, created_at FROM comment_messages
+         WHERE thread_id IN (${placeholders}) ORDER BY created_at ASC, rowid ASC`,
+      )
+      .all(...threads.map((thread) => thread.id)) as CommentMessageRow[];
+    const byThread = new Map<string, CommentMessage[]>();
+    for (const message of messages) {
+      const list = byThread.get(message.thread_id) ?? [];
+      list.push({
+        id: message.id,
+        threadId: message.thread_id,
+        author: message.author,
+        body: message.body,
+        createdAt: message.created_at,
+      });
+      byThread.set(message.thread_id, list);
+    }
+    return threads.map((thread) => ({
+      id: thread.id,
+      pageId: thread.page_id,
+      quote: thread.quote,
+      resolved: thread.resolved !== 0,
+      createdAt: thread.created_at,
+      updatedAt: thread.updated_at,
+      messages: byThread.get(thread.id) ?? [],
+    }));
+  }
+
+  setCommentResolved(input: CommentResolveInput): CommentThread {
+    const now = Date.now();
+    const result = this.db
+      .prepare(`UPDATE comment_threads SET resolved = ?, updated_at = ? WHERE id = ?`)
+      .run(input.resolved ? 1 : 0, now, input.threadId);
+    if (result.changes === 0) {
+      throw new Error(`Comment thread not found: ${input.threadId}`);
+    }
+    return this.commentThreadById(input.threadId);
+  }
+
+  deleteCommentThread(threadId: string): boolean {
+    const result = this.db.prepare(`DELETE FROM comment_threads WHERE id = ?`).run(threadId);
+    return result.changes > 0;
+  }
+
+  private commentThreadById(id: string): CommentThread {
+    const thread = this.db
+      .prepare(
+        `SELECT id, page_id, quote, resolved, created_at, updated_at FROM comment_threads WHERE id = ?`,
+      )
+      .get(id) as CommentThreadRow | undefined;
+    if (!thread) {
+      throw new Error(`Comment thread not found: ${id}`);
+    }
+    const messages = this.db
+      .prepare(
+        `SELECT id, thread_id, author, body, created_at FROM comment_messages
+         WHERE thread_id = ? ORDER BY created_at ASC, rowid ASC`,
+      )
+      .all(id) as CommentMessageRow[];
+    return {
+      id: thread.id,
+      pageId: thread.page_id,
+      quote: thread.quote,
+      resolved: thread.resolved !== 0,
+      createdAt: thread.created_at,
+      updatedAt: thread.updated_at,
+      messages: messages.map((message) => ({
+        id: message.id,
+        threadId: message.thread_id,
+        author: message.author,
+        body: message.body,
+        createdAt: message.created_at,
+      })),
+    };
   }
 
   private pathTitles(metas: PageMeta[], id: string): string[] {

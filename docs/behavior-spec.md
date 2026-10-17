@@ -184,3 +184,14 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Mention semantics (A-web note).** Notion's bundle contains a `link_to_page` mention flow and page-mention localization (`pageMention.untitledPlaceholder`, `mentionsMe`); those confirm the concept. Geometry (popup placement, chip styling), copy ("Linked from"), and the backlink data model are original Pagegrove choices (C).
 
+## 13. M6.3 spec: anchored comments (Pagegrove — C, informed by A-web)
+
+**Creating a thread.** Selecting text in the editor shows a floating "Comment" button at the selection. Pressing it opens the right-side Comments panel with a composer whose quote is the selected text (plain-text snapshot, max 140 chars shown / 500 stored). Posting creates a thread and pins an inline anchor mark (`commentAnchor`, carrying `threadId`) to the selected range; the anchored text renders with an amber highlight and underline, and clicking it opens/activates the thread in the panel.
+
+**Panel.** The Comments panel opens via the page's "Comments" action (shows a count of open threads) or automatically when a thread is created or its anchor is clicked. Each thread card shows the quote, its messages (author + body), a reply box, and Resolve/Delete actions. Resolved threads collapse behind a "Show resolved (n)" toggle; Reopen restores them. Deleting a thread removes its anchors from the document immediately.
+
+**Data model.** Threads and messages live in the workspace DB (migration v4: `comment_threads`, `comment_messages` with `ON DELETE CASCADE`); anchors live in the document itself, so highlights survive save/reload and travel with the doc over LAN sync. On page open, anchor marks whose thread is missing from the local DB are pruned automatically. Author is the local workspace user name, snapshotted per message.
+
+**Known limitations (documented).** Comments are workspace-local in M6.3: LAN sessions and sync bundles carry pages/docs but not thread data. Consequence: opening a page that carries foreign anchors prunes those marks locally (they survive on the machine that owns the thread data); resolving/deleting/replying on one machine does not reach others. Deleting a page moves its threads out of reach of the UI (rows remain via the trash lifecycle); restoring the page restores its threads.
+
+

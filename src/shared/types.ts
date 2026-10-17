@@ -46,6 +46,42 @@ export interface BacklinkHit {
   path: string[];
 }
 
+export interface CommentMessage {
+  id: string;
+  threadId: string;
+  author: string;
+  body: string;
+  createdAt: number;
+}
+
+export interface CommentThread {
+  id: string;
+  pageId: string;
+  quote: string;
+  resolved: boolean;
+  createdAt: number;
+  updatedAt: number;
+  messages: CommentMessage[];
+}
+
+export interface NewCommentThreadInput {
+  pageId: string;
+  quote: string;
+  body: string;
+  author: string;
+}
+
+export interface CommentReplyInput {
+  threadId: string;
+  body: string;
+  author: string;
+}
+
+export interface CommentResolveInput {
+  threadId: string;
+  resolved: boolean;
+}
+
 export interface NewPageInput {
   parentId: string | null;
   title?: string;

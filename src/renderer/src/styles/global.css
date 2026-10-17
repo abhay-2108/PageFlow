@@ -1611,4 +1611,242 @@ body {
   background: var(--pg-hover);
 }
 
+/* M6.3: comments */
+
+.pg-comment-mark {
+  background: rgba(246, 191, 38, 0.2);
+  border-bottom: 1.5px solid rgba(196, 137, 0, 0.65);
+  cursor: pointer;
+}
+
+.pg-comment-mark:hover {
+  background: rgba(246, 191, 38, 0.34);
+}
+
+.pg-comment-bubble {
+  position: fixed;
+  z-index: 45;
+  appearance: none;
+  border: 1px solid var(--pg-border);
+  border-radius: 8px;
+  background: var(--pg-surface);
+  color: var(--pg-text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 550;
+  padding: 6px 12px;
+  box-shadow: var(--pg-shadow);
+}
+
+.pg-comment-bubble:hover {
+  background: var(--pg-hover-strong);
+}
+
+.comments-panel {
+  position: fixed;
+  top: 64px;
+  right: 16px;
+  bottom: 24px;
+  width: 300px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid var(--pg-border);
+  border-radius: 12px;
+  background: var(--pg-surface);
+  box-shadow: var(--pg-shadow);
+}
+
+.comments-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.comments-panel__title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pg-text-muted);
+}
+
+.comments-panel__close {
+  appearance: none;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pg-text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 3px 7px;
+}
+
+.comments-panel__close:hover {
+  background: var(--pg-hover);
+  color: var(--pg-text);
+}
+
+.comments-panel__empty {
+  margin: 2px;
+  font-size: 0.8125rem;
+  color: var(--pg-text-muted);
+  line-height: 1.5;
+}
+
+.comments-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comments-panel__resolved-toggle {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--pg-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 550;
+  padding: 2px 0;
+  text-align: left;
+}
+
+.comments-panel__resolved-toggle:hover {
+  color: var(--pg-text);
+}
+
+.comments-panel__resolved {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.comment-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--pg-border);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.comment-thread[data-active="true"] {
+  outline: 2px solid var(--pg-accent);
+}
+
+.comment-thread--resolved {
+  opacity: 0.62;
+}
+
+.comment-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--pg-accent);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.comment-thread__quote {
+  margin: 0;
+  max-height: 64px;
+  overflow: hidden;
+  padding: 4px 8px;
+  border-left: 3px solid var(--pg-accent);
+  border-radius: 4px;
+  background: var(--pg-hover);
+  color: var(--pg-text-muted);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.comment-thread__messages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.comment-thread__author {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.comment-thread__body {
+  margin: 1px 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.comment-thread__reply {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.comment-thread__reply-input,
+.comment-composer__input {
+  flex: 1;
+  min-height: 32px;
+  max-height: 120px;
+  resize: none;
+  padding: 6px 9px;
+  border: 1px solid var(--pg-border);
+  border-radius: 8px;
+  background: var(--pg-bg);
+  color: var(--pg-text);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.comment-composer__input {
+  min-height: 64px;
+  width: 100%;
+}
+
+.comment-thread__reply-input:focus,
+.comment-composer__input:focus {
+  outline: 2px solid var(--pg-accent);
+  outline-offset: -1px;
+}
+
+.comment-thread__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.comment-composer__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.comment-composer__actions .btn-primary {
+  font-size: 0.8125rem;
+  padding: 6px 14px;
+}
+
+.comment-composer__actions .btn-primary:disabled {
+  cursor: default;
+  filter: none;
+  opacity: 0.55;
+}
+
 

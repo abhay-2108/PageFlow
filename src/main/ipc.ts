@@ -6,6 +6,10 @@ import type { z } from "zod";
 import {
   applyMetaInputSchema,
   appendUpdatesInputSchema,
+  commentDeleteInputSchema,
+  commentReplyInputSchema,
+  commentResolveInputSchema,
+  createCommentThreadInputSchema,
   createPageInputSchema,
   exportMarkdownInputSchema,
   getPageInputSchema,
@@ -121,6 +125,31 @@ export function registerIpc(db: WorkspaceDb): void {
   ipcMain.handle("pg:pages:backlinks", (_event, raw: unknown) => {
     const { id } = parse(getPageInputSchema, raw);
     return guarded(db, () => db.listBacklinks(id)) ?? [];
+  });
+
+  ipcMain.handle("pg:comments:list", (_event, raw: unknown) => {
+    const { id } = parse(getPageInputSchema, raw);
+    return guarded(db, () => db.listCommentThreads(id)) ?? [];
+  });
+
+  ipcMain.handle("pg:comments:create", (_event, raw: unknown) => {
+    const input = parse(createCommentThreadInputSchema, raw);
+    return guarded(db, () => db.createCommentThread(input));
+  });
+
+  ipcMain.handle("pg:comments:reply", (_event, raw: unknown) => {
+    const input = parse(commentReplyInputSchema, raw);
+    return guarded(db, () => db.addCommentMessage(input));
+  });
+
+  ipcMain.handle("pg:comments:resolve", (_event, raw: unknown) => {
+    const input = parse(commentResolveInputSchema, raw);
+    return guarded(db, () => db.setCommentResolved(input));
+  });
+
+  ipcMain.handle("pg:comments:delete", (_event, raw: unknown) => {
+    const input = parse(commentDeleteInputSchema, raw);
+    return guarded(db, () => db.deleteCommentThread(input.threadId)) ?? false;
   });
 
   ipcMain.handle("pg:search:query", (_event, raw: unknown) => {

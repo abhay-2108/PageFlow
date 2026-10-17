@@ -9,6 +9,8 @@ import StarterKit from "@tiptap/starter-kit";
 import type { WebrtcProvider } from "y-webrtc";
 import type * as Y from "yjs";
 import { BRAND } from "../../../shared/brand";
+import { CommentAnchor } from "./comments/CommentAnchor";
+import { CommentTools } from "./comments/extension";
 import { KeyboardShortcuts } from "./extensions/KeyboardShortcuts";
 import { Toggle } from "./extensions/Toggle";
 import { MentionCommand } from "./mention/extension";
@@ -46,6 +48,8 @@ export function buildExtensions(
     KeyboardShortcuts,
     SlashCommand,
     MentionCommand.configure({ currentPageId: options.currentPageId ?? null }),
+    CommentAnchor,
+    CommentTools,
   ];
   if (collaboration) {
     extensions.push(Collaboration.configure({ document: collaboration.document }));

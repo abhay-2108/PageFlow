@@ -3,7 +3,11 @@ import type { PagegroveApi } from "../shared/api";
 import type { CoverId } from "../shared/covers";
 import type {
   BacklinkHit,
+  CommentReplyInput,
+  CommentResolveInput,
+  CommentThread,
   MovePageInput,
+  NewCommentThreadInput,
   NewPageInput,
   PageMeta,
   PageRecord,
@@ -41,6 +45,18 @@ const api: PagegroveApi = {
   },
   search: {
     query: (query: string) => ipcRenderer.invoke("pg:search:query", { query }) as Promise<SearchHit[]>,
+  },
+  comments: {
+    list: (pageId: string) =>
+      ipcRenderer.invoke("pg:comments:list", { id: pageId }) as Promise<CommentThread[]>,
+    create: (input: NewCommentThreadInput) =>
+      ipcRenderer.invoke("pg:comments:create", input) as Promise<CommentThread>,
+    reply: (input: CommentReplyInput) =>
+      ipcRenderer.invoke("pg:comments:reply", input) as Promise<CommentThread>,
+    resolve: (input: CommentResolveInput) =>
+      ipcRenderer.invoke("pg:comments:resolve", input) as Promise<CommentThread>,
+    remove: (threadId: string) =>
+      ipcRenderer.invoke("pg:comments:delete", { threadId }) as Promise<boolean>,
   },
   sync: {
     loadDocUpdates: (pageId: string) =>

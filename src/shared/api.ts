@@ -1,7 +1,11 @@
 import type { CoverId } from "./covers";
 import type {
   BacklinkHit,
+  CommentReplyInput,
+  CommentResolveInput,
+  CommentThread,
   MovePageInput,
+  NewCommentThreadInput,
   NewPageInput,
   PageMeta,
   PageRecord,
@@ -35,6 +39,13 @@ export interface PagegroveApi {
   };
   readonly search: {
     query(query: string): Promise<SearchHit[]>;
+  };
+  readonly comments: {
+    list(pageId: string): Promise<CommentThread[]>;
+    create(input: NewCommentThreadInput): Promise<CommentThread>;
+    reply(input: CommentReplyInput): Promise<CommentThread>;
+    resolve(input: CommentResolveInput): Promise<CommentThread>;
+    remove(threadId: string): Promise<boolean>;
   };
   readonly sync: {
     loadDocUpdates(pageId: string): Promise<number[][]>;

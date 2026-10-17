@@ -5,6 +5,7 @@ import type { WebrtcProvider } from "y-webrtc";
 import type { TipTapDocument } from "../../../shared/types";
 import { getApi } from "../lib/api";
 import { colorFor, session, type DocBinding } from "../lib/session";
+import { CommentBubble } from "./comments/CommentBubble";
 import { buildExtensions } from "./editorExtensions";
 import { MentionMenu } from "./mention/MentionMenu";
 import { SlashMenu } from "./slash/SlashMenu";
@@ -16,9 +17,18 @@ export interface EditorProps {
   onDocChange: (doc: TipTapDocument) => void;
   autoFocus?: boolean;
   onOpenPage?: (id: string) => void;
+  onCommentRequest?: (quote: string) => void;
+  onCommentClick?: (threadId: string) => void;
 }
 
-export function Editor({ pageId, onDocChange, autoFocus = false, onOpenPage }: EditorProps) {
+export function Editor({
+  pageId,
+  onDocChange,
+  autoFocus = false,
+  onOpenPage,
+  onCommentRequest,
+  onCommentClick,
+}: EditorProps) {
   const [binding, setBinding] = useState<DocBinding | null>(null);
   const bindingRef = useRef<DocBinding | null>(null);
   const sessionState = useSyncExternalStore(session.subscribe, session.getState, session.getState);
@@ -94,10 +104,13 @@ export function Editor({ pageId, onDocChange, autoFocus = false, onOpenPage }: E
           onDocChange={onDocChange}
           autoFocus={autoFocus}
           onOpenPage={onOpenPage}
+          onCommentRequest={onCommentRequest}
+          onCommentClick={onCommentClick}
         />
       ) : null}
       <SlashMenu />
       <MentionMenu />
+      {onCommentRequest ? <CommentBubble onRequest={onCommentRequest} /> : null}
     </div>
   );
 }
@@ -109,9 +122,19 @@ interface BoundEditorProps {
   onDocChange: (doc: TipTapDocument) => void;
   autoFocus: boolean;
   onOpenPage?: (id: string) => void;
+  onCommentRequest?: (quote: string) => void;
+  onCommentClick?: (threadId: string) => void;
 }
 
-function BoundEditor({ pageId, ydoc, provider, onDocChange, autoFocus, onOpenPage }: BoundEditorProps) {
+function BoundEditor({
+  pageId,
+  ydoc,
+  provider,
+  onDocChange,
+  autoFocus,
+  onOpenPage,
+  onCommentClick,
+}: BoundEditorProps) {
   const extensions = buildExtensions(
     {
       document: ydoc,
@@ -136,6 +159,14 @@ function BoundEditor({ pageId, ydoc, provider, onDocChange, autoFocus, onOpenPag
           const id = mentionEl.getAttribute("data-page-mention");
           if (id) {
             onOpenPage(id);
+            return true;
+          }
+        }
+        const commentEl = target?.closest("[data-comment-thread]");
+        if (commentEl && onCommentClick) {
+          const threadId = commentEl.getAttribute("data-comment-thread");
+          if (threadId) {
+            onCommentClick(threadId);
             return true;
           }
         }
