@@ -1,10 +1,11 @@
-import { useState } from "react";
-import type { PageRecord, TipTapDocument } from "../../shared/types";
+import { useEffect, useState } from "react";
+import type { BacklinkHit, PageRecord, TipTapDocument } from "../../shared/types";
 import type { CoverId } from "../../shared/covers";
 import { BRAND } from "../../shared/brand";
 import { Editor } from "./editor/Editor";
 import { CoverPicker } from "./components/CoverPicker";
 import { EmojiPicker } from "./components/EmojiPicker";
+import { getApi } from "./lib/api";
 
 export interface PageViewProps {
   record: PageRecord;
@@ -14,6 +15,7 @@ export interface PageViewProps {
   autoFocusEditor: boolean;
   onIconChange: (icon: string | null) => void;
   onCoverChange: (cover: CoverId | null) => void;
+  onOpenPage: (id: string) => void;
 }
 
 export function PageView({
@@ -24,11 +26,29 @@ export function PageView({
   autoFocusEditor,
   onIconChange,
   onCoverChange,
+  onOpenPage,
 }: PageViewProps) {
+  const api = getApi();
   const [picker, setPicker] = useState<"icon" | "cover" | null>(null);
+  const [backlinks, setBacklinks] = useState<BacklinkHit[]>([]);
   const displayTitle = record.meta.title.length > 0 ? record.meta.title : BRAND.empty.untitled;
   const icon = record.meta.icon;
   const cover = (record.meta.cover ?? null) as CoverId | null;
+
+  useEffect(() => {
+    let cancelled = false;
+    void api.pages
+      .backlinks(record.meta.id)
+      .then((hits) => {
+        if (!cancelled) {
+          setBacklinks(hits);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [api, record.meta.id, editorEpoch]);
 
   return (
     <main className={cover ? "page page--has-cover" : "page"}>
@@ -127,7 +147,30 @@ export function PageView({
         pageId={record.meta.id}
         onDocChange={onDocChange}
         autoFocus={autoFocusEditor}
+        onOpenPage={onOpenPage}
       />
+      {backlinks.length > 0 ? (
+        <section className="page__backlinks" aria-label="Linked from">
+          <h2 className="page__backlinks-title">Linked from</h2>
+          <ul className="page__backlinks-list">
+            {backlinks.map((hit) => {
+              const parentPath = hit.path.slice(0, -1);
+              return (
+                <li key={hit.id}>
+                  <button type="button" className="page__backlink" onClick={() => onOpenPage(hit.id)}>
+                    <span className="page__backlink-title">
+                      {hit.title.length > 0 ? hit.title : BRAND.empty.untitled}
+                    </span>
+                    {parentPath.length > 0 ? (
+                      <span className="page__backlink-path">{parentPath.join(" / ")}</span>
+                    ) : null}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
     </main>
   );
 }

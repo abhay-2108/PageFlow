@@ -175,3 +175,12 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 **Page covers.** A curated set of 8 gradient covers (`src/shared/covers.ts`), no image uploads in M6.1. Cover renders as a 176px banner above the icon/title; hover reveals "Change cover"/"Remove". Cover id persists as `cover TEXT`; unknown ids render nothing (forward compatibility).
 
 **Sync & persistence.** Icon/cover travel in `PageMeta` (LAN meta room diffing via `entriesEqual` covers them; sync bundles carry them; legacy bundles without the fields normalize to `null`). All four operations (move, set/clear icon, set/clear cover) bump `updated_at` and schedule snapshot writes like rename does.
+
+## 12. M6.2 spec: page mentions + backlinks (Pagegrove — C, informed by A-web)
+
+**Page mentions.** Typing `@` in the editor opens a page picker anchored to the caret, listing current pages (excluding the page you are on), filtered case-insensitively by the typed text, up to 12 items; the current selection is keyboard-navigable (up/down/enter/escape) and each entry shows the page icon (when set) and title. Selecting one inserts an atomic inline "mention chip" — rendered as `@Title` on an accent chip — that survives save/reload as a `pageMention` node carrying `{pageId, label}`. A label is a snapshot for display; the `pageId` is authoritative. Mentions export to Markdown as `[label](page/<id>)`. Mentions of deleted pages degrade to plain chip text (no dangling navigation) until resolved.
+
+**Backlinks.** Opening a page shows a "Linked from" section (below the document) listing every live page whose current document contains a mention of it, newest-updated first, capped at 50, each with its ancestor path as a muted subtitle. Clicking an entry opens that page; clicking a mention chip opens its target page. Backlinks are computed on demand from the live docs (no separate index to go stale), so names/paths always reflect current state, and the list recomputes on page open and after external workspace changes. Known limitation: the list can be stale while the page stays open after another page locally starts or stops mentioning it.
+
+**Mention semantics (A-web note).** Notion's bundle contains a `link_to_page` mention flow and page-mention localization (`pageMention.untitledPlaceholder`, `mentionsMe`); those confirm the concept. Geometry (popup placement, chip styling), copy ("Linked from"), and the backlink data model are original Pagegrove choices (C).
+

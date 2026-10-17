@@ -1,4 +1,4 @@
-import { _electron as electron } from "@playwright/test";
+import { _electron as electron, expect } from "@playwright/test";
 import type { ElectronApplication, Page } from "@playwright/test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -64,4 +64,13 @@ export function removeWorkspace(dir: string): void {
   } catch {
     // Helper processes may still hold locks briefly on Windows; the temp dir is disposable.
   }
+}
+
+export async function setPageTitle(page: Page, title: string): Promise<void> {
+  const input = page.getByLabel("Page title");
+  await input.click();
+  await input.press("Control+a");
+  await input.pressSequentially(title, { delay: 15 });
+  await expect(input).toHaveValue(title);
+  await page.waitForTimeout(700);
 }

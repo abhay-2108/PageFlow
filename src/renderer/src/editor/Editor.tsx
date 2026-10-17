@@ -6,6 +6,7 @@ import type { TipTapDocument } from "../../../shared/types";
 import { getApi } from "../lib/api";
 import { colorFor, session, type DocBinding } from "../lib/session";
 import { buildExtensions } from "./editorExtensions";
+import { MentionMenu } from "./mention/MentionMenu";
 import { SlashMenu } from "./slash/SlashMenu";
 
 const UPDATE_FLUSH_MS = 300;
@@ -14,9 +15,10 @@ export interface EditorProps {
   pageId: string;
   onDocChange: (doc: TipTapDocument) => void;
   autoFocus?: boolean;
+  onOpenPage?: (id: string) => void;
 }
 
-export function Editor({ pageId, onDocChange, autoFocus = false }: EditorProps) {
+export function Editor({ pageId, onDocChange, autoFocus = false, onOpenPage }: EditorProps) {
   const [binding, setBinding] = useState<DocBinding | null>(null);
   const bindingRef = useRef<DocBinding | null>(null);
   const sessionState = useSyncExternalStore(session.subscribe, session.getState, session.getState);
@@ -86,30 +88,38 @@ export function Editor({ pageId, onDocChange, autoFocus = false }: EditorProps) 
       {binding ? (
         <BoundEditor
           key={binding.doc.guid}
+          pageId={pageId}
           ydoc={binding.doc}
           provider={binding.provider}
           onDocChange={onDocChange}
           autoFocus={autoFocus}
+          onOpenPage={onOpenPage}
         />
       ) : null}
       <SlashMenu />
+      <MentionMenu />
     </div>
   );
 }
 
 interface BoundEditorProps {
+  pageId: string;
   ydoc: Y.Doc;
   provider: WebrtcProvider | null;
   onDocChange: (doc: TipTapDocument) => void;
   autoFocus: boolean;
+  onOpenPage?: (id: string) => void;
 }
 
-function BoundEditor({ ydoc, provider, onDocChange, autoFocus }: BoundEditorProps) {
-  const extensions = buildExtensions({
-    document: ydoc,
-    provider,
-    user: { name: session.getUserName(), color: colorFor(session.getUserName()) },
-  });
+function BoundEditor({ pageId, ydoc, provider, onDocChange, autoFocus, onOpenPage }: BoundEditorProps) {
+  const extensions = buildExtensions(
+    {
+      document: ydoc,
+      provider,
+      user: { name: session.getUserName(), color: colorFor(session.getUserName()) },
+    },
+    { currentPageId: pageId },
+  );
 
   const editor = useEditor({
     extensions,
@@ -118,6 +128,18 @@ function BoundEditor({ ydoc, provider, onDocChange, autoFocus }: BoundEditorProp
       attributes: {
         class: "pg-editor",
         spellcheck: "true",
+      },
+      handleClick: (_view, _pos, event) => {
+        const target = event.target as HTMLElement | null;
+        const mentionEl = target?.closest("[data-page-mention]");
+        if (mentionEl && onOpenPage) {
+          const id = mentionEl.getAttribute("data-page-mention");
+          if (id) {
+            onOpenPage(id);
+            return true;
+          }
+        }
+        return false;
       },
     },
     onUpdate: ({ editor: instance }) => {

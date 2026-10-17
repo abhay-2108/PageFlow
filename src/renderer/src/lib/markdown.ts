@@ -49,6 +49,11 @@ const nodes = {
     state.write("</details>");
     state.closeBlock(node);
   },
+  pageMention(state: MarkdownSerializerState, node: Node) {
+    const label = String(node.attrs.label ?? "").replace(/[[\]]/g, "");
+    const pageId = String(node.attrs.pageId ?? "");
+    state.write(`[${label}](page/${pageId})`);
+  },
 };
 
 type MarkSerializerSpec = (typeof defaults.marks)[string];

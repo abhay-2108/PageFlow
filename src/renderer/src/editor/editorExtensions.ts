@@ -11,6 +11,8 @@ import type * as Y from "yjs";
 import { BRAND } from "../../../shared/brand";
 import { KeyboardShortcuts } from "./extensions/KeyboardShortcuts";
 import { Toggle } from "./extensions/Toggle";
+import { MentionCommand } from "./mention/extension";
+import { PageMention } from "./mention/PageMention";
 import { SlashCommand } from "./slash/extension";
 
 export const EDITOR_FIELD = "default";
@@ -21,7 +23,14 @@ export interface CollaborationOptions {
   user: { name: string; color: string };
 }
 
-export function buildExtensions(collaboration: CollaborationOptions | null): Extensions {
+export interface BuildExtensionsOptions {
+  currentPageId?: string | null;
+}
+
+export function buildExtensions(
+  collaboration: CollaborationOptions | null,
+  options: BuildExtensionsOptions = {},
+): Extensions {
   const extensions: Extensions = [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },
@@ -32,9 +41,11 @@ export function buildExtensions(collaboration: CollaborationOptions | null): Ext
     TaskList,
     TaskItem.configure({ nested: true }),
     Toggle,
+    PageMention,
     Placeholder.configure({ placeholder: BRAND.empty.editorPlaceholder }),
     KeyboardShortcuts,
     SlashCommand,
+    MentionCommand.configure({ currentPageId: options.currentPageId ?? null }),
   ];
   if (collaboration) {
     extensions.push(Collaboration.configure({ document: collaboration.document }));

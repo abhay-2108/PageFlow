@@ -472,6 +472,9 @@ export default function App() {
             onCoverChange={(cover) => {
               void setPageCover(activeRecord.meta.id, cover);
             }}
+            onOpenPage={(id) => {
+              void selectPage(id);
+            }}
           />
         ) : null}
       </div>

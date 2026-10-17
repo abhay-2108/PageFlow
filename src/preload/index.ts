@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { PagegroveApi } from "../shared/api";
 import type { CoverId } from "../shared/covers";
 import type {
+  BacklinkHit,
   MovePageInput,
   NewPageInput,
   PageMeta,
@@ -36,6 +37,7 @@ const api: PagegroveApi = {
       ipcRenderer.invoke("pg:pages:set-cover", { id, cover }) as Promise<PageMeta>,
     trash: (id: string) => ipcRenderer.invoke("pg:pages:trash", { id }) as Promise<boolean>,
     restore: (id: string) => ipcRenderer.invoke("pg:pages:restore", { id }) as Promise<boolean>,
+    backlinks: (id: string) => ipcRenderer.invoke("pg:pages:backlinks", { id }) as Promise<BacklinkHit[]>,
   },
   search: {
     query: (query: string) => ipcRenderer.invoke("pg:search:query", { query }) as Promise<SearchHit[]>,

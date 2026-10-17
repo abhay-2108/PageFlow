@@ -118,6 +118,11 @@ export function registerIpc(db: WorkspaceDb): void {
     return true;
   });
 
+  ipcMain.handle("pg:pages:backlinks", (_event, raw: unknown) => {
+    const { id } = parse(getPageInputSchema, raw);
+    return guarded(db, () => db.listBacklinks(id)) ?? [];
+  });
+
   ipcMain.handle("pg:search:query", (_event, raw: unknown) => {
     const { query } = parse(searchInputSchema, raw);
     return guarded(db, () => db.search(query)) ?? [];

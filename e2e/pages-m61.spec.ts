@@ -3,7 +3,7 @@ import type { Locator, Page } from "@playwright/test";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { openApp, removeWorkspace } from "./helpers";
+import { openApp, removeWorkspace, setPageTitle } from "./helpers";
 
 async function dragRow(page: Page, from: Locator, to: Locator, position: { x: number; y: number }) {
   const fromBox = await from.boundingBox();
@@ -18,15 +18,6 @@ async function dragRow(page: Page, from: Locator, to: Locator, position: { x: nu
   await page.mouse.up();
 }
 
-async function setTitle(page: Page, title: string) {
-  const input = page.getByLabel("Page title");
-  await input.click();
-  await input.press("Control+a");
-  await input.pressSequentially(title, { delay: 15 });
-  await expect(input).toHaveValue(title);
-  await page.waitForTimeout(700);
-}
-
 function rootLabels(page: Page): Locator {
   return page.locator(".tree > .tree-item > .tree-row .tree-row__label");
 }
@@ -37,10 +28,10 @@ test("drag reorder, nest into a page, and move back to top level", async () => {
 
   try {
     await page.getByRole("button", { name: "Create a page" }).click();
-    await setTitle(page, "Alpha");
+    await setPageTitle(page, "Alpha");
 
     await page.locator(".sidebar__new .ghost-btn").click();
-    await setTitle(page, "Beta");
+    await setPageTitle(page, "Beta");
 
     await expect(rootLabels(page)).toHaveText(["Alpha", "Beta"]);
 
@@ -100,7 +91,7 @@ test("page icon and cover persist across reload", async () => {
 
   try {
     await page.getByRole("button", { name: "Create a page" }).click();
-    await setTitle(page, "Styled");
+    await setPageTitle(page, "Styled");
 
     await page.locator(".page").hover();
     await page.getByRole("button", { name: "Add icon" }).click();

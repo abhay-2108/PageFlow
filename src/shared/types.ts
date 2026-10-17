@@ -40,6 +40,12 @@ export interface SearchHit {
   path: string[];
 }
 
+export interface BacklinkHit {
+  id: string;
+  title: string;
+  path: string[];
+}
+
 export interface NewPageInput {
   parentId: string | null;
   title?: string;

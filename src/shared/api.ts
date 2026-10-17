@@ -1,5 +1,6 @@
 import type { CoverId } from "./covers";
 import type {
+  BacklinkHit,
   MovePageInput,
   NewPageInput,
   PageMeta,
@@ -30,6 +31,7 @@ export interface PagegroveApi {
     setCover(id: string, cover: CoverId | null): Promise<PageMeta>;
     trash(id: string): Promise<boolean>;
     restore(id: string): Promise<boolean>;
+    backlinks(id: string): Promise<BacklinkHit[]>;
   };
   readonly search: {
     query(query: string): Promise<SearchHit[]>;

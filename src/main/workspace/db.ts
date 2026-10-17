@@ -6,7 +6,15 @@ import { extractDocText } from "../../shared/doc-text";
 import { sortEntriesByDepth } from "../../shared/meta";
 import { needsRebalance, rankAppend, rankBetween, rebalancedRanks } from "../../shared/rank";
 import { isDescendant } from "../../shared/tree";
-import type { MovePageInput, NewPageInput, PageMeta, PageRecord, SearchHit, TipTapDocument } from "../../shared/types";
+import type {
+  BacklinkHit,
+  MovePageInput,
+  NewPageInput,
+  PageMeta,
+  PageRecord,
+  SearchHit,
+  TipTapDocument,
+} from "../../shared/types";
 import { EMPTY_DOC } from "../../shared/types";
 import { writeSnapshot } from "./snapshot";
 
@@ -388,6 +396,26 @@ export class WorkspaceDb {
       id: row.id,
       title: row.title,
       snippet: row.snip.trim(),
+      path: this.pathTitles(metas, row.id),
+    }));
+  }
+
+  listBacklinks(targetId: string): BacklinkHit[] {
+    const rows = this.db
+      .prepare(
+        `SELECT id, title FROM pages
+         WHERE deleted_at IS NULL AND id != ? AND doc LIKE ?
+         ORDER BY updated_at DESC
+         LIMIT 50`,
+      )
+      .all(targetId, `%"pageId":"${targetId}"%`) as { id: string; title: string }[];
+    if (rows.length === 0) {
+      return [];
+    }
+    const metas = this.listPages();
+    return rows.map((row) => ({
+      id: row.id,
+      title: row.title,
       path: this.pathTitles(metas, row.id),
     }));
   }

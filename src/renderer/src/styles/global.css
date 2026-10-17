@@ -406,6 +406,132 @@ body {
   line-height: 1.35;
 }
 
+/* M6.2: page mentions and backlinks */
+
+.pg-mention {
+  display: inline;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--pg-hover-strong);
+  color: var(--pg-text);
+  font-weight: 550;
+  white-space: nowrap;
+  cursor: pointer;
+  box-decoration-break: clone;
+}
+
+.pg-mention:hover {
+  outline: 1.5px solid var(--pg-accent);
+}
+
+.pg-mention.ProseMirror-selectednode {
+  outline: 2px solid var(--pg-accent);
+}
+
+.pg-mention-menu {
+  position: fixed;
+  z-index: 40;
+  background: var(--pg-surface);
+  border: 1px solid var(--pg-border);
+  border-radius: 10px;
+  box-shadow: var(--pg-shadow);
+  overflow-y: auto;
+  padding: 6px;
+  animation: pg-slash-in 130ms ease;
+}
+
+.pg-mention-menu__item {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--pg-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 7px;
+  text-align: left;
+  font-family: inherit;
+}
+
+.pg-mention-menu__item--active {
+  background: var(--pg-hover-strong);
+}
+
+.pg-mention-menu__icon {
+  flex: none;
+  font-size: 0.9375rem;
+  line-height: 1;
+}
+
+.pg-mention-menu__title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page__backlinks {
+  margin-top: 42px;
+  border-top: 1px solid var(--pg-border);
+  padding-top: 14px;
+}
+
+.page__backlinks-title {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 550;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pg-text-muted);
+}
+
+.page__backlinks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page__backlink {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--pg-text);
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 7px;
+  text-align: left;
+  font-family: inherit;
+}
+
+.page__backlink:hover {
+  background: var(--pg-hover);
+}
+
+.page__backlink-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.page__backlink-path {
+  font-size: 0.75rem;
+  color: var(--pg-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
