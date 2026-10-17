@@ -5,5 +5,9 @@ release/
 *.log
 .rea.backup
 docs/rea/evidence.json
+docs/rea/evidence-webapp.json
+docs/rea/cache-extract/
 test-results/
 playwright-report/
+docs/rea/evidence-webapp-batch-*.json
+docs/rea/cache-batches/
