@@ -1,12 +1,9 @@
-interface PagegroveApi {
-  readonly platform: string;
-  readonly versions: {
-    readonly electron: string;
-    readonly chrome: string;
-    readonly node: string;
-  };
+import type { PagegroveApi } from "../shared/api";
+
+declare global {
+  interface Window {
+    readonly pagegrove: PagegroveApi;
+  }
 }
 
-interface Window {
-  readonly pagegrove: PagegroveApi;
-}
+export {};

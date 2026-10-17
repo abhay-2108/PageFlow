@@ -5,3 +5,5 @@ release/
 *.log
 .rea.backup
 docs/rea/evidence.json
+test-results/
+playwright-report/

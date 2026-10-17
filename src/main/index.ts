@@ -2,6 +2,8 @@ import { BrowserWindow, Menu, app, session } from "electron";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { BRAND } from "../shared/brand";
+import { registerIpc } from "./ipc";
+import { WorkspaceDb } from "./workspace/db";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const isDev = !app.isPackaged;
@@ -18,6 +20,16 @@ const PROD_CSP = [
   "form-action 'none'",
   "frame-ancestors 'none'",
 ].join("; ");
+
+let workspace: WorkspaceDb | null = null;
+
+function resolveWorkspaceDir(): string {
+  const override = process.env["PAGEGROVE_WORKSPACE"];
+  if (override && override.trim().length > 0) {
+    return override;
+  }
+  return join(app.getPath("documents"), BRAND.name);
+}
 
 function applyCsp(): void {
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
@@ -66,6 +78,9 @@ function createWindow(): void {
 app.setAppUserModelId("com.pagegrove.app");
 
 app.whenReady().then(() => {
+  workspace = new WorkspaceDb(resolveWorkspaceDir());
+  registerIpc(workspace);
+
   if (!isDev) {
     Menu.setApplicationMenu(null);
     applyCsp();
@@ -78,6 +93,11 @@ app.whenReady().then(() => {
       createWindow();
     }
   });
+});
+
+app.on("before-quit", () => {
+  workspace?.close();
+  workspace = null;
 });
 
 app.on("window-all-closed", () => {

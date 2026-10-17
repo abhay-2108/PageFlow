@@ -6,12 +6,19 @@ import Underline from "@tiptap/extension-underline";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { BRAND } from "../../../shared/brand";
+import type { TipTapDocument } from "../../../shared/types";
 import { KeyboardShortcuts } from "./extensions/KeyboardShortcuts";
 import { Toggle } from "./extensions/Toggle";
 import { SlashCommand } from "./slash/extension";
 import { SlashMenu } from "./slash/SlashMenu";
 
-export function Editor() {
+export interface EditorProps {
+  document: TipTapDocument;
+  onDocChange: (doc: TipTapDocument) => void;
+  autoFocus?: boolean;
+}
+
+export function Editor({ document: initialDocument, onDocChange, autoFocus = false }: EditorProps) {
   const extensions = useMemo(
     () => [
       StarterKit.configure({
@@ -31,13 +38,16 @@ export function Editor() {
 
   const editor = useEditor({
     extensions,
-    content: { type: "doc", content: [{ type: "paragraph" }] },
-    autofocus: "end",
+    content: initialDocument,
+    autofocus: autoFocus ? "end" : false,
     editorProps: {
       attributes: {
         class: "pg-editor",
         spellcheck: "true",
       },
+    },
+    onUpdate: ({ editor: instance }) => {
+      onDocChange(instance.getJSON() as TipTapDocument);
     },
   });
 

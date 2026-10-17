@@ -13,7 +13,13 @@ export default tseslint.config(
     ],
   },
   {
-    files: ["src/**/*.{ts,tsx}", "electron.vite.config.ts"],
+    files: [
+      "src/**/*.{ts,tsx}",
+      "electron.vite.config.ts",
+      "vitest.config.ts",
+      "playwright.config.ts",
+      "e2e/**/*.ts",
+    ],
     extends: [...tseslint.configs.recommended],
     rules: {
       "@typescript-eslint/no-unused-vars": [
