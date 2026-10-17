@@ -33,6 +33,7 @@ interface PageRow {
   icon: string | null;
   cover: string | null;
   view: string;
+  favorite: number;
   doc: string;
   text: string;
   created_at: number;
@@ -60,7 +61,7 @@ interface CommentMessageRow {
 const SNAPSHOT_DEBOUNCE_MS = 1500;
 
 const SELECT_COLUMNS =
-  "rowid, id, parent_id, title, rank, icon, cover, view, doc, text, created_at, updated_at, deleted_at";
+  "rowid, id, parent_id, title, rank, icon, cover, view, favorite, doc, text, created_at, updated_at, deleted_at";
 
 function toMeta(row: PageRow): PageMeta {
   return {
@@ -71,6 +72,7 @@ function toMeta(row: PageRow): PageMeta {
     icon: row.icon,
     cover: row.cover,
     view: row.view === "table" ? "table" : "doc",
+    favorite: row.favorite !== 0,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -164,6 +166,12 @@ export class WorkspaceDb {
         ALTER TABLE pages ADD COLUMN view TEXT NOT NULL DEFAULT 'doc';
       `);
       this.db.pragma("user_version = 5");
+    }
+    if (version < 6) {
+      this.db.exec(`
+        ALTER TABLE pages ADD COLUMN favorite INTEGER NOT NULL DEFAULT 0;
+      `);
+      this.db.pragma("user_version = 6");
     }
   }
 
@@ -406,6 +414,66 @@ export class WorkspaceDb {
     })();
   }
 
+  setPageFavorite(id: string, favorite: boolean): PageMeta {
+    return this.db.transaction(() => {
+      const row = this.rowById(id);
+      if (!row || row.deleted_at !== null) {
+        throw new Error("Page not found");
+      }
+      this.db
+        .prepare("UPDATE pages SET favorite = ? WHERE id = ?")
+        .run(favorite ? 1 : 0, id);
+      this.scheduleSnapshot(id);
+      return this.metaById(id);
+    })();
+  }
+
+  duplicatePage(id: string): PageMeta {
+    return this.db.transaction(() => {
+      const source = this.rowById(id);
+      if (!source || source.deleted_at !== null) {
+        throw new Error("Page not found");
+      }
+      const nextSibling = this.childRows(source.parent_id).find(
+        (sibling) => sibling.rank > source.rank,
+      );
+      const rank = rankBetween(source.rank, nextSibling ? nextSibling.rank : null);
+      const now = Date.now();
+      const insertRow = this.db.prepare(
+        `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, doc, text, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
+      );
+      const clone = (row: PageRow, parentId: string | null, childRank: number, title: string): string => {
+        const cloneId = randomUUID();
+        insertRow.run(
+          cloneId,
+          parentId,
+          title,
+          childRank,
+          row.icon,
+          row.cover,
+          row.view,
+          row.doc,
+          row.text,
+          now,
+          now,
+        );
+        const inserted = this.rowById(cloneId) as PageRow;
+        this.ftsInsert(inserted.rowid, inserted.title, inserted.text);
+        this.scheduleSnapshot(cloneId);
+        let siblingRank: number | null = null;
+        for (const child of this.childRows(row.id)) {
+          siblingRank = rankAppend(siblingRank);
+          clone(child, cloneId, siblingRank, child.title);
+        }
+        return cloneId;
+      };
+      const title = source.title.length > 0 ? `${source.title} (copy)` : "";
+      const cloneId = clone(source, source.parent_id, rank, title);
+      return this.metaById(cloneId);
+    })();
+  }
+
   trashPage(id: string): void {
     this.db.transaction(() => {
       const row = this.rowById(id);
@@ -645,11 +713,11 @@ export class WorkspaceDb {
     }
     const ordered = sortEntriesByDepth(entries);
     const insertRow = this.db.prepare(
-      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, doc, text, created_at, updated_at, deleted_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`,
+      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, doc, text, created_at, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`,
     );
     const updateRow = this.db.prepare(
-      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, icon = ?, cover = ?, view = ?, created_at = ?, updated_at = ?, deleted_at = ?
+      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, icon = ?, cover = ?, view = ?, favorite = ?, created_at = ?, updated_at = ?, deleted_at = ?
        WHERE id = ?`,
     );
     let applied = 0;
@@ -659,6 +727,7 @@ export class WorkspaceDb {
         const icon = entry.icon ?? null;
         const cover = entry.cover ?? null;
         const view = entry.view ?? "doc";
+        const favorite = entry.favorite === true ? 1 : 0;
         const row = this.rowById(entry.id);
         if (!row) {
           try {
@@ -670,6 +739,7 @@ export class WorkspaceDb {
               icon,
               cover,
               view,
+              favorite,
               JSON.stringify(EMPTY_DOC),
               entry.createdAt,
               entry.updatedAt,
@@ -690,6 +760,7 @@ export class WorkspaceDb {
             icon,
             cover,
             view,
+            favorite,
             entry.createdAt,
             entry.updatedAt,
             entry.deletedAt,

@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
   BacklinkHit,
   CommentThread,
+  PageMeta,
   PageRecord,
   PageViewMode,
   TipTapDocument,
@@ -19,6 +20,7 @@ import { session } from "./lib/session";
 
 export interface PageViewProps {
   record: PageRecord;
+  pages: PageMeta[];
   editorEpoch: number;
   onDocChange: (doc: TipTapDocument) => void;
   onTitleChange: (title: string) => void;
@@ -27,10 +29,15 @@ export interface PageViewProps {
   onCoverChange: (cover: string | null) => void;
   onViewChange: (view: PageViewMode) => void;
   onOpenPage: (id: string) => void;
+  onDuplicatePage: (id: string) => void;
+  onTrashPage: (id: string) => void;
+  onExportMarkdown: () => void;
+  onCopyLink: (id: string) => void;
 }
 
 export function PageView({
   record,
+  pages,
   editorEpoch,
   onDocChange,
   onTitleChange,
@@ -39,9 +46,15 @@ export function PageView({
   onCoverChange,
   onViewChange,
   onOpenPage,
+  onDuplicatePage,
+  onTrashPage,
+  onExportMarkdown,
+  onCopyLink,
 }: PageViewProps) {
   const api = getApi();
   const [picker, setPicker] = useState<"icon" | "cover" | null>(null);
+  const [crumbsMenuOpen, setCrumbsMenuOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [backlinks, setBacklinks] = useState<BacklinkHit[]>([]);
   const [threads, setThreads] = useState<CommentThread[]>([]);
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -54,6 +67,27 @@ export function PageView({
   const icon = record.meta.icon;
   const cover = record.meta.cover ?? null;
   const view: PageViewMode = record.meta.view === "table" ? "table" : "doc";
+
+  useEffect(() => {
+    if (!crumbsMenuOpen && !optionsOpen) {
+      return;
+    }
+    const close = () => {
+      setCrumbsMenuOpen(false);
+      setOptionsOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        close();
+      }
+    };
+    window.addEventListener("mousedown", close);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("mousedown", close);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [crumbsMenuOpen, optionsOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -157,6 +191,28 @@ export function PageView({
   const openThreads = threads.filter((thread) => !thread.resolved);
   const resolvedThreads = threads.filter((thread) => thread.resolved);
 
+  const crumbPath = useMemo(() => {
+    const byId = new Map(pages.map((page) => [page.id, page]));
+    const path: PageMeta[] = [];
+    const visited = new Set<string>();
+    let current: PageMeta | undefined = byId.get(record.meta.id) ?? record.meta;
+    while (current && !visited.has(current.id)) {
+      visited.add(current.id);
+      path.unshift(current);
+      current = current.parentId === null ? undefined : byId.get(current.parentId);
+    }
+    return path;
+  }, [pages, record.meta]);
+
+  const collapsedCrumbs =
+    crumbPath.length > 4 ? crumbPath.slice(1, crumbPath.length - 2) : [];
+  const visibleCrumbs: Array<PageMeta | "ellipsis"> =
+    collapsedCrumbs.length > 0
+      ? [crumbPath[0] as PageMeta, "ellipsis", ...crumbPath.slice(-2)]
+      : crumbPath;
+  const crumbLabel = (page: PageMeta) =>
+    page.title.trim().length > 0 ? page.title : BRAND.empty.untitled;
+
   const renderThread = (thread: CommentThread) => (
     <li
       key={thread.id}
@@ -212,6 +268,134 @@ export function PageView({
 
   return (
     <main className={cover ? "page page--has-cover" : "page"}>
+      <nav className="page__crumbs" aria-label="Breadcrumbs">
+        {icon ? (
+          <span className="page__crumbs-icon" aria-hidden="true">
+            {icon}
+          </span>
+        ) : null}
+        {visibleCrumbs.map((entry, index) => {
+          if (entry === "ellipsis") {
+            return (
+              <span key="ellipsis" className="crumb-ellipsis-wrap">
+                <button
+                  type="button"
+                  className="crumb crumb--ellipsis"
+                  aria-label="Show hidden pages"
+                  aria-expanded={crumbsMenuOpen}
+                  onClick={() => setCrumbsMenuOpen((open) => !open)}
+                >
+                  …
+                </button>
+                {crumbsMenuOpen ? (
+                  <div
+                    className="menu-popover crumbs-menu"
+                    role="menu"
+                    onMouseDown={(event) => event.stopPropagation()}
+                  >
+                    {collapsedCrumbs.map((hidden) => (
+                      <button
+                        key={hidden.id}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setCrumbsMenuOpen(false);
+                          onOpenPage(hidden.id);
+                        }}
+                      >
+                        {hidden.icon ? <span aria-hidden="true">{hidden.icon} </span> : null}
+                        {crumbLabel(hidden)}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </span>
+            );
+          }
+          const isLast = index === visibleCrumbs.length - 1;
+          return (
+            <span key={entry.id} className="crumb-slot">
+              {index > 0 ? (
+                <span className="crumb-sep" aria-hidden="true">
+                  /
+                </span>
+              ) : null}
+              {isLast ? (
+                <span className="crumb crumb--current" aria-current="page" title={crumbLabel(entry)}>
+                  {crumbLabel(entry)}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="crumb"
+                  title={crumbLabel(entry)}
+                  onClick={() => onOpenPage(entry.id)}
+                >
+                  {entry.icon ? <span aria-hidden="true">{entry.icon} </span> : null}
+                  {crumbLabel(entry)}
+                </button>
+              )}
+            </span>
+          );
+        })}
+        <span className="page__crumbs-spacer" />
+        <div className="page__options-wrap" onMouseDown={(event) => event.stopPropagation()}>
+          <button
+            type="button"
+            className="icon-btn page__options-btn"
+            aria-label="Page options"
+            aria-expanded={optionsOpen}
+            onClick={() => setOptionsOpen((open) => !open)}
+          >
+            …
+          </button>
+          {optionsOpen ? (
+            <div className="menu-popover menu-popover--anchored" role="menu">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOptionsOpen(false);
+                  onCopyLink(record.meta.id);
+                }}
+              >
+                Copy link
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOptionsOpen(false);
+                  onDuplicatePage(record.meta.id);
+                }}
+              >
+                Duplicate
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOptionsOpen(false);
+                  onExportMarkdown();
+                }}
+              >
+                Export as Markdown
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="menu-popover__danger"
+                onClick={() => {
+                  setOptionsOpen(false);
+                  onTrashPage(record.meta.id);
+                }}
+              >
+                Move to trash
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </nav>
       {cover ? (
         <div
           className={isCoverId(cover) ? `page__cover cover--${cover}` : "page__cover page__cover--asset"}

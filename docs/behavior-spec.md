@@ -250,5 +250,17 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Known limitations.** Assets travel with the workspace folder but not with LAN sync bundles or live sessions (bundles carry page data only; copy the `assets` folder alongside a bundle to move images); no image resizing, captions, or text-wrap around images.
 
+## 19. M7.4 spec: breadcrumbs, page options, and tree menus (Pagegrove — C, informed by A-web)
+
+**Breadcrumbs.** The page header opens with a breadcrumb trail above the cover: the page icon, then clickable ancestors (em dash between each) ending in the current page (truncated, non-clickable, `aria-current="page"`). Clicking an ancestor navigates to it. When the path is deeper than four segments the middle collapses into a "…" button whose popover lists the hidden pages; it closes on outside click or Escape.
+
+**Page options.** A "…" button at the right of the breadcrumb row opens the page menu: Copy link (writes `pagegrove://page/<id>` to the clipboard), Duplicate, Export as Markdown, and Move to trash.
+
+**Tree menus.** Each sidebar row's "…" menu now offers Rename, Duplicate, Add to/Remove from Favorites, Move to…, New subpage, and Move to trash. Duplicate deep-copies the page and its whole subtree ("Title (copy)" for the root copy, children keep their titles) and inserts the copy directly below the original; comments are not copied. Move to… swaps the menu into a searchable target picker with "Top level" plus every page that is not inside the moved page's own subtree; picking a target re-parents the page.
+
+**Favorites.** Favorited pages appear in a collapsible Favorites section at the top of the sidebar, sorted by last edited. The star state rides on page metadata, so it persists through reload, LAN sync, and sync bundles.
+
+**Known limitations.** Favorites cannot be manually reordered; the `pagegrove://` link scheme is for reference only (not clickable outside the app); duplicate does not copy comments.
+
 
 

@@ -26,6 +26,7 @@ export interface PageMeta {
   icon: string | null;
   cover: string | null;
   view: PageViewMode;
+  favorite: boolean;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;

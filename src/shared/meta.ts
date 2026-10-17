@@ -8,6 +8,7 @@ export function entriesEqual(a: PageMeta, b: PageMeta): boolean {
     (a.icon ?? null) === (b.icon ?? null) &&
     (a.cover ?? null) === (b.cover ?? null) &&
     (a.view ?? "doc") === (b.view ?? "doc") &&
+    a.favorite === b.favorite &&
     a.createdAt === b.createdAt &&
     a.updatedAt === b.updatedAt &&
     a.deletedAt === b.deletedAt

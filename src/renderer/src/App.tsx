@@ -245,6 +245,39 @@ export default function App() {
     [api, refreshLists],
   );
 
+  const duplicatePage = useCallback(
+    async (id: string) => {
+      flushSave();
+      flushRename();
+      const label = pages.find((page) => page.id === id)?.title.trim();
+      try {
+        const meta = await api.pages.duplicate(id);
+        if (meta.parentId !== null) {
+          setExpanded((prev) => new Set(prev).add(meta.parentId as string));
+        }
+        await refreshLists();
+        setToast({
+          message: `Duplicated "${label && label.length > 0 ? label : BRAND.empty.untitled}"`,
+        });
+      } catch {
+        setToast({ message: "Could not duplicate that page." });
+      }
+    },
+    [api, flushRename, flushSave, pages, refreshLists],
+  );
+
+  const copyPageLink = useCallback(
+    async (id: string) => {
+      try {
+        await navigator.clipboard.writeText(`pagegrove://page/${id}`);
+        setToast({ message: "Page link copied" });
+      } catch {
+        setToast({ message: "Could not copy the link." });
+      }
+    },
+    [],
+  );
+
   const applyMetaUpdate = useCallback((meta: PageMeta) => {
     setPages((prev) => prev.map((page) => (page.id === meta.id ? meta : page)));
     setActiveRecord((prev) =>
@@ -300,6 +333,18 @@ export default function App() {
         applyMetaUpdate(meta);
       } catch {
         setToast({ message: "Could not switch the page view." });
+      }
+    },
+    [api, applyMetaUpdate],
+  );
+
+  const setPageFavorite = useCallback(
+    async (id: string, favorite: boolean) => {
+      try {
+        const meta = await api.pages.setFavorite(id, favorite);
+        applyMetaUpdate(meta);
+      } catch {
+        setToast({ message: "Could not update Favorites." });
       }
     },
     [api, applyMetaUpdate],
@@ -458,6 +503,12 @@ export default function App() {
         onMove={(id, parentId, beforeId) => {
           void movePage(id, parentId, beforeId);
         }}
+        onFavorite={(id, favorite) => {
+          void setPageFavorite(id, favorite);
+        }}
+        onDuplicate={(id) => {
+          void duplicatePage(id);
+        }}
       />
       <div className="app__scroll">
         {!loading && pages.length === 0 ? (
@@ -470,6 +521,7 @@ export default function App() {
         {activeRecord ? (
           <PageView
             record={activeRecord}
+            pages={pages}
             editorEpoch={editorEpoch}
             onDocChange={(doc) => {
               latestDoc.current = { id: activeRecord.meta.id, doc };
@@ -488,6 +540,18 @@ export default function App() {
             }}
             onOpenPage={(id) => {
               void selectPage(id);
+            }}
+            onDuplicatePage={(id) => {
+              void duplicatePage(id);
+            }}
+            onTrashPage={(id) => {
+              void trashPage(id);
+            }}
+            onExportMarkdown={() => {
+              void exportCurrentPageMarkdown();
+            }}
+            onCopyLink={(id) => {
+              void copyPageLink(id);
             }}
           />
         ) : null}

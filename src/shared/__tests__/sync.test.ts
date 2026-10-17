@@ -11,6 +11,7 @@ function meta(partial: Partial<PageMeta> & { id: string }): PageMeta {
     icon: null,
     cover: null,
     view: "doc",
+    favorite: false,
     createdAt: 0,
     updatedAt: 0,
     deletedAt: null,

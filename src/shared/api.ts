@@ -35,6 +35,8 @@ export interface PagegroveApi {
     setIcon(id: string, icon: string | null): Promise<PageMeta>;
     setCover(id: string, cover: string | null): Promise<PageMeta>;
     setView(id: string, view: PageViewMode): Promise<PageMeta>;
+    setFavorite(id: string, favorite: boolean): Promise<PageMeta>;
+    duplicate(id: string): Promise<PageMeta>;
     trash(id: string): Promise<boolean>;
     restore(id: string): Promise<boolean>;
     backlinks(id: string): Promise<BacklinkHit[]>;

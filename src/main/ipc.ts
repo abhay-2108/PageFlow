@@ -21,6 +21,7 @@ import {
   searchInputSchema,
   setPageCoverInputSchema,
   setPageIconInputSchema,
+  setPageFavoriteInputSchema,
   setPageViewInputSchema,
   updateDocInputSchema,
 } from "../shared/schemas";
@@ -132,6 +133,16 @@ export function registerIpc(db: WorkspaceDb): void {
     return guarded(db, () => db.setPageView(id, view));
   });
 
+  ipcMain.handle("pg:pages:set-favorite", (_event, raw: unknown) => {
+    const { id, favorite } = parse(setPageFavoriteInputSchema, raw);
+    return guarded(db, () => db.setPageFavorite(id, favorite));
+  });
+
+  ipcMain.handle("pg:pages:duplicate", (_event, raw: unknown) => {
+    const { id } = parse(getPageInputSchema, raw);
+    return guarded(db, () => db.duplicatePage(id));
+  });
+
   ipcMain.handle("pg:pages:trash", (_event, raw: unknown) => {
     const { id } = parse(getPageInputSchema, raw);
     guarded(db, () => db.trashPage(id));
@@ -203,6 +214,7 @@ export function registerIpc(db: WorkspaceDb): void {
           icon: entry.icon ?? null,
           cover: entry.cover ?? null,
           view: entry.view ?? "doc",
+          favorite: entry.favorite === true,
         })),
       ),
     );

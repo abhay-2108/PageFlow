@@ -42,6 +42,10 @@ const api: PagegroveApi = {
       ipcRenderer.invoke("pg:pages:set-cover", { id, cover }) as Promise<PageMeta>,
     setView: (id: string, view: PageViewMode) =>
       ipcRenderer.invoke("pg:pages:set-view", { id, view }) as Promise<PageMeta>,
+    setFavorite: (id: string, favorite: boolean) =>
+      ipcRenderer.invoke("pg:pages:set-favorite", { id, favorite }) as Promise<PageMeta>,
+    duplicate: (id: string) =>
+      ipcRenderer.invoke("pg:pages:duplicate", { id }) as Promise<PageMeta>,
     trash: (id: string) => ipcRenderer.invoke("pg:pages:trash", { id }) as Promise<boolean>,
     restore: (id: string) => ipcRenderer.invoke("pg:pages:restore", { id }) as Promise<boolean>,
     backlinks: (id: string) => ipcRenderer.invoke("pg:pages:backlinks", { id }) as Promise<BacklinkHit[]>,

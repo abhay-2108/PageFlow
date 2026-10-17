@@ -246,6 +246,8 @@ export interface SidebarProps {
   onTrash: (id: string) => void;
   onRestore: (id: string) => void;
   onMove: (id: string, parentId: string | null, beforeId: string | null) => void;
+  onFavorite: (id: string, favorite: boolean) => void;
+  onDuplicate: (id: string) => void;
 }
 
 export function Sidebar(props: SidebarProps) {
@@ -262,12 +264,17 @@ export function Sidebar(props: SidebarProps) {
     onTrash,
     onRestore,
     onMove,
+    onFavorite,
+    onDuplicate,
   } = props;
 
   const api = getApi();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [menu, setMenu] = useState<MenuState | null>(null);
+  const [moveMode, setMoveMode] = useState(false);
+  const [moveQuery, setMoveQuery] = useState("");
   const [trashOpen, setTrashOpen] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[] | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
@@ -312,18 +319,27 @@ export function Sidebar(props: SidebarProps) {
       return;
     }
     const close = () => setMenu(null);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenu(null);
+      }
+    };
     window.addEventListener("click", close);
     window.addEventListener("blur", close);
+    window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("click", close);
       window.removeEventListener("blur", close);
+      window.removeEventListener("keydown", onKeyDown);
     };
   }, [menu]);
 
   const openMenu = (event: ReactMouseEvent, id: string) => {
     event.preventDefault();
-    const x = Math.min(event.clientX, window.innerWidth - 200);
-    const y = Math.min(event.clientY, window.innerHeight - 140);
+    const x = Math.min(event.clientX, window.innerWidth - 240);
+    const y = Math.min(event.clientY, window.innerHeight - 340);
+    setMoveMode(false);
+    setMoveQuery("");
     setMenu({ id, x, y });
   };
 
@@ -415,10 +431,31 @@ export function Sidebar(props: SidebarProps) {
   };
 
   const rootPages = childrenMap.get(null) ?? [];
+  const favorites = useMemo(
+    () =>
+      pages
+        .filter((page) => page.favorite)
+        .sort((a, b) => b.updatedAt - a.updatedAt),
+    [pages],
+  );
+  const menuPage = menu ? pages.find((page) => page.id === menu.id) ?? null : null;
   const menuLabel =
-    menu && pages.find((page) => page.id === menu.id)?.title.trim().length === 0
-      ? BRAND.empty.untitled
-      : pages.find((page) => page.id === menu?.id)?.title;
+    menuPage === null ? undefined : menuPage.title.trim().length === 0 ? BRAND.empty.untitled : menuPage.title;
+  const moveTargets = useMemo(() => {
+    if (!menu) {
+      return [];
+    }
+    const needle = moveQuery.trim().toLowerCase();
+    return pages
+      .filter((page) => page.id !== menu.id && !isDescendant(pages, menu.id, page.id))
+      .filter((page) => {
+        if (needle.length === 0) {
+          return true;
+        }
+        const label = page.title.trim().length === 0 ? BRAND.empty.untitled : page.title;
+        return label.toLowerCase().includes(needle);
+      });
+  }, [menu, moveQuery, pages]);
 
   return (
     <aside className="sidebar">
@@ -483,6 +520,46 @@ export function Sidebar(props: SidebarProps) {
             </button>
           </div>
           <div className="sidebar__scroll">
+            {favorites.length > 0 ? (
+              <section className="sidebar__favorites" aria-label="Favorites">
+                <button
+                  type="button"
+                  className="section-toggle"
+                  aria-expanded={favoritesOpen}
+                  onClick={() => setFavoritesOpen((open) => !open)}
+                >
+                  Favorites
+                </button>
+                {favoritesOpen ? (
+                  <ul className="favorite-list">
+                    {favorites.map((page) => (
+                      <li key={page.id}>
+                        <button
+                          type="button"
+                          className={
+                            page.id === activeId ? "favorite-row favorite-row--active" : "favorite-row"
+                          }
+                          onClick={() => onSelect(page.id)}
+                        >
+                          {page.icon ? (
+                            <span className="tree-row__icon" aria-hidden="true">
+                              {page.icon}
+                            </span>
+                          ) : (
+                            <span className="favorite-row__star" aria-hidden="true">
+                              ★
+                            </span>
+                          )}
+                          <span className="favorite-row__label">
+                            {page.title.length > 0 ? page.title : BRAND.empty.untitled}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </section>
+            ) : null}
             {rootPages.length > 0 ? (
               <ul className="tree">
                 {rootPages.map((page) => (
@@ -567,39 +644,132 @@ export function Sidebar(props: SidebarProps) {
       </div>
 
       {menu ? (
-        <div className="menu-popover" style={{ left: menu.x, top: menu.y }} role="menu">
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setMenu(null);
-              setEditingId(menu.id);
-            }}
-          >
-            Rename
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setMenu(null);
-              onCreate(menu.id);
-            }}
-          >
-            New subpage
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            className="menu-popover__danger"
-            onClick={() => {
-              setMenu(null);
-              onTrash(menu.id);
-            }}
-          >
-            Move to trash
-          </button>
-          <div className="menu-popover__meta">{menuLabel}</div>
+        <div
+          className="menu-popover"
+          style={{ left: menu.x, top: menu.y }}
+          role="menu"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {moveMode ? (
+            <>
+              <div className="menu-popover__header">
+                <button
+                  type="button"
+                  className="menu-popover__back"
+                  aria-label="Back"
+                  onClick={() => {
+                    setMoveMode(false);
+                    setMoveQuery("");
+                  }}
+                >
+                  ←
+                </button>
+                <span>Move to</span>
+              </div>
+              <input
+                className="menu-popover__search"
+                type="text"
+                placeholder="Find a page"
+                aria-label="Move to page"
+                value={moveQuery}
+                autoFocus
+                spellCheck={false}
+                onChange={(event) => setMoveQuery(event.target.value)}
+              />
+              <div className="menu-popover__list">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenu(null);
+                    onMove(menu.id, null, null);
+                  }}
+                >
+                  Top level
+                </button>
+                {moveTargets.length === 0 ? (
+                  <p className="menu-popover__empty">{searchNoResults(moveQuery.trim())}</p>
+                ) : (
+                  moveTargets.map((target) => (
+                    <button
+                      key={target.id}
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMenu(null);
+                        onMove(menu.id, target.id, null);
+                      }}
+                    >
+                      {target.icon ? <span aria-hidden="true">{target.icon} </span> : null}
+                      {target.title.length > 0 ? target.title : BRAND.empty.untitled}
+                    </button>
+                  ))
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenu(null);
+                  setEditingId(menu.id);
+                }}
+              >
+                Rename
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenu(null);
+                  onDuplicate(menu.id);
+                }}
+              >
+                Duplicate
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenu(null);
+                  onFavorite(menu.id, !(menuPage?.favorite ?? false));
+                }}
+              >
+                {menuPage?.favorite ? "Remove from Favorites" : "Add to Favorites"}
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => setMoveMode(true)}
+              >
+                Move to…
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenu(null);
+                  onCreate(menu.id);
+                }}
+              >
+                New subpage
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="menu-popover__danger"
+                onClick={() => {
+                  setMenu(null);
+                  onTrash(menu.id);
+                }}
+              >
+                Move to trash
+              </button>
+              <div className="menu-popover__meta">{menuLabel}</div>
+            </>
+          )}
         </div>
       ) : null}
     </aside>

@@ -1,3 +1,5 @@
+/// <reference lib="dom" />
+
 import { expect, test } from "@playwright/test";
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

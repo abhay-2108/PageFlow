@@ -73,6 +73,11 @@ export const setPageViewInputSchema = z.object({
   view: pageViewSchema,
 });
 
+export const setPageFavoriteInputSchema = z.object({
+  id: pageIdSchema,
+  favorite: z.boolean(),
+});
+
 export const searchInputSchema = z.object({
   query: z.string().max(200),
 });
@@ -98,6 +103,7 @@ export const metaEntrySchema = z.object({
   icon: pageIconSchema.optional(),
   cover: pageCoverSchema.optional(),
   view: pageViewSchema.optional(),
+  favorite: z.boolean().optional(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
   deletedAt: z.number().int().nullable(),
