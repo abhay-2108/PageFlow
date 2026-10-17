@@ -267,35 +267,47 @@ export default function App() {
     if (!activeRecord) {
       return;
     }
-    const id = activeRecord.meta.id;
-    const doc =
-      latestDoc.current && latestDoc.current.id === id
-        ? latestDoc.current.doc
-        : ((await api.pages.get(id))?.doc ?? null);
-    if (!doc) {
-      return;
-    }
-    flushSave();
-    const label = activeRecord.meta.title.trim().length > 0 ? activeRecord.meta.title : BRAND.empty.untitled;
-    const markdown = exportMarkdown(doc, activeRecord.meta.title);
-    const result = await api.files.exportMarkdown(activeRecord.meta.title, markdown);
-    if (result.ok) {
-      setToast({ message: `Exported "${label}" as Markdown` });
+    try {
+      const id = activeRecord.meta.id;
+      const doc =
+        latestDoc.current && latestDoc.current.id === id
+          ? latestDoc.current.doc
+          : ((await api.pages.get(id))?.doc ?? null);
+      if (!doc) {
+        return;
+      }
+      flushSave();
+      const label = activeRecord.meta.title.trim().length > 0 ? activeRecord.meta.title : BRAND.empty.untitled;
+      const markdown = exportMarkdown(doc, activeRecord.meta.title);
+      const result = await api.files.exportMarkdown(activeRecord.meta.title, markdown);
+      if (result.ok) {
+        setToast({ message: `Exported "${label}" as Markdown` });
+      }
+    } catch {
+      setToast({ message: "Could not export the page." });
     }
   }, [activeRecord, api, flushSave]);
 
   const exportBundle = useCallback(async () => {
-    const result = await api.sync.exportBundle();
-    if (result.ok) {
-      setToast({ message: "Sync bundle exported" });
+    try {
+      const result = await api.sync.exportBundle();
+      if (result.ok) {
+        setToast({ message: "Sync bundle exported" });
+      }
+    } catch {
+      setToast({ message: "Could not export the sync bundle." });
     }
   }, [api]);
 
   const importBundle = useCallback(async () => {
-    const result = await api.sync.importBundle();
-    if (result.ok) {
-      emitWorkspaceChanged();
-      setToast({ message: `Merged ${result.applied} pages from bundle` });
+    try {
+      const result = await api.sync.importBundle();
+      if (result.ok) {
+        emitWorkspaceChanged();
+        setToast({ message: `Merged ${result.applied} pages from bundle` });
+      }
+    } catch {
+      setToast({ message: "Could not import the sync bundle." });
     }
   }, [api]);
 
