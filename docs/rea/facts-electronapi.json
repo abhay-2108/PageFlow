@@ -1,0 +1,1267 @@
+{
+  "uniqueMembers": [
+    "addAttemptPreTabActionCleanupHandler",
+    "addGetAppStoreStateHandler",
+    "addGetClientStateHandler",
+    "addToDictionary",
+    "addUnloadTabHandler",
+    "appUpdateAvailable",
+    "appUpdateChecking",
+    "appUpdateDismissPending",
+    "appUpdateError",
+    "appUpdateFinished",
+    "appUpdateInstall",
+    "appUpdateInstallPending",
+    "appUpdateNotAvailable",
+    "appUpdateProgress",
+    "appUpdateReady",
+    "calendarTicker",
+    "checkAccessibilityAccess",
+    "checkAudioCaptureAccessWithResult",
+    "checkExistingLocalSkillInstalls",
+    "checkForUpdates",
+    "checkLocaleSupport",
+    "checkScreenCaptureAccess",
+    "clearAllCookies",
+    "clearBrowserHistory",
+    "clearClientDeployPreview",
+    "clearCookies",
+    "clearHoveredTab",
+    "clickMeetingNotification",
+    "clientMcpHost",
+    "closeMeetingNotification",
+    "closeOauthPopup",
+    "closeQuickSearch",
+    "closeTab",
+    "completeMeetingNotificationResume",
+    "contextMenu",
+    "copy",
+    "copyImage",
+    "copyText",
+    "coreAudioTap",
+    "crashReporting",
+    "createMeetingNotesFromQuickSearch",
+    "cut",
+    "desktopBeta",
+    "desktopNotifications",
+    "desktopTopbarActions",
+    "disableBackgroundThrottlingTemporarily",
+    "disableMeetingNotifications",
+    "discardMarkdownPreviewPayload",
+    "dismissMeetingPillNotification",
+    "dismissToast",
+    "dismissToastInAllTabs",
+    "downloadUrl",
+    "electronAppFeatures",
+    "electronCurrentTab",
+    "electronTabs",
+    "enforceSingleActiveTranscription",
+    "ensureWindowVisible",
+    "fullscreen",
+    "getAnalyticsInfo",
+    "getAppVersion",
+    "getAvailableSpellCheckerLanguages",
+    "getCookie",
+    "getDeviceName",
+    "getDeviceVolume",
+    "getInitialWindowId",
+    "getMarkdownPreviewPayload",
+    "getMediaAccessStatus",
+    "getMeetingNotificationNonce",
+    "getMicrophoneAuthorizationStatus",
+    "getProcessesAccessingMicrophoneDebouncedWithResult",
+    "getProcessesAccessingMicrophoneWithResult",
+    "getProcessesAccessingSpeakersWithResult",
+    "getRestoredClientState",
+    "getRunningInputAudioProcesses",
+    "getSpellCheckerLanguages",
+    "getSqliteDiskUsage",
+    "getSqliteMeta",
+    "getSubstitutions",
+    "handleBackForwardNavigation",
+    "handleMetaClick",
+    "handleTabClicked",
+    "heapSnapshot",
+    "hideRecordingScreenSelection",
+    "initialPageRenderCompleted",
+    "initializeRunningInputAudioProcessDetection",
+    "installAppJsUpdate",
+    "installUpdate",
+    "isActiveTab",
+    "isEphemeralSession",
+    "isMainTab",
+    "isMainWindow",
+    "isProtocolRegistered",
+    "isRunningUnderArm64Translation",
+    "logErrorForOffline",
+    "lookupSelection",
+    "manageSkillDirectories",
+    "meetingNotesDisclosureStatus",
+    "meetingNotesExtensionConnection",
+    "meetingNotesMicMuteState",
+    "meetingNotesSpeakerActivity",
+    "meetingNotificationAnalyticsTracked",
+    "meetingNotificationClicked",
+    "meetingNotificationPillClosed",
+    "meetingNotificationReady",
+    "meetingNotificationState",
+    "meetingNotificationsDisabled",
+    "meetingPillWaveform",
+    "navigateToBlock",
+    "navigateToBlockInTab",
+    "navigationReady",
+    "networkEmulation",
+    "newTab",
+    "newWindow",
+    "offlineIndicatorMenu",
+    "onNavigate",
+    "onOpenSettings",
+    "openAppMenu",
+    "openApplecartPage",
+    "openClassicUrl",
+    "openDevTools",
+    "openExternalUrl",
+    "openGoogleDrivePickerPopup",
+    "openInNewTab",
+    "openInNewWindow",
+    "openNotificationUrl",
+    "openNotionAiFromQuickSearch",
+    "openOauthPopup",
+    "openQuickSearchResult",
+    "openQuickSearchShortcutSetting",
+    "openSearchModalForNewTab",
+    "openSearchModalFromQuickSearch",
+    "openSessionLogFile",
+    "openSystemSettings",
+    "paste",
+    "performShortcut",
+    "powerResume",
+    "powerSuspend",
+    "pushToast",
+    "pushToastInMainTab",
+    "quickSearchReady",
+    "quickSearchRefresh",
+    "quickSearchRenderCompleted",
+    "quickSearchSetSearchAssistantMode",
+    "quickSearchVisibilityState",
+    "rdpProxy",
+    "recordingOverlayCommand",
+    "recordingOverlayState",
+    "recordingPreviewFrame",
+    "recordingScreenSelectionState",
+    "refreshAll",
+    "relaunch",
+    "relayMessageFromServiceWorker",
+    "relayMessageToServiceWorker",
+    "replaceMisspelling",
+    "reportMeetingNotesExtensionNativeMessagingGateValue",
+    "reportMeetingNotesExtensionNativeMessagingKillSwitchValue",
+    "requestAccessibilityAccess",
+    "requestAudioCaptureAccessWithResult",
+    "requestCreateMeetingNotesFromQuickSearch",
+    "requestMeetingNotesCaptureStart",
+    "requestMicrophoneAccess",
+    "requestScreenCaptureAccess",
+    "runningInputAudioProcessesChanged",
+    "runningInputAudioProcessesChangedV2",
+    "sendRecordingOverlayCommand",
+    "sendZoomConsentMessage",
+    "setActiveBlocks",
+    "setAppStoreState",
+    "setBadge",
+    "setBootstrapUserId",
+    "setClientDeployPreview",
+    "setCloseConfirmationDialogReason",
+    "setContrastMode",
+    "setCookie",
+    "setGlobalShortcutsEnabled",
+    "setHoveredTab",
+    "setIsMediaActive",
+    "setIsRecording",
+    "setLocale",
+    "setLoggerData",
+    "setMeetingNotesExtensionTranscriptionActive",
+    "setMeetingNotificationDimensions",
+    "setMeetingNotificationDraggableAreas",
+    "setMeetingNotificationIgnoreMouseEvents",
+    "setMeetingNotificationInteractiveAreas",
+    "setNavigationState",
+    "setOverlay",
+    "setRecordingScreenSelectionInteractiveAreas",
+    "setSpellCheckerEnabled",
+    "setSpellCheckerLanguages",
+    "setTabColors",
+    "setTabInitialFaviconAndTitle",
+    "setTheme",
+    "setTranscriptionBlockVisible",
+    "setUnauthorizedIframeUrls",
+    "setWindowTitle",
+    "setZenMode",
+    "setZoomSpeakerAttributionConfig",
+    "showMeetingNotification",
+    "showMeetingTranscriptionState",
+    "showRecordingScreenSelection",
+    "showTabHistoryMenu",
+    "sidebarState",
+    "snackbarReady",
+    "sqliteServerEnabled",
+    "stopRunningInputAudioProcessDetection",
+    "tabSpaces",
+    "toggleMaximized",
+    "trackBatched",
+    "trackMeetingNotificationAnalytics",
+    "updateAvailable",
+    "updateChecking",
+    "updateError",
+    "updateMeetingPillWaveform",
+    "updateNotAvailable",
+    "updateProgress",
+    "updateReady",
+    "updateRecordingOverlaySession",
+    "updateRecordingPreviewFrame",
+    "updateRecordingScreenSelectionTarget",
+    "virtualTabs",
+    "win32Migration",
+    "windowFocused",
+    "windowIsVisible",
+    "windowSidebarState",
+    "workspaceSwitcher",
+    "writeSessionLogs",
+    "writeSkillAssets",
+    "writeSkillFile",
+    "zoom",
+    "zoomMeetingJoined"
+  ],
+  "callPaths": [
+    {
+      "entry": "__electronApi.addToDictionary",
+      "channel": "notion:add-to-dictionary",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.appUpdateDismissPending",
+      "channel": "notion:app-update-dismiss-pending",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.appUpdateInstallPending",
+      "channel": "notion:app-update-install-pending",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.calendarTicker.cancelCalendarTick",
+      "channel": "notion:cancel-calendar-tick",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.calendarTicker.scheduleCalendarTick",
+      "channel": "notion:schedule-calendar-tick",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.checkAccessibilityAccess",
+      "channel": "notion:check-accessibility-access",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.checkAudioCaptureAccessWithResult",
+      "channel": "notion:check-audio-capture-access-with-result",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.checkExistingLocalSkillInstalls",
+      "channel": "notion:check-existing-local-skill-installs",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.checkForUpdates",
+      "channel": "notion:check-for-updates",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.checkLocaleSupport",
+      "channel": "notion:check-locale-support",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.checkScreenCaptureAccess",
+      "channel": "notion:check-screen-capture-access",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.clearAllCookies",
+      "channel": "notion:clear-all-cookies",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.clearBrowserHistory",
+      "channel": "notion:clear-browser-history",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.clearClientDeployPreview",
+      "channel": "notion:clear-client-deploy-preview",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.clearCookies",
+      "channel": "notion:clear-cookies",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.clickMeetingNotification",
+      "channel": "notion:click-meeting-notification",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.clientMcpHost.getAccess",
+      "channel": "notion:agent:client-mcp-host:get-access",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.clientMcpHost.initialize",
+      "channel": "notion:agent:client-mcp-host:initialize",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.clientMcpHost.openIMessageSettings",
+      "channel": "notion:agent:client-mcp-host:open-imessage-settings",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.clientMcpHost.removeRoot",
+      "channel": "notion:agent:client-mcp-host:remove-root",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.clientMcpHost.selectFolders",
+      "channel": "notion:agent:client-mcp-host:select-folders",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.clientMcpHost.setIMessageEnabled",
+      "channel": "notion:agent:client-mcp-host:set-imessage-enabled",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.clientMcpHost.stop",
+      "channel": "notion:agent:client-mcp-host:stop",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.closeMeetingNotification",
+      "channel": "notion:close-meeting-notification",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.closeOauthPopup",
+      "channel": "notion:close-popup",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.closeQuickSearch",
+      "channel": "notion:quick-search-close",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.closeTab",
+      "channel": "notion:close-tab-from-notion",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.completeMeetingNotificationResume",
+      "channel": "notion:complete-meeting-notification-resume",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.copy",
+      "channel": "notion:copy",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.copyImage",
+      "channel": "null",
+      "terminal": "navigator.clipboard.write"
+    },
+    {
+      "entry": "__electronApi.copyText",
+      "channel": "null",
+      "terminal": "navigator.clipboard.writeText"
+    },
+    {
+      "entry": "__electronApi.coreAudioTap.getStatus",
+      "channel": "notion:core-audio-tap:get-status",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.coreAudioTap.reportGateValue",
+      "channel": "notion:core-audio-tap:report-gate-value",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.coreAudioTap.reportOptOut",
+      "channel": "notion:core-audio-tap:report-opt-out",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.crashReporting.enableCrashReporting",
+      "channel": "notion:enable-crash-reporting",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.cut",
+      "channel": "notion:cut",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.desktopBeta.setCtaEligible",
+      "channel": "notion:set-desktop-beta-cta-eligible",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.desktopBeta.setEnrollment",
+      "channel": "notion:set-desktop-beta-enrollment",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.desktopNotifications.isRegistered",
+      "channel": "notion:desktop-notification-registration-status",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.desktopNotifications.markRegistered",
+      "channel": "notion:desktop-notification-registered",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.desktopNotifications.setNotificationTypes",
+      "channel": "notion:desktop-notification-types",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.desktopNotifications.subscribe",
+      "channel": "notion:subscribe-desktop-push",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.desktopNotifications.unsubscribe",
+      "channel": "notion:unsubscribe-desktop-push",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.disableBackgroundThrottlingTemporarily",
+      "channel": "notion:disable-background-throttling-temporarily",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.disableMeetingNotifications",
+      "channel": "notion:disable-meeting-notifications",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.discardMarkdownPreviewPayload",
+      "channel": "notion:discard-markdown-preview-payload",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.dismissMeetingPillNotification",
+      "channel": "notion:dismiss-meeting-pill-notification",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.dismissToastInAllTabs",
+      "channel": "notion:dismiss-toast-in-all-tabs",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.downloadUrl",
+      "channel": "notion:download-url",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.electronAppFeatures.get",
+      "channel": "notion:get-electron-app-features",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.electronAppFeatures.setPreference",
+      "channel": "notion:set-user-preference",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.ensureWindowVisible",
+      "channel": "notion:ensure-window-visible",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.fullscreen.get",
+      "channel": "notion:get-fullscreen",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getAnalyticsInfo",
+      "channel": "notion:get-analytics-info",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getAppVersion",
+      "channel": "notion:get-app-version",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getAvailableSpellCheckerLanguages",
+      "channel": "notion:get-available-spellchecker-languages",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getCookie",
+      "channel": "notion:get-cookie",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getDeviceName",
+      "channel": "notion:get-device-name",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getDeviceVolume",
+      "channel": "notion:get-device-volume",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getMarkdownPreviewPayload",
+      "channel": "notion:get-markdown-preview-payload",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getMediaAccessStatus",
+      "channel": "notion:get-media-access-status",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getMeetingNotificationNonce",
+      "channel": "notion:get-meeting-notification-nonce",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getMicrophoneAuthorizationStatus",
+      "channel": "notion:get-microphone-authorization-status",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getProcessesAccessingMicrophoneDebouncedWithResult",
+      "channel": "notion:get-processes-accessing-microphone-debounced-with-result",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getProcessesAccessingMicrophoneWithResult",
+      "channel": "notion:get-processes-accessing-microphone-with-result",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getProcessesAccessingSpeakersWithResult",
+      "channel": "notion:get-processes-accessing-speakers-with-result",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getRestoredClientState",
+      "channel": "notion:get-restored-client-state",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getRunningInputAudioProcesses",
+      "channel": "notion:get-running-input-audio-processes",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getSpellCheckerLanguages",
+      "channel": "notion:get-spellchecker-languages",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getSqliteDiskUsage",
+      "channel": "notion:get-sqlite-disk-usage",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getSqliteMeta",
+      "channel": "notion:get-sqlite-meta",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.getSubstitutions",
+      "channel": "notion:get-substitutions",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.handleTabClicked",
+      "channel": "notion:tab-clicked",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.heapSnapshot.reportConfig",
+      "channel": "notion:heap-snapshot:report-config",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.hideRecordingScreenSelection",
+      "channel": "notion:hide-recording-screen-selection",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.initialPageRenderCompleted",
+      "channel": "notion:initial-page-render-completed",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.initializeRunningInputAudioProcessDetection",
+      "channel": "notion:initialize-running-input-audio-process-detection",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.installAppJsUpdate",
+      "channel": "notion:install-appjs-update",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.installUpdate",
+      "channel": "notion:install-update",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.isActiveTab.get",
+      "channel": "notion:is-active-tab",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.isMainTab",
+      "channel": "notion:is-main-tab",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.isMainWindow",
+      "channel": "notion:is-main-tab",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.isProtocolRegistered",
+      "channel": "notion:get-is-protocol-registered",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.isRunningUnderArm64Translation",
+      "channel": "notion:get-is-running-under-arm64-translation",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.logErrorForOffline",
+      "channel": "notion:log-error-for-offline",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.lookupSelection",
+      "channel": "notion:lookup-selection",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.manageSkillDirectories",
+      "channel": "notion:manage-skill-directories",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.meetingNotesExtensionConnection.get",
+      "channel": "notion:get-meeting-notes-extension-connected",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.meetingNotificationReady",
+      "channel": "notion:meeting-notification-ready",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.meetingNotificationState.get",
+      "channel": "notion:get-meeting-notification-state",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.navigateToBlockInTab",
+      "channel": "notion:navigate-to-block-in-tab",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.navigationReady",
+      "channel": "notion:ready",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.networkEmulation.getEmulation",
+      "channel": "notion:get-network-emulation",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.networkEmulation.getEmulationOptions",
+      "channel": "notion:get-network-emulation-options",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.networkEmulation.setEmulation",
+      "channel": "notion:set-network-emulation",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.newTab",
+      "channel": "notion:new-tab-from-tab-bar",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openAppMenu",
+      "channel": "notion:open-app-menu",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openApplecartPage",
+      "channel": "notion:open-applecart-page",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.openClassicUrl",
+      "channel": "notion:open-classic-url",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.openDevTools",
+      "channel": "notion:open-dev-tools",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openExternalUrl",
+      "channel": "notion:open-external-url",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.openGoogleDrivePickerPopup",
+      "channel": "notion:create-google-drive-picker",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openInNewTab",
+      "channel": "notion:new-tab-from-notion",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openInNewWindow",
+      "channel": "notion:create-window",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openNotificationUrl",
+      "channel": "notion:open-notification-url",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openOauthPopup",
+      "channel": "notion:create-popup",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openQuickSearchResult",
+      "channel": "notion:quick-search-open-result",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openQuickSearchShortcutSetting",
+      "channel": "notion:quick-search-open-shortcut-settings",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.openSessionLogFile",
+      "channel": "notion:open-session-log-file",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.openSystemSettings",
+      "channel": "notion:open-system-settings",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.paste",
+      "channel": "notion:paste",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.pushToastInMainTab",
+      "channel": "notion:push-toast-in-main-tab",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.quickSearchReady",
+      "channel": "notion:quick-search-ready",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.quickSearchRefresh",
+      "channel": "notion:quick-search-refresh",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.quickSearchRenderCompleted",
+      "channel": "notion:quick-search-render-completed",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.quickSearchSetSearchAssistantMode",
+      "channel": "notion:quick-search-set-search-assistant-mode",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.quickSearchVisibilityState.isVisible",
+      "channel": "notion:is-quick-search-visible",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.rdpProxy.close",
+      "channel": "notion:rdp-proxy-close",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.rdpProxy.command",
+      "channel": "notion:rdp-proxy-command",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.rdpProxy.create",
+      "channel": "notion:rdp-proxy-create",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.rdpProxy.proxyAvailable",
+      "channel": "notion:rdp-proxy-eligible",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.recordingOverlayState.get",
+      "channel": "notion:get-recording-overlay-state",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.refreshAll",
+      "channel": "notion:refresh-all",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.relaunch",
+      "channel": "notion:relaunch",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.relayMessageFromServiceWorker",
+      "channel": "notion:relay-message-from-service-worker",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.replaceMisspelling",
+      "channel": "notion:replace-misspelling",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.reportMeetingNotesExtensionNativeMessagingGateValue",
+      "channel": "notion:report-meeting-notes-extension-native-messaging-gate-value",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.reportMeetingNotesExtensionNativeMessagingKillSwitchValue",
+      "channel": "notion:report-meeting-notes-extension-native-messaging-kill-switch-value",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.requestAccessibilityAccess",
+      "channel": "notion:request-accessibility-access",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.requestAudioCaptureAccessWithResult",
+      "channel": "notion:request-audio-capture-access-with-result",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.requestCreateMeetingNotesFromQuickSearch",
+      "channel": "notion:quick-search-create-meeting-notes",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.requestMeetingNotesCaptureStart",
+      "channel": "notion:request-meeting-notes-capture-start",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.requestMicrophoneAccess",
+      "channel": "notion:request-microphone-access",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.requestScreenCaptureAccess",
+      "channel": "notion:request-screen-capture-access",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.sendRecordingOverlayCommand",
+      "channel": "notion:send-recording-overlay-command",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.sendZoomConsentMessage",
+      "channel": "notion:send-zoom-consent-message",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.setActiveBlocks",
+      "channel": "notion:set-active-blocks",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setAppStoreState",
+      "channel": "notion:set-app-store-state",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setBadge",
+      "channel": "notion:set-badge",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setBootstrapUserId",
+      "channel": "notion:set-bootstrap-user-id",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setClientDeployPreview",
+      "channel": "notion:set-client-deploy-preview",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.setCloseConfirmationDialogReason",
+      "channel": "notion:set-close-confirmation-dialog-reason",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setContrastMode",
+      "channel": "notion:set-contrast-mode",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setCookie",
+      "channel": "notion:set-cookie",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setGlobalShortcutsEnabled",
+      "channel": "notion:set-global-shortcuts-enabled",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setIsMediaActive",
+      "channel": "notion:set-is-media-active",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setIsRecording",
+      "channel": "notion:set-is-recording",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setLocale",
+      "channel": "notion:set-locale",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setLoggerData",
+      "channel": "notion:set-logger-data",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setMeetingNotesExtensionTranscriptionActive",
+      "channel": "notion:set-meeting-notes-extension-transcription-active",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setMeetingNotificationDimensions",
+      "channel": "notion:set-meeting-notification-dimensions",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setMeetingNotificationDraggableAreas",
+      "channel": "notion:set-meeting-notification-draggable-areas",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setMeetingNotificationIgnoreMouseEvents",
+      "channel": "notion:set-meeting-notification-ignore-mouse-events",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setMeetingNotificationInteractiveAreas",
+      "channel": "notion:set-meeting-notification-interactive-areas",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setNavigationState",
+      "channel": "notion:set-navigation-state",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setOverlay",
+      "channel": "notion:set-tab-is-overlay-active",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setRecordingScreenSelectionInteractiveAreas",
+      "channel": "notion:set-recording-screen-selection-interactive-areas",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setSpellCheckerEnabled",
+      "channel": "notion:set-spellchecker-enabled",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setSpellCheckerLanguages",
+      "channel": "notion:set-spellchecker-languages",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setTabColors",
+      "channel": "notion:set-tab-colors",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setTabInitialFaviconAndTitle",
+      "channel": "notion:set-tab-initial-favicon-and-title",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setTheme",
+      "channel": "notion:set-theme",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setTranscriptionBlockVisible",
+      "channel": "notion:set-transcription-block-visible",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setWindowTitle",
+      "channel": "notion:set-window-title",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setZenMode",
+      "channel": "notion:set-zen-mode",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.setZoomSpeakerAttributionConfig",
+      "channel": "notion:set-zoom-speaker-attribution-config",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.showMeetingNotification",
+      "channel": "notion:show-meeting-notification",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.showMeetingTranscriptionState",
+      "channel": "notion:show-meeting-transcription-state",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.showRecordingScreenSelection",
+      "channel": "notion:show-recording-screen-selection",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.sidebarState.set",
+      "channel": "notion:set-sidebar-state",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.snackbarReady",
+      "channel": "notion:set-snackbar-ready",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.stopRunningInputAudioProcessDetection",
+      "channel": "notion:stop-running-input-audio-process-detection",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.tabSpaces.createTabSpace",
+      "channel": "notion:create-tab-space",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.tabSpaces.deleteTabSpace",
+      "channel": "notion:delete-tab-space",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.tabSpaces.reorderTabSpaces",
+      "channel": "notion:reorder-tab-spaces",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.tabSpaces.setActiveTabSection",
+      "channel": "notion:set-active-tab-section",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.tabSpaces.setTabSpacesMenuOpenState",
+      "channel": "notion:set-tab-spaces-menu-open-state",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.tabSpaces.toggleTabSpacesMenuOpen",
+      "channel": "notion:toggle-tab-spaces-menu-open",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.tabSpaces.updateTabSpaceMetadata",
+      "channel": "notion:update-tab-space-metadata",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.toggleMaximized",
+      "channel": "notion:toggle-maximized",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.trackMeetingNotificationAnalytics",
+      "channel": "notion:track-meeting-notification-analytics",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.updateMeetingPillWaveform",
+      "channel": "notion:update-meeting-pill-waveform",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.updateRecordingOverlaySession",
+      "channel": "notion:update-recording-overlay-session",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.updateRecordingPreviewFrame",
+      "channel": "notion:update-recording-preview-frame",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.updateRecordingScreenSelectionTarget",
+      "channel": "notion:update-recording-screen-selection-target",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.closeEmptiedWindow",
+      "channel": "notion:close-emptied-virtual-tab-window",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.closeWindow",
+      "channel": "notion:close-virtual-tab-window",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.completeClosedTabsRestore",
+      "channel": "notion:restore-closed-virtual-tabs-complete",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.detachTabFromWindow",
+      "channel": "notion:detach-virtual-tab-from-window",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.hydrateTabSnapshotSession",
+      "channel": "notion:hydrate-virtual-tab-snapshot-session",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.moveTabToNewWindow",
+      "channel": "notion:move-virtual-tab-to-new-window",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.recordClose",
+      "channel": "notion:record-virtual-tabs-close",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.refreshTabSnapshotSession",
+      "channel": "notion:refresh-virtual-tab-snapshot-session",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.resumeOwnerSessions",
+      "channel": "notion:resume-owner-sessions",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.routeToOwnerSession",
+      "channel": "notion:route-to-owner-session",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.setState",
+      "channel": "notion:set-virtual-tabs-state",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.startOwnerSession",
+      "channel": "notion:start-owner-session",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.suspendOwnerSessions",
+      "channel": "notion:suspend-owner-sessions",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.virtualTabs.transitionMode",
+      "channel": "notion:transition-tab-mode",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.win32Migration.uninstallDuplicate",
+      "channel": "notion:win32-uninstall-duplicate",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.windowIsVisible",
+      "channel": "notion:is-window-visible",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.windowSidebarState.get",
+      "channel": "notion:get-window-sidebar-state",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.windowSidebarState.set",
+      "channel": "notion:set-window-sidebar-state",
+      "terminal": "electron.ipcRenderer.send"
+    },
+    {
+      "entry": "__electronApi.writeSessionLogs",
+      "channel": "notion:write-session-logs",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.writeSkillAssets",
+      "channel": "notion:write-skill-assets",
+      "terminal": "electron.ipcRenderer.invoke"
+    },
+    {
+      "entry": "__electronApi.writeSkillFile",
+      "channel": "notion:write-skill-file",
+      "terminal": "electron.ipcRenderer.invoke"
+    }
+  ]
+}

@@ -1,0 +1,352 @@
+[
+  {
+    "relation": "loads",
+    "source": "javascript-chunk",
+    "target": "javascript-module",
+    "props": "{\"kind\":\"bundler-entry-module\",\"bundler\":\"webpack\",\"runtime\":\"webpack-bootstrap@63\",\"module_key\":\"984\",\"resolution_status\":\"resolved\"}",
+    "at": ".webpack/renderer/activity_monitor/index.js:L2:C0"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-module",
+    "target": "worker",
+    "props": "{\"kind\":\"worker\",\"resolution_status\":null}",
+    "at": ".webpack/main/index.js:L2:C2039292"
+  },
+  {
+    "relation": "sends",
+    "source": "javascript-asset",
+    "target": "ipc-channel",
+    "props": "{\"side\":\"renderer\",\"operation\":\"send\",\"channel\":null,\"channel_expression\":\"n.createKey(\\\"status\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/native_modules/default.js:L1:C661"
+  },
+  {
+    "relation": "loads",
+    "source": "package",
+    "target": "electron-main",
+    "props": "{\"declared_path\":\"./.webpack/main\",\"resolution_context\":\"package-entrypoint\",\"resolved_path\":\".webpack/main/index.js\",\"resolution_status\":\"resolved\",\"limitations\":[]}",
+    "at": "n/a"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":null,\"channel_expression\":\"t.createKey(\\\"scope\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/index.js:L2:C2571106"
+  },
+  {
+    "relation": "exposes",
+    "source": "javascript-module",
+    "target": "endpoint",
+    "props": "{\"mechanism\":\"property:path\"}",
+    "at": ".webpack/main/index.js:L8:C903665"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":\"migration-restore-done\",\"channel_expression\":null,\"resolution\":\"literal\"}",
+    "at": ".webpack/main/index.js:L2:C322061"
+  },
+  {
+    "relation": "loads",
+    "source": "electron-renderer",
+    "target": "javascript-asset",
+    "props": "{\"script_path\":\"../client_placeholder/index.js\",\"base_href\":null,\"resolution_context\":\"html-reference\",\"resolved_path\":\".webpack/renderer/client_placeholder/index.js\",\"resolution_status\":\"resolved\",\"limitations\":[]}",
+    "at": ".webpack/renderer/client_placeholder/index.html:L1:C367"
+  },
+  {
+    "relation": "sends",
+    "source": "javascript-module",
+    "target": "ipc-handler",
+    "props": "{\"channel\":\"electron-store-get-data\",\"pairing_basis\":\"unique-exact-literal-channel\",\"handler_path\":\".webpack/main/index.js\",\"handler_operation\":\"on\"}",
+    "at": ".webpack/main/index.js:L8:C96018"
+  },
+  {
+    "relation": "loads",
+    "source": "electron-renderer",
+    "target": "javascript-asset",
+    "props": "{\"script_path\":\"../speaker_and_microphone_status/index.js\",\"base_href\":null,\"resolution_context\":\"html-reference\",\"resolved_path\":\".webpack/renderer/speaker_and_microphone_status/index.js\",\"resolution_status\":\"resolved\",",
+    "at": ".webpack/renderer/speaker_and_microphone_status/index.html:L1:C147"
+  },
+  {
+    "relation": "exposes",
+    "source": "javascript-module",
+    "target": "endpoint",
+    "props": "{\"mechanism\":\"property:path\"}",
+    "at": ".webpack/main/ClientMcpHostWorker.js:L2:C139515"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":null,\"channel_expression\":\"t.createKey(\\\"envelope\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/index.js:L2:C2571155"
+  },
+  {
+    "relation": "sends",
+    "source": "javascript-asset",
+    "target": "ipc-channel",
+    "props": "{\"side\":\"renderer\",\"operation\":\"send\",\"channel\":null,\"channel_expression\":\"n.createKey(\\\"envelope\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/native_modules/default.js:L1:C594"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":null,\"channel_expression\":\"t.createKey(\\\"metric\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/index.js:L2:C2571291"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-chunk",
+    "target": "javascript-module",
+    "props": "{\"kind\":\"bundler-entry-module\",\"bundler\":\"webpack\",\"runtime\":\"webpack-bootstrap@63\",\"module_key\":\"5652\",\"resolution_status\":\"resolved\"}",
+    "at": ".webpack/renderer/meeting_notification_pill/index.js:L2:C0"
+  },
+  {
+    "relation": "sends",
+    "source": "javascript-asset",
+    "target": "ipc-channel",
+    "props": "{\"side\":\"renderer\",\"operation\":\"send\",\"channel\":null,\"channel_expression\":\"n.createKey(\\\"metric\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/native_modules/default.js:L1:C806"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-module",
+    "target": "electron-utility",
+    "props": "{\"declared_path\":null,\"expression\":\"t\",\"resolved_path\":null,\"resolution_status\":null}",
+    "at": ".webpack/main/index.js:L2:C597396"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-module",
+    "target": "electron-renderer",
+    "props": "{\"mechanism\":\"call:window.webContents.loadURL\"}",
+    "at": ".webpack/main/index.js:L2:C288381"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-module",
+    "target": "worker",
+    "props": "{\"kind\":\"worker\",\"resolution_status\":null}",
+    "at": ".webpack/main/index.js:L2:C2644686"
+  },
+  {
+    "relation": "sends",
+    "source": "javascript-asset",
+    "target": "ipc-channel",
+    "props": "{\"side\":\"renderer\",\"operation\":\"send\",\"channel\":null,\"channel_expression\":\"n.createKey(\\\"structured-log\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/native_modules/default.js:L1:C733"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":\"migration-dump-done\",\"channel_expression\":null,\"resolution\":\"literal\"}",
+    "at": ".webpack/main/index.js:L2:C321166"
+  },
+  {
+    "relation": "exposes",
+    "source": "javascript-module",
+    "target": "javascript-module",
+    "props": "{\"module_link_kind\":\"commonjs-export\",\"specifier\":null,\"imported_name\":null,\"imported_path\":[],\"local_name\":\"fileUriToPath\",\"exported_name\":\"default\",\"resolved_path\":null,\"resolution_status\":null,\"target_file_kind\":null,",
+    "at": "node_modules/file-uri-to-path/index.js:L12:C0"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-module",
+    "target": "worker",
+    "props": "{\"kind\":\"worker\",\"resolution_status\":null}",
+    "at": ".webpack/main/index.js:L2:C2675383"
+  },
+  {
+    "relation": "exposes",
+    "source": "javascript-module",
+    "target": "javascript-module",
+    "props": "{\"module_link_kind\":\"commonjs-export\",\"specifier\":null,\"imported_name\":null,\"imported_path\":[],\"local_name\":\"n\",\"exported_name\":\"default\",\"resolved_path\":null,\"resolution_status\":null,\"target_file_kind\":null,\"target_json",
+    "at": ".webpack/main/SqliteServer.js:L1:C100941"
+  },
+  {
+    "relation": "loads",
+    "source": "electron-renderer",
+    "target": "javascript-asset",
+    "props": "{\"script_path\":\"../meeting_notification_pill/index.js\",\"base_href\":null,\"resolution_context\":\"html-reference\",\"resolved_path\":\".webpack/renderer/meeting_notification_pill/index.js\",\"resolution_status\":\"resolved\",\"limitat",
+    "at": ".webpack/renderer/meeting_notification_pill/index.html:L1:C143"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":null,\"channel_expression\":\"t.createKey(\\\"structured-log\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/index.js:L2:C2571220"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-chunk",
+    "target": "javascript-module",
+    "props": "{\"kind\":\"bundler-entry-module\",\"bundler\":\"webpack\",\"runtime\":\"webpack-bootstrap@63\",\"module_key\":\"64982\",\"resolution_status\":\"resolved\"}",
+    "at": ".webpack/main/index.js:L2:C0"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":null,\"channel_expression\":\"t.createKey(\\\"start\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/index.js:L2:C2570952"
+  },
+  {
+    "relation": "loads",
+    "source": "electron-renderer",
+    "target": "javascript-asset",
+    "props": "{\"script_path\":\"../sqlite_browser/index.js\",\"base_href\":null,\"resolution_context\":\"html-reference\",\"resolved_path\":\".webpack/renderer/sqlite_browser/index.js\",\"resolution_status\":\"resolved\",\"limitations\":[]}",
+    "at": ".webpack/renderer/sqlite_browser/index.html:L1:C132"
+  },
+  {
+    "relation": "loads",
+    "source": "electron-renderer",
+    "target": "javascript-asset",
+    "props": "{\"script_path\":\"../tabs/index.js\",\"base_href\":null,\"resolution_context\":\"html-reference\",\"resolved_path\":\".webpack/renderer/tabs/index.js\",\"resolution_status\":\"resolved\",\"limitations\":[]}",
+    "at": ".webpack/renderer/tabs/index.html:L1:C57"
+  },
+  {
+    "relation": "loads",
+    "source": "electron-renderer",
+    "target": "javascript-asset",
+    "props": "{\"script_path\":\"../darkmode_placeholder/index.js\",\"base_href\":null,\"resolution_context\":\"html-reference\",\"resolved_path\":\".webpack/renderer/darkmode_placeholder/index.js\",\"resolution_status\":\"resolved\",\"limitations\":[]}",
+    "at": ".webpack/renderer/darkmode_placeholder/index.html:L6:C12"
+  },
+  {
+    "relation": "exposes",
+    "source": "javascript-module",
+    "target": "javascript-module",
+    "props": "{\"module_link_kind\":\"commonjs-export\",\"specifier\":null,\"imported_name\":null,\"imported_path\":[],\"local_name\":\"r\",\"exported_name\":\"default\",\"resolved_path\":null,\"resolution_status\":null,\"target_file_kind\":null,\"target_json",
+    "at": ".webpack/main/ClientMcpHostWorker.js:L2:C303395"
+  },
+  {
+    "relation": "sends",
+    "source": "javascript-asset",
+    "target": "ipc-channel",
+    "props": "{\"side\":\"renderer\",\"operation\":\"send\",\"channel\":null,\"channel_expression\":\"n.createKey(\\\"scope\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/native_modules/default.js:L1:C528"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-module",
+    "target": "electron-utility",
+    "props": "{\"declared_path\":\"ClientMcpHostWorker.js\",\"expression\":null,\"resolved_path\":\".webpack/main/ClientMcpHostWorker.js\",\"resolution_status\":\"resolved\"}",
+    "at": ".webpack/main/index.js:L2:C269633"
+  },
+  {
+    "relation": "loads",
+    "source": "electron-renderer",
+    "target": "javascript-asset",
+    "props": "{\"script_path\":\"../windows_and_tabs/index.js\",\"base_href\":null,\"resolution_context\":\"html-reference\",\"resolved_path\":\".webpack/renderer/windows_and_tabs/index.js\",\"resolution_status\":\"resolved\",\"limitations\":[]}",
+    "at": ".webpack/renderer/windows_and_tabs/index.html:L1:C134"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":null,\"channel_expression\":\"t.createKey(\\\"status\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/index.js:L2:C2571412"
+  },
+  {
+    "relation": "sends",
+    "source": "javascript-module",
+    "target": "ipc-channel",
+    "props": "{\"side\":\"renderer\",\"operation\":\"send-sync\",\"channel\":\"electron-store-get-data\",\"channel_expression\":null,\"resolution\":\"literal\"}",
+    "at": ".webpack/main/index.js:L8:C96018"
+  },
+  {
+    "relation": "exposes",
+    "source": "javascript-module",
+    "target": "javascript-module",
+    "props": "{\"module_link_kind\":\"commonjs-export\",\"specifier\":null,\"imported_name\":null,\"imported_path\":[],\"local_name\":\"r\",\"exported_name\":\"default\",\"resolved_path\":null,\"resolution_status\":null,\"target_file_kind\":null,\"target_json",
+    "at": ".webpack/main/index.js:L8:C1447956"
+  },
+  {
+    "relation": "loads",
+    "source": "electron-renderer",
+    "target": "javascript-asset",
+    "props": "{\"script_path\":\"../activity_monitor/index.js\",\"base_href\":null,\"resolution_context\":\"html-reference\",\"resolved_path\":\".webpack/renderer/activity_monitor/index.js\",\"resolution_status\":\"resolved\",\"limitations\":[]}",
+    "at": ".webpack/renderer/activity_monitor/index.html:L1:C134"
+  },
+  {
+    "relation": "sends",
+    "source": "javascript-asset",
+    "target": "ipc-channel",
+    "props": "{\"side\":\"renderer\",\"operation\":\"send\",\"channel\":null,\"channel_expression\":\"n.createKey(\\\"start\\\")\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/native_modules/default.js:L1:C467"
+  },
+  {
+    "relation": "exposes",
+    "source": "javascript-module",
+    "target": "endpoint",
+    "props": "{\"mechanism\":\"property:path\"}",
+    "at": ".webpack/main/index.js:L2:C827550"
+  },
+  {
+    "relation": "exposes",
+    "source": "javascript-module",
+    "target": "endpoint",
+    "props": "{\"mechanism\":\"property:path\"}",
+    "at": ".webpack/main/index.js:L2:C274125"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-module",
+    "target": "electron-renderer",
+    "props": "{\"mechanism\":\"call:window.webContents.loadURL\"}",
+    "at": ".webpack/main/index.js:L2:C286374"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-chunk",
+    "target": "javascript-module",
+    "props": "{\"kind\":\"bundler-entry-module\",\"bundler\":\"webpack\",\"runtime\":\"webpack-bootstrap@0\",\"module_key\":\"72931\",\"resolution_status\":\"resolved\"}",
+    "at": ".webpack/main/SqliteServer.js:L1:C0"
+  },
+  {
+    "relation": "exposes",
+    "source": "javascript-asset",
+    "target": "context-bridge-api",
+    "props": "{\"world\":\"main\",\"api_key\":\"__SENTRY_IPC__\",\"resolution\":\"literal\"}",
+    "at": ".webpack/main/native_modules/default.js:L1:C925"
+  },
+  {
+    "relation": "loads",
+    "source": "electron-renderer",
+    "target": "javascript-asset",
+    "props": "{\"script_path\":\"../internal_settings/index.js\",\"base_href\":null,\"resolution_context\":\"html-reference\",\"resolved_path\":\".webpack/renderer/internal_settings/index.js\",\"resolution_status\":\"resolved\",\"limitations\":[]}",
+    "at": ".webpack/renderer/internal_settings/index.html:L1:C135"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":\"electron-store-get-data\",\"channel_expression\":null,\"resolution\":\"literal\"}",
+    "at": ".webpack/main/index.js:L8:C95893"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-module",
+    "target": "worker",
+    "props": "{\"kind\":\"worker\",\"resolution_status\":null}",
+    "at": ".webpack/main/index.js:L2:C2154445"
+  },
+  {
+    "relation": "handles",
+    "source": "ipc-handler",
+    "target": "ipc-channel",
+    "props": "{\"channel\":null,\"channel_expression\":\"e\",\"resolution\":\"dynamic\"}",
+    "at": ".webpack/main/index.js:L2:C372413"
+  },
+  {
+    "relation": "loads",
+    "source": "javascript-module",
+    "target": "electron-renderer",
+    "props": "{\"mechanism\":\"call:browserWindow.loadURL\"}",
+    "at": ".webpack/main/index.js:L2:C219027"
+  }
+]

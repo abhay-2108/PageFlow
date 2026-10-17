@@ -1,0 +1,1713 @@
+[
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_007e5bbb017db55",
+    "label": "t.createKey(\"structured-log\")",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"structured-log\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/index.js:L2:C2571220",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_01dcee2a389f2f2",
+    "label": "id",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C1471396",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_01dcee2a389f2f2",
+    "label": "id",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C1470893",
+    "confidence": "low"
+  },
+  {
+    "kind": "native-addon",
+    "node_id": "jag_node_049c13a81de3ea1",
+    "label": "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+    "props": {
+      "__other": [
+        "path",
+        "bytes",
+        "inventory_artifact_id",
+        "unpacked",
+        "file_kind",
+        "text_status",
+        "parse_status",
+        "json_parse_status"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\"node_modules/better-sqlite3/",
+    "confidence": "exact"
+  },
+  {
+    "kind": "storage",
+    "node_id": "jag_node_0623ee7a4c7c632",
+    "label": "session-storage",
+    "props": {
+      "__other": [
+        "storage_kind",
+        "name",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2141278",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_0784f0483511231",
+    "label": "baggage",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2275560",
+    "confidence": "low"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_07c882af428ae48",
+    "label": ".webpack/renderer/speaker_and_microphone_status/index.html",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\".webpack/renderer/speaker_an",
+    "confidence": "high"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_080eadc09977744",
+    "label": "",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"envelope\")",
+      "handler_kind": "inline-function"
+    },
+    "at": ".webpack/main/index.js:L2:C2571192",
+    "confidence": "exact"
+  },
+  {
+    "kind": "electron-utility",
+    "node_id": "jag_node_0c3cbd343d5e5be",
+    "label": "Desktop MCP Host",
+    "props": {
+      "__other": [
+        "module_path",
+        "module_resolution_context",
+        "module_expression",
+        "service_name"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C269633",
+    "confidence": "exact"
+  },
+  {
+    "kind": "electron-utility",
+    "node_id": "jag_node_0c3cbd343d5e5be",
+    "label": "utility process entrypoint resolution",
+    "props": {
+      "__other": [
+        "resolved_path",
+        "resolution_status"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C269633",
+    "confidence": "high"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_0dceb1d77aa6137",
+    "label": ".webpack/renderer/tabs/index.html",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\".webpack/renderer/tabs/index",
+    "confidence": "high"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_108f56fccfa5d97",
+    "label": "migration-dump-done",
+    "props": {
+      "side": "main",
+      "operation": "once",
+      "mode": "listen",
+      "channel": "migration-dump-done",
+      "channel_expression": null,
+      "resolution": "literal"
+    },
+    "at": ".webpack/main/index.js:L2:C321166",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_14d1cc6e44d2057",
+    "label": "Debugger.resume",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2676876",
+    "confidence": "low"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_167248855540155",
+    "label": "migration-dump-done",
+    "props": {
+      "side": "main",
+      "operation": "once",
+      "mode": "listen",
+      "channel": "migration-dump-done",
+      "channel_expression": null,
+      "handler_kind": "inline-function"
+    },
+    "at": ".webpack/main/index.js:L2:C321203",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_179db6d83816df5",
+    "label": "user-agent",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C1870300",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_18354f9645f72d2",
+    "label": "CN",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L8:C285684",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_1b2a64b5b4dcc2c",
+    "label": "ownerSessions",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C614608",
+    "confidence": "low"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_1ff033e8ab2182b",
+    "label": "n.createKey(\"envelope\")",
+    "props": {
+      "side": "renderer",
+      "operation": "send",
+      "mode": "send",
+      "channel": null,
+      "channel_expression": "n.createKey(\"envelope\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/native_modules/default.js:L1:C594",
+    "confidence": "exact"
+  },
+  {
+    "kind": "context-bridge-api",
+    "node_id": "jag_node_2276c0473b5f951",
+    "label": "__SENTRY_IPC__",
+    "props": {
+      "api_key": "__SENTRY_IPC__",
+      "__other": [
+        "world",
+        "world_id",
+        "api_key_expression",
+        "api_status",
+        "unknown_members",
+        "resolution_basis"
+      ]
+    },
+    "at": ".webpack/main/native_modules/default.js:L1:C925",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_23883174e9ee2a3",
+    "label": "network endpoint",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C288381",
+    "confidence": "exact"
+  },
+  {
+    "kind": "worker",
+    "node_id": "jag_node_25f8530986f3269",
+    "label": "",
+    "props": {
+      "__other": [
+        "declared_specifier",
+        "expression",
+        "resolved_path",
+        "resolution_status"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2039292",
+    "confidence": "high"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_27846484f03f6dd",
+    "label": "t.createKey(\"start\")",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"start\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/index.js:L2:C2570952",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_285584e481c0209",
+    "label": "t",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C858875",
+    "confidence": "low"
+  },
+  {
+    "kind": "native-addon",
+    "node_id": "jag_node_288411dd8102045",
+    "label": "node_modules/@vscode/windows-registry/build/Release/winregistry.node",
+    "props": {
+      "__other": [
+        "path",
+        "bytes",
+        "inventory_artifact_id",
+        "unpacked",
+        "file_kind",
+        "text_status",
+        "parse_status",
+        "json_parse_status"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\"node_modules/@vscode/windows",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_29b0dc2bbffd664",
+    "label": "n.createKey(\"status\")",
+    "props": {
+      "side": "renderer",
+      "operation": "send",
+      "mode": "send",
+      "channel": null,
+      "channel_expression": "n.createKey(\"status\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/native_modules/default.js:L1:C661",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_29d1c51d41250d9",
+    "label": "spaceId",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C1471427",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_29d1c51d41250d9",
+    "label": "spaceId",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C1470924",
+    "confidence": "low"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_2d47db1060907f0",
+    "label": "migration-restore-done",
+    "props": {
+      "side": "main",
+      "operation": "once",
+      "mode": "listen",
+      "channel": "migration-restore-done",
+      "channel_expression": null,
+      "resolution": "literal"
+    },
+    "at": ".webpack/main/index.js:L2:C322061",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_32334af95278ff4",
+    "label": "n.createKey(\"metric\")",
+    "props": {
+      "side": "renderer",
+      "operation": "send",
+      "mode": "send",
+      "channel": null,
+      "channel_expression": "n.createKey(\"metric\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/native_modules/default.js:L1:C806",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_33a1da95397265d",
+    "label": "y",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C941171",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_34995dfbae0a376",
+    "label": "x-statsig-region",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L8:C838322",
+    "confidence": "low"
+  },
+  {
+    "kind": "native-addon",
+    "node_id": "jag_node_37ada343732aa97",
+    "label": "node_modules/@notionhq/desktop-native/build/Release/win_utils.node",
+    "props": {
+      "__other": [
+        "path",
+        "bytes",
+        "inventory_artifact_id",
+        "unpacked",
+        "file_kind",
+        "text_status",
+        "parse_status",
+        "json_parse_status"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\"node_modules/@notionhq/deskt",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_38be2b553878b41",
+    "label": "y",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/SqliteServer.js:L1:C36544",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_4013ec6d6552170",
+    "label": "coreAudioTapGateEnabled",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C76010",
+    "confidence": "low"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_4157579d2a03c16",
+    "label": "about:blank",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C219027",
+    "confidence": "high"
+  },
+  {
+    "kind": "storage",
+    "node_id": "jag_node_47f56109ad1c210",
+    "label": "session-storage",
+    "props": {
+      "__other": [
+        "storage_kind",
+        "name",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2241072",
+    "confidence": "exact"
+  },
+  {
+    "kind": "storage",
+    "node_id": "jag_node_4f2e8df57b526a9",
+    "label": "session-storage",
+    "props": {
+      "__other": [
+        "storage_kind",
+        "name",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2121226",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_51d196f0f3ce128",
+    "label": "electron-store-get-data",
+    "props": {
+      "side": "renderer",
+      "operation": "send-sync",
+      "mode": "send",
+      "channel": "electron-store-get-data",
+      "channel_expression": null,
+      "resolution": "literal"
+    },
+    "at": ".webpack/main/index.js:L8:C96018",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_51d196f0f3ce128",
+    "label": "electron-store-get-data",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": "electron-store-get-data",
+      "channel_expression": null,
+      "resolution": "literal"
+    },
+    "at": ".webpack/main/index.js:L8:C95893",
+    "confidence": "exact"
+  },
+  {
+    "kind": "storage",
+    "node_id": "jag_node_5286f9489650e65",
+    "label": "local-storage",
+    "props": {
+      "__other": [
+        "storage_kind",
+        "name",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L8:C878815",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_52fd545bad391cd",
+    "label": "migration-restore-done",
+    "props": {
+      "side": "main",
+      "operation": "once",
+      "mode": "listen",
+      "channel": "migration-restore-done",
+      "channel_expression": null,
+      "handler_kind": "inline-function"
+    },
+    "at": ".webpack/main/index.js:L2:C322101",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_57973eafe436771",
+    "label": "",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"status\")",
+      "handler_kind": "inline-function"
+    },
+    "at": ".webpack/main/index.js:L2:C2571447",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_59c667780a7e7a7",
+    "label": "sentry-trace",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2275450",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_5b357ab0fef97e3",
+    "label": "sentry.sample_rand",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2392826",
+    "confidence": "low"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_5c32ddd3c2d17e7",
+    "label": "",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"start\")",
+      "handler_kind": "inline-function"
+    },
+    "at": ".webpack/main/index.js:L2:C2570986",
+    "confidence": "exact"
+  },
+  {
+    "kind": "native-addon",
+    "node_id": "jag_node_5ea13b8093607a8",
+    "label": "node_modules/@jasonscheirer/native-progress-bar/build/Release/progress_bar.node",
+    "props": {
+      "__other": [
+        "path",
+        "bytes",
+        "inventory_artifact_id",
+        "unpacked",
+        "file_kind",
+        "text_status",
+        "parse_status",
+        "json_parse_status"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\"node_modules/@jasonscheirer/",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_5f028a40d54dbc2",
+    "label": "network endpoint candidate",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2677059",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_5f028a40d54dbc2",
+    "label": "network endpoint candidate",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2676956",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_60b5423da43461f",
+    "label": "",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L8:C727091",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_60b5423da43461f",
+    "label": "",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L8:C185174",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_60b5423da43461f",
+    "label": "",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L8:C404397",
+    "confidence": "low"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_659eac5b597f97b",
+    "label": "t.createKey(\"status\")",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"status\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/index.js:L2:C2571412",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_6fe5f8006663f9e",
+    "label": "e",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "e",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/index.js:L2:C372413",
+    "confidence": "exact"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_767f652df21a9be",
+    "label": ".webpack/renderer/client_placeholder/index.html",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\".webpack/renderer/client_pla",
+    "confidence": "high"
+  },
+  {
+    "kind": "electron-utility",
+    "node_id": "jag_node_7718891eb2eecef",
+    "label": "Sqlite Server",
+    "props": {
+      "__other": [
+        "module_path",
+        "module_resolution_context",
+        "module_expression",
+        "service_name"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C597396",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_7733a54c8a34bf9",
+    "label": "about:blank",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C219027",
+    "confidence": "exact"
+  },
+  {
+    "kind": "worker",
+    "node_id": "jag_node_7856d2b43b9352e",
+    "label": "",
+    "props": {
+      "__other": [
+        "declared_specifier",
+        "expression",
+        "resolved_path",
+        "resolution_status"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2154445",
+    "confidence": "high"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_7bbd3a30ecbb04b",
+    "label": "Debugger.enable",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2676918",
+    "confidence": "low"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_7e221800c3da201",
+    "label": ".webpack/renderer/sqlite_browser/index.html",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\".webpack/renderer/sqlite_bro",
+    "confidence": "high"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_81ae684b59c35f3",
+    "label": "runtimeOverrides",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C56217",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_81ae684b59c35f3",
+    "label": "runtimeOverrides",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C649063",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_81ae684b59c35f3",
+    "label": "runtimeOverrides",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C649671",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_81ae684b59c35f3",
+    "label": "runtimeOverrides",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C649480",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_81ae684b59c35f3",
+    "label": "runtimeOverrides",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C649795",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_81ae684b59c35f3",
+    "label": "runtimeOverrides",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C649241",
+    "confidence": "low"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_8894446e92c6ad8",
+    "label": "t.createKey(\"scope\")",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"scope\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/index.js:L2:C2571106",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_896d6536ebf8104",
+    "label": "/",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C274125",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_8b04b9f142e86cb",
+    "label": "sentry.sample_rate",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2392281",
+    "confidence": "low"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_8c619763895cf77",
+    "label": "https://calendar.notion.so",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C286374",
+    "confidence": "high"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_8f5fd38ab39a838",
+    "label": ".webpack/renderer/windows_and_tabs/index.html",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\".webpack/renderer/windows_an",
+    "confidence": "high"
+  },
+  {
+    "kind": "storage",
+    "node_id": "jag_node_91233e603681ac0",
+    "label": "session-storage",
+    "props": {
+      "__other": [
+        "storage_kind",
+        "name",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2122216",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_985ba6f263836ca",
+    "label": "at",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C858861",
+    "confidence": "low"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_9b75b950ca7bb01",
+    "label": ".webpack/renderer/activity_monitor/index.html",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\".webpack/renderer/activity_m",
+    "confidence": "high"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_9fe2b933820f7f2",
+    "label": "network endpoint candidate",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C616179",
+    "confidence": "low"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_a130f361a347c7f",
+    "label": "t.createKey(\"metric\")",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"metric\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/index.js:L2:C2571291",
+    "confidence": "exact"
+  },
+  {
+    "kind": "storage",
+    "node_id": "jag_node_a20c6a414d02b36",
+    "label": "session-storage",
+    "props": {
+      "__other": [
+        "storage_kind",
+        "name",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2240902",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_a6604cd38c24db3",
+    "label": "",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"scope\")",
+      "handler_kind": "inline-function"
+    },
+    "at": ".webpack/main/index.js:L2:C2571140",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_a85b44ea3fd10dd",
+    "label": "network endpoint",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C286374",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_aaa7f9181a5d524",
+    "label": "history",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C647521",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_aaa7f9181a5d524",
+    "label": "history",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C647565",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_ae0600aec0bed13",
+    "label": "sentry.dsc",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2392536",
+    "confidence": "low"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_aef843bc1cf842e",
+    "label": ".webpack/renderer/internal_settings/index.html",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\".webpack/renderer/internal_s",
+    "confidence": "high"
+  },
+  {
+    "kind": "storage",
+    "node_id": "jag_node_affc32e021625d7",
+    "label": "local-storage",
+    "props": {
+      "__other": [
+        "storage_kind",
+        "name",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L8:C878774",
+    "confidence": "exact"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_b17dac4fbfdd254",
+    "label": ".webpack/renderer/darkmode_placeholder/index.html",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\".webpack/renderer/darkmode_p",
+    "confidence": "high"
+  },
+  {
+    "kind": "electron-main",
+    "node_id": "jag_node_b39e4f8bade059a",
+    "label": ".webpack/main/index.js",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\"package.json\"}",
+    "confidence": "high"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_b5fbebf6ecd080c",
+    "label": "network endpoint candidate",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C35377",
+    "confidence": "low"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_bc1afe8ff2aab4a",
+    "label": "https://accounts.google.com",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C288381",
+    "confidence": "high"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_bef7cfa6088f205",
+    "label": "",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"structured-log\")",
+      "handler_kind": "inline-function"
+    },
+    "at": ".webpack/main/index.js:L2:C2571263",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_c2dbf7650f0b852",
+    "label": "host",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/ClientMcpHostWorker.js:L2:C139515",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_c4e31717bc9edc6",
+    "label": "n.createKey(\"scope\")",
+    "props": {
+      "side": "renderer",
+      "operation": "send",
+      "mode": "send",
+      "channel": null,
+      "channel_expression": "n.createKey(\"scope\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/native_modules/default.js:L1:C528",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_c72346aaa449e5a",
+    "label": "traceparent",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2275504",
+    "confidence": "low"
+  },
+  {
+    "kind": "native-addon",
+    "node_id": "jag_node_ca2c2021669e188",
+    "label": "node_modules/cf-prefs/build/Release/cf-prefs.node",
+    "props": {
+      "__other": [
+        "path",
+        "bytes",
+        "inventory_artifact_id",
+        "unpacked",
+        "file_kind",
+        "text_status",
+        "parse_status",
+        "json_parse_status"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\"node_modules/cf-prefs/build/",
+    "confidence": "exact"
+  },
+  {
+    "kind": "worker",
+    "node_id": "jag_node_db76bc1b8be0fab",
+    "label": "",
+    "props": {
+      "__other": [
+        "declared_specifier",
+        "expression",
+        "resolved_path",
+        "resolution_status"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2644686",
+    "confidence": "high"
+  },
+  {
+    "kind": "storage",
+    "node_id": "jag_node_e1d4a611846300a",
+    "label": "local-storage",
+    "props": {
+      "__other": [
+        "storage_kind",
+        "name",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L8:C878857",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_e3199bb4de5ad64",
+    "label": "table",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C1470907",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_e3199bb4de5ad64",
+    "label": "table",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C1471410",
+    "confidence": "low"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_e69bfe6768e8ee0",
+    "label": "t.createKey(\"envelope\")",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"envelope\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/index.js:L2:C2571155",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_ea5c9131cd85765",
+    "label": "",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "e",
+      "handler_kind": "identifier"
+    },
+    "at": ".webpack/main/index.js:L2:C372428",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_ed891f0e3927679",
+    "label": "coreAudioTapOptOut",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C76083",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_eef63098fe28a5f",
+    "label": "appState",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C36014",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_eef63098fe28a5f",
+    "label": "appState",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C599904",
+    "confidence": "low"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_eef63098fe28a5f",
+    "label": "appState",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C605513",
+    "confidence": "low"
+  },
+  {
+    "kind": "storage",
+    "node_id": "jag_node_f2e199d96f82df0",
+    "label": "indexed-db",
+    "props": {
+      "__other": [
+        "storage_kind",
+        "name",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2247722",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_f566e09e7ee5f55",
+    "label": "Runtime.getProperties",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism",
+        "interpretation"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2677537",
+    "confidence": "low"
+  },
+  {
+    "kind": "worker",
+    "node_id": "jag_node_f5e237906b695f5",
+    "label": "",
+    "props": {
+      "__other": [
+        "declared_specifier",
+        "expression",
+        "resolved_path",
+        "resolution_status"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C2675383",
+    "confidence": "high"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_f65aefa38848258",
+    "label": "n.createKey(\"structured-log\")",
+    "props": {
+      "side": "renderer",
+      "operation": "send",
+      "mode": "send",
+      "channel": null,
+      "channel_expression": "n.createKey(\"structured-log\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/native_modules/default.js:L1:C733",
+    "confidence": "exact"
+  },
+  {
+    "kind": "electron-renderer",
+    "node_id": "jag_node_f7bf146da345685",
+    "label": ".webpack/renderer/meeting_notification_pill/index.html",
+    "props": {
+      "__other": [
+        "declared_path",
+        "resolution_context",
+        "resolved_path",
+        "resolution_status",
+        "limitations",
+        "mechanism"
+      ]
+    },
+    "at": "{\"kind\":\"artifact-path\",\"path\":\".webpack/renderer/meeting_no",
+    "confidence": "high"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_fa48834d41aa430",
+    "label": "electron-store-get-data",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": "electron-store-get-data",
+      "channel_expression": null,
+      "handler_kind": "inline-function"
+    },
+    "at": ".webpack/main/index.js:L8:C95924",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_fb39836541d0f7a",
+    "label": "",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L2:C827550",
+    "confidence": "exact"
+  },
+  {
+    "kind": "endpoint",
+    "node_id": "jag_node_fb39836541d0f7a",
+    "label": "",
+    "props": {
+      "__other": [
+        "endpoint_kind",
+        "value",
+        "mechanism"
+      ]
+    },
+    "at": ".webpack/main/index.js:L8:C903665",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-handler",
+    "node_id": "jag_node_fd1c2996f1ec7e7",
+    "label": "",
+    "props": {
+      "side": "main",
+      "operation": "on",
+      "mode": "listen",
+      "channel": null,
+      "channel_expression": "t.createKey(\"metric\")",
+      "handler_kind": "inline-function"
+    },
+    "at": ".webpack/main/index.js:L2:C2571326",
+    "confidence": "exact"
+  },
+  {
+    "kind": "ipc-channel",
+    "node_id": "jag_node_fecc3a71eee6d13",
+    "label": "n.createKey(\"start\")",
+    "props": {
+      "side": "renderer",
+      "operation": "send",
+      "mode": "send",
+      "channel": null,
+      "channel_expression": "n.createKey(\"start\")",
+      "resolution": "dynamic"
+    },
+    "at": ".webpack/main/native_modules/default.js:L1:C467",
+    "confidence": "exact"
+  }
+]
