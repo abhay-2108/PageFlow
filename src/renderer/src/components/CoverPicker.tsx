@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react";
-import { COVER_IDS, type CoverId } from "../../../shared/covers";
+import { COVER_IDS, isCoverId } from "../../../shared/covers";
+import { getApi } from "../lib/api";
+import { assetUrl } from "../lib/assetUrl";
 
 export interface CoverPickerProps {
-  current: CoverId | null;
-  onPick: (cover: CoverId) => void;
+  current: string | null;
+  onPick: (cover: string) => void;
   onRemove: () => void;
   onClose: () => void;
 }
@@ -30,6 +32,15 @@ export function CoverPicker({ current, onPick, onRemove, onClose }: CoverPickerP
     };
   }, [onClose]);
 
+  const upload = async () => {
+    const result = await getApi().assets.pickImage();
+    if (result.ok && result.src) {
+      onPick(result.src);
+    }
+  };
+
+  const customCover = current !== null && !isCoverId(current) ? current : null;
+
   return (
     <div className="cover-picker" ref={ref} role="dialog" aria-label="Page cover">
       <div className="cover-picker__grid">
@@ -46,7 +57,21 @@ export function CoverPicker({ current, onPick, onRemove, onClose }: CoverPickerP
             onClick={() => onPick(id)}
           />
         ))}
+        {customCover ? (
+          <button
+            type="button"
+            className="cover-picker__swatch cover-picker__swatch--custom cover-picker__swatch--active"
+            aria-label="Cover uploaded"
+            aria-pressed="true"
+            onClick={() => onPick(customCover)}
+          >
+            <img src={assetUrl(customCover)} alt="" draggable={false} />
+          </button>
+        ) : null}
       </div>
+      <button type="button" className="cover-picker__upload" onClick={() => void upload()}>
+        Upload image
+      </button>
       {current ? (
         <button type="button" className="cover-picker__remove" onClick={onRemove}>
           Remove cover

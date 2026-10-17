@@ -18,6 +18,7 @@ import { CommentAnchor } from "./comments/CommentAnchor";
 import { CommentTools } from "./comments/extension";
 import { Callout } from "./extensions/Callout";
 import { KeyboardShortcuts } from "./extensions/KeyboardShortcuts";
+import { PgImage } from "./extensions/PgImage";
 import { Toggle } from "./extensions/Toggle";
 import { FormatTools } from "./format/extension";
 import { BgColor, TextColor } from "./format/marks";
@@ -57,6 +58,7 @@ export function buildExtensions(
     TableCell,
     Toggle,
     Callout,
+    PgImage,
     TextColor,
     BgColor,
     PageMention,

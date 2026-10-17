@@ -8,6 +8,7 @@ import { colorFor, session, type DocBinding } from "../lib/session";
 import { BlockGutter } from "./blocks/BlockGutter";
 import { buildExtensions } from "./editorExtensions";
 import { SelectionBubble } from "./format/SelectionBubble";
+import { insertImageFiles } from "./images/insertImageFiles";
 import { MentionMenu } from "./mention/MentionMenu";
 import { SlashMenu } from "./slash/SlashMenu";
 import { TableBar } from "./table/TableBar";
@@ -175,6 +176,30 @@ function BoundEditor({
           }
         }
         return false;
+      },
+      handlePaste: (view, event) => {
+        const files = Array.from(event.clipboardData?.files ?? []).filter((file) =>
+          file.type.startsWith("image/"),
+        );
+        if (files.length === 0) {
+          return false;
+        }
+        event.preventDefault();
+        void insertImageFiles(view, files, view.state.selection.from);
+        return true;
+      },
+      handleDrop: (view, event) => {
+        const dragEvent = event as DragEvent;
+        const files = Array.from(dragEvent.dataTransfer?.files ?? []).filter((file) =>
+          file.type.startsWith("image/"),
+        );
+        if (files.length === 0) {
+          return false;
+        }
+        event.preventDefault();
+        const coords = view.posAtCoords({ left: dragEvent.clientX, top: dragEvent.clientY });
+        void insertImageFiles(view, files, coords?.pos ?? view.state.selection.from);
+        return true;
       },
     },
     onUpdate: ({ editor: instance }) => {

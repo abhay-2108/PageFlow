@@ -1,6 +1,6 @@
-import { BrowserWindow, Menu, app, session } from "electron";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { BrowserWindow, Menu, app, net, protocol, session } from "electron";
+import { dirname, join, resolve, sep } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { BRAND } from "../shared/brand";
 import { registerIpc } from "./ipc";
 import { stopSession } from "./session/server";
@@ -13,7 +13,7 @@ const PROD_CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data:",
+  "img-src 'self' data: pgfile:",
   "font-src 'self'",
   "connect-src 'self' ws: wss:",
   "object-src 'none'",
@@ -22,7 +22,31 @@ const PROD_CSP = [
   "frame-ancestors 'none'",
 ].join("; ");
 
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: "pgfile",
+    privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true },
+  },
+]);
+
 let workspace: WorkspaceDb | null = null;
+
+function registerAssetProtocol(workspaceDir: string): void {
+  const assetsRoot = resolve(workspaceDir, "assets");
+  protocol.handle("pgfile", async (request) => {
+    try {
+      const url = new URL(request.url);
+      const relative = decodeURIComponent(url.pathname).replace(/^\/+/, "");
+      const target = resolve(assetsRoot, relative);
+      if (target !== assetsRoot && !target.startsWith(assetsRoot + sep)) {
+        return new Response("Forbidden", { status: 403 });
+      }
+      return await net.fetch(pathToFileURL(target).toString());
+    } catch {
+      return new Response("Not found", { status: 404 });
+    }
+  });
+}
 
 function resolveWorkspaceDir(): string {
   const override = process.env["PAGEGROVE_WORKSPACE"];
@@ -79,8 +103,10 @@ function createWindow(): void {
 app.setAppUserModelId("com.pagegrove.app");
 
 app.whenReady().then(() => {
-  workspace = new WorkspaceDb(resolveWorkspaceDir());
+  const workspaceDir = resolveWorkspaceDir();
+  workspace = new WorkspaceDb(workspaceDir);
   registerIpc(workspace);
+  registerAssetProtocol(workspaceDir);
 
   if (!isDev) {
     Menu.setApplicationMenu(null);

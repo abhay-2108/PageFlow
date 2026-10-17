@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { PagegroveApi } from "../shared/api";
-import type { CoverId } from "../shared/covers";
 import type {
+  AssetImportResult,
   BacklinkHit,
   CommentReplyInput,
   CommentResolveInput,
@@ -38,7 +38,7 @@ const api: PagegroveApi = {
     move: (input: MovePageInput) => ipcRenderer.invoke("pg:pages:move", input) as Promise<PageMeta>,
     setIcon: (id: string, icon: string | null) =>
       ipcRenderer.invoke("pg:pages:set-icon", { id, icon }) as Promise<PageMeta>,
-    setCover: (id: string, cover: CoverId | null) =>
+    setCover: (id: string, cover: string | null) =>
       ipcRenderer.invoke("pg:pages:set-cover", { id, cover }) as Promise<PageMeta>,
     setView: (id: string, view: PageViewMode) =>
       ipcRenderer.invoke("pg:pages:set-view", { id, view }) as Promise<PageMeta>,
@@ -83,6 +83,11 @@ const api: PagegroveApi = {
         ok: boolean;
         path?: string;
       }>,
+  },
+  assets: {
+    pickImage: () => ipcRenderer.invoke("pg:assets:pick-image") as Promise<AssetImportResult>,
+    importImage: (input: { name: string; bytes: Uint8Array }) =>
+      ipcRenderer.invoke("pg:assets:import-image", input) as Promise<AssetImportResult>,
   },
 };
 

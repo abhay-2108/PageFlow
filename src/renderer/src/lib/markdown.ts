@@ -62,6 +62,12 @@ const nodes = {
     const pageId = String(node.attrs.pageId ?? "");
     state.write(`[${label}](page/${pageId})`);
   },
+  pgImage(state: MarkdownSerializerState, node: Node) {
+    const alt = String(node.attrs.alt ?? "").replace(/[[\]]/g, "");
+    const src = String(node.attrs.src ?? "");
+    state.write(`![${alt}](${src})`);
+    state.closeBlock(node);
+  },
   table(state: MarkdownSerializerState, node: Node) {
     const rows: string[][] = [];
     node.forEach((row) => {

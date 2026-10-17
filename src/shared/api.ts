@@ -1,5 +1,5 @@
-import type { CoverId } from "./covers";
 import type {
+  AssetImportResult,
   BacklinkHit,
   CommentReplyInput,
   CommentResolveInput,
@@ -33,7 +33,7 @@ export interface PagegroveApi {
     updateDoc(id: string, doc: TipTapDocument): Promise<PageMeta>;
     move(input: MovePageInput): Promise<PageMeta>;
     setIcon(id: string, icon: string | null): Promise<PageMeta>;
-    setCover(id: string, cover: CoverId | null): Promise<PageMeta>;
+    setCover(id: string, cover: string | null): Promise<PageMeta>;
     setView(id: string, view: PageViewMode): Promise<PageMeta>;
     trash(id: string): Promise<boolean>;
     restore(id: string): Promise<boolean>;
@@ -62,5 +62,9 @@ export interface PagegroveApi {
   };
   readonly files: {
     exportMarkdown(title: string, markdown: string): Promise<{ ok: boolean; path?: string }>;
+  };
+  readonly assets: {
+    pickImage(): Promise<AssetImportResult>;
+    importImage(input: { name: string; bytes: Uint8Array }): Promise<AssetImportResult>;
   };
 }

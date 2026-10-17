@@ -51,7 +51,10 @@ export const movePageInputSchema = z.object({
 
 export const pageIconSchema = z.string().min(1).max(16).nullable();
 
-export const pageCoverSchema = z.enum(COVER_IDS).nullable();
+export const pageCoverSchema = z.union([
+  z.enum(COVER_IDS),
+  z.string().regex(/^assets\/[A-Za-z0-9][A-Za-z0-9._-]*$/),
+]).nullable();
 
 export const setPageIconInputSchema = z.object({
   id: pageIdSchema,
@@ -131,4 +134,11 @@ export const commentDeleteInputSchema = z.object({
 export const exportMarkdownInputSchema = z.object({
   title: z.string().max(200),
   markdown: z.string().max(5_000_000),
+});
+
+export const importImageInputSchema = z.object({
+  name: z.string().max(200),
+  bytes: z.instanceof(Uint8Array).refine((bytes) => bytes.byteLength > 0 && bytes.byteLength <= 40_000_000, {
+    message: "Image must be between 1 byte and 40 MB",
+  }),
 });

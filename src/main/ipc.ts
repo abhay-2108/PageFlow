@@ -1,7 +1,8 @@
 import { dialog, ipcMain } from "electron";
-import { readFile, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { copyFile, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { userInfo } from "node:os";
-import { join } from "node:path";
+import { basename, extname, join } from "node:path";
 import type { z } from "zod";
 import {
   applyMetaInputSchema,
@@ -13,6 +14,7 @@ import {
   createPageInputSchema,
   exportMarkdownInputSchema,
   getPageInputSchema,
+  importImageInputSchema,
   loadUpdatesInputSchema,
   movePageInputSchema,
   renamePageInputSchema,
@@ -22,7 +24,7 @@ import {
   setPageViewInputSchema,
   updateDocInputSchema,
 } from "../shared/schemas";
-import type { PageMeta } from "../shared/types";
+import type { AssetImportResult, PageMeta } from "../shared/types";
 import { startSession, stopSession } from "./session/server";
 import type { WorkspaceDb } from "./workspace/db";
 
@@ -48,6 +50,20 @@ function sanitizeFileName(title: string): string {
 interface BundleShape {
   entries: PageMeta[];
   updates: { pageId: string; data: string }[];
+}
+
+const ASSET_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg", ".avif"]);
+const MAX_ASSET_BYTES = 40_000_000;
+
+function assetExtension(name: string): string {
+  const ext = extname(name).toLowerCase();
+  return ASSET_EXTENSIONS.has(ext) ? ext : ".png";
+}
+
+async function ensureAssetsDir(db: WorkspaceDb): Promise<string> {
+  const dir = join(db.directory, "assets");
+  await mkdir(dir, { recursive: true });
+  return dir;
 }
 
 function parseBundle(raw: string): BundleShape {
@@ -241,5 +257,51 @@ export function registerIpc(db: WorkspaceDb): void {
     }
     await writeFile(result.filePath, markdown, "utf8");
     return { ok: true, path: result.filePath };
+  });
+
+  ipcMain.handle("pg:assets:pick-image", async (): Promise<AssetImportResult> => {
+    const result = await dialog.showOpenDialog({
+      title: "Choose an image",
+      properties: ["openFile"],
+      filters: [
+        {
+          name: "Images",
+          extensions: ["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "avif"],
+        },
+      ],
+    });
+    const filePath = result.filePaths[0];
+    if (result.canceled || !filePath) {
+      return { ok: false };
+    }
+    try {
+      const info = await stat(filePath);
+      if (!info.isFile() || info.size === 0 || info.size > MAX_ASSET_BYTES) {
+        return { ok: false, error: "Image must be between 1 byte and 40 MB" };
+      }
+      const assetsDir = await ensureAssetsDir(db);
+      const fileName = `${randomUUID()}${assetExtension(filePath)}`;
+      await copyFile(filePath, join(assetsDir, fileName));
+      return {
+        ok: true,
+        src: `assets/${fileName}`,
+        alt: basename(filePath, extname(filePath)).slice(0, 120),
+      };
+    } catch {
+      return { ok: false, error: "Could not import the image" };
+    }
+  });
+
+  ipcMain.handle("pg:assets:import-image", async (_event, raw: unknown): Promise<AssetImportResult> => {
+    const { name, bytes } = parse(importImageInputSchema, raw);
+    try {
+      const assetsDir = await ensureAssetsDir(db);
+      const fileName = `${randomUUID()}${assetExtension(name)}`;
+      await writeFile(join(assetsDir, fileName), bytes);
+      const alt = basename(name, extname(name)).slice(0, 120);
+      return { ok: true, src: `assets/${fileName}`, alt };
+    } catch {
+      return { ok: false, error: "Could not save the image" };
+    }
   });
 }

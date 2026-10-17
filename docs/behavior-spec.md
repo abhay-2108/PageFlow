@@ -242,5 +242,13 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Known limitations.** No "last used color" shortcuts, no comment highlight color inside the bar (Notion shows the comment color chip), no per-block callout background color choice (callouts use the neutral surface color), and the bar does not appear inside code blocks by design.
 
+## 18. M7.3 spec: image blocks and cover upload (Pagegrove — C, informed by A-web)
+
+**Image blocks.** `/image` (aliases img, picture) opens the native file picker (png, jpg, gif, webp, bmp, svg, avif; 40 MB cap) and inserts an image block; pasting or dropping image files into the editor imports them through the same pipeline. Imported files are copied to `<workspace>/assets/<uuid>.<ext>` and referenced by workspace-relative path, keeping workspaces portable; rendering goes through the `pgfile://` app protocol rooted at the workspace assets folder (with a path-traversal guard) and the production CSP allows it via `img-src`. Image blocks select on click (accent outline) and show a "Delete image" action; they hover, drag, duplicate, and delete like other blocks. Markdown export writes `![alt](assets/<uuid>.<ext>)` with the stored relative path.
+
+**Cover upload.** The cover picker gains an "Upload image" button using the same import pipeline; uploaded covers render edge-to-edge over the cover band (`object-fit: cover`) and the picker shows the current upload as an active swatch. Preset covers are unchanged.
+
+**Known limitations.** Assets travel with the workspace folder but not with LAN sync bundles or live sessions (bundles carry page data only; copy the `assets` folder alongside a bundle to move images); no image resizing, captions, or text-wrap around images.
+
 
 

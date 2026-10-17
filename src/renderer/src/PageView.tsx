@@ -6,7 +6,7 @@ import type {
   PageViewMode,
   TipTapDocument,
 } from "../../shared/types";
-import type { CoverId } from "../../shared/covers";
+import { isCoverId } from "../../shared/covers";
 import { BRAND } from "../../shared/brand";
 import { Editor } from "./editor/Editor";
 import { commentTools } from "./editor/comments/controller";
@@ -14,6 +14,7 @@ import { ChildrenTable } from "./components/ChildrenTable";
 import { CoverPicker } from "./components/CoverPicker";
 import { EmojiPicker } from "./components/EmojiPicker";
 import { getApi } from "./lib/api";
+import { assetUrl } from "./lib/assetUrl";
 import { session } from "./lib/session";
 
 export interface PageViewProps {
@@ -23,7 +24,7 @@ export interface PageViewProps {
   onTitleChange: (title: string) => void;
   autoFocusEditor: boolean;
   onIconChange: (icon: string | null) => void;
-  onCoverChange: (cover: CoverId | null) => void;
+  onCoverChange: (cover: string | null) => void;
   onViewChange: (view: PageViewMode) => void;
   onOpenPage: (id: string) => void;
 }
@@ -51,7 +52,7 @@ export function PageView({
   const [showResolved, setShowResolved] = useState(false);
   const displayTitle = record.meta.title.length > 0 ? record.meta.title : BRAND.empty.untitled;
   const icon = record.meta.icon;
-  const cover = (record.meta.cover ?? null) as CoverId | null;
+  const cover = record.meta.cover ?? null;
   const view: PageViewMode = record.meta.view === "table" ? "table" : "doc";
 
   useEffect(() => {
@@ -212,7 +213,13 @@ export function PageView({
   return (
     <main className={cover ? "page page--has-cover" : "page"}>
       {cover ? (
-        <div className={`page__cover cover--${cover}`} data-page-cover={cover}>
+        <div
+          className={isCoverId(cover) ? `page__cover cover--${cover}` : "page__cover page__cover--asset"}
+          data-page-cover={cover}
+        >
+          {isCoverId(cover) ? null : (
+            <img className="page__cover-image" src={assetUrl(cover)} alt="" draggable={false} />
+          )}
           <div className="page__cover-actions">
             <button
               type="button"

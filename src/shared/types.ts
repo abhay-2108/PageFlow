@@ -96,6 +96,13 @@ export interface MovePageInput {
   beforeId: string | null;
 }
 
+export interface AssetImportResult {
+  ok: boolean;
+  src?: string;
+  alt?: string;
+  error?: string;
+}
+
 export const EMPTY_DOC: TipTapDocument = {
   type: "doc",
   content: [{ type: "paragraph" }],

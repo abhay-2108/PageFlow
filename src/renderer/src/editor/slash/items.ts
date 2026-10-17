@@ -1,4 +1,5 @@
 import type { Editor, Range } from "@tiptap/core";
+import { getApi } from "../../lib/api";
 
 export interface SlashItem {
   id: string;
@@ -10,6 +11,24 @@ export interface SlashItem {
 
 function replaceBlock(editor: Editor, range: Range) {
   return editor.chain().focus().deleteRange(range);
+}
+
+async function insertImageFromPicker(editor: Editor, range: Range) {
+  const api = getApi();
+  const result = await api.assets.pickImage();
+  if (!result.ok || !result.src) {
+    editor.chain().focus().deleteRange(range).run();
+    return;
+  }
+  editor
+    .chain()
+    .focus()
+    .deleteRange(range)
+    .insertContent({
+      type: "pgImage",
+      attrs: { src: result.src, alt: result.alt ?? "" },
+    })
+    .run();
 }
 
 export const slashItems: SlashItem[] = [
@@ -92,6 +111,15 @@ export const slashItems: SlashItem[] = [
     hint: "Make it stand out",
     run: (editor, range) => {
       replaceBlock(editor, range).insertCalloutBlock().run();
+    },
+  },
+  {
+    id: "image",
+    title: "Image",
+    aliases: ["img", "picture", "photo"],
+    hint: "Upload an image",
+    run: (editor, range) => {
+      void insertImageFromPicker(editor, range);
     },
   },
   {

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { BRAND } from "../../shared/brand";
-import type { CoverId } from "../../shared/covers";
 import { childrenOf } from "../../shared/tree";
 import type { PageMeta, PageRecord, PageViewMode, TipTapDocument } from "../../shared/types";
 import { EmptyWorkspace } from "./EmptyWorkspace";
@@ -283,7 +282,7 @@ export default function App() {
   );
 
   const setPageCover = useCallback(
-    async (id: string, cover: CoverId | null) => {
+    async (id: string, cover: string | null) => {
       try {
         const meta = await api.pages.setCover(id, cover);
         applyMetaUpdate(meta);
