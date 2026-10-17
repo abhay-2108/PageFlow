@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { BRAND } from "../../shared/brand";
 import { childrenOf } from "../../shared/tree";
 import type { PageMeta, PageRecord, TipTapDocument } from "../../shared/types";
 import { EmptyWorkspace } from "./EmptyWorkspace";
 import { PageView } from "./PageView";
+import { CommandPalette, type PaletteAction } from "./components/CommandPalette";
 import { Sidebar } from "./components/Sidebar";
 import { Toast, type ToastData } from "./components/Toast";
 import { getApi } from "./lib/api";
-import { onWorkspaceChanged } from "./lib/bus";
+import { emitWorkspaceChanged, onWorkspaceChanged } from "./lib/bus";
+import { exportMarkdown } from "./lib/markdown";
 import { session } from "./lib/session";
 
 const SAVE_DEBOUNCE_MS = 250;
@@ -26,7 +28,9 @@ export default function App() {
   const [toast, setToast] = useState<ToastData | null>(null);
   const [sessionReady, setSessionReady] = useState(false);
   const [editorEpoch, setEditorEpoch] = useState(0);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const sessionState = useSyncExternalStore(session.subscribe, session.getState, session.getState);
+  const latestDoc = useRef<{ id: string; doc: TipTapDocument } | null>(null);
 
   const pendingSave = useRef<{ id: string; doc: TipTapDocument } | null>(null);
   const saveTimer = useRef<number | null>(null);
@@ -246,6 +250,11 @@ export default function App() {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n") {
         event.preventDefault();
         void createPage(null);
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPaletteOpen(true);
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -253,6 +262,94 @@ export default function App() {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [createPage]);
+
+  const exportCurrentPageMarkdown = useCallback(async () => {
+    if (!activeRecord) {
+      return;
+    }
+    const id = activeRecord.meta.id;
+    const doc =
+      latestDoc.current && latestDoc.current.id === id
+        ? latestDoc.current.doc
+        : ((await api.pages.get(id))?.doc ?? null);
+    if (!doc) {
+      return;
+    }
+    flushSave();
+    const label = activeRecord.meta.title.trim().length > 0 ? activeRecord.meta.title : BRAND.empty.untitled;
+    const markdown = exportMarkdown(doc, activeRecord.meta.title);
+    const result = await api.files.exportMarkdown(activeRecord.meta.title, markdown);
+    if (result.ok) {
+      setToast({ message: `Exported "${label}" as Markdown` });
+    }
+  }, [activeRecord, api, flushSave]);
+
+  const exportBundle = useCallback(async () => {
+    const result = await api.sync.exportBundle();
+    if (result.ok) {
+      setToast({ message: "Sync bundle exported" });
+    }
+  }, [api]);
+
+  const importBundle = useCallback(async () => {
+    const result = await api.sync.importBundle();
+    if (result.ok) {
+      emitWorkspaceChanged();
+      setToast({ message: `Merged ${result.applied} pages from bundle` });
+    }
+  }, [api]);
+
+  const paletteActions = useMemo<PaletteAction[]>(() => {
+    const actions: PaletteAction[] = [
+      {
+        id: "new-page",
+        label: "New page",
+        keywords: ["create", "add"],
+        onRun: () => {
+          void createPage(null);
+        },
+      },
+    ];
+    if (activeRecord) {
+      actions.push(
+        {
+          id: "export-markdown",
+          label: "Export page as Markdown",
+          keywords: ["download", "md"],
+          onRun: () => {
+            void exportCurrentPageMarkdown();
+          },
+        },
+        {
+          id: "trash-page",
+          label: "Move current page to trash",
+          keywords: ["delete", "remove"],
+          onRun: () => {
+            void trashPage(activeRecord.meta.id);
+          },
+        },
+      );
+    }
+    actions.push(
+      {
+        id: "export-bundle",
+        label: "Export sync bundle",
+        keywords: ["backup", "sync", "file"],
+        onRun: () => {
+          void exportBundle();
+        },
+      },
+      {
+        id: "import-bundle",
+        label: "Import sync bundle",
+        keywords: ["merge", "sync", "file"],
+        onRun: () => {
+          void importBundle();
+        },
+      },
+    );
+    return actions;
+  }, [activeRecord, createPage, exportBundle, exportCurrentPageMarkdown, importBundle, trashPage]);
 
   return (
     <div className="shell">
@@ -299,13 +396,17 @@ export default function App() {
           <PageView
             record={activeRecord}
             editorEpoch={editorEpoch}
-            onDocChange={(doc) => queueSave(activeRecord.meta.id, doc)}
+            onDocChange={(doc) => {
+              latestDoc.current = { id: activeRecord.meta.id, doc };
+              queueSave(activeRecord.meta.id, doc);
+            }}
             onTitleChange={(title) => queueRename(activeRecord.meta.id, title)}
             autoFocusEditor={focusPageId !== null && focusPageId === activeRecord.meta.id}
           />
         ) : null}
       </div>
       <Toast toast={toast} onDismiss={() => setToast(null)} />
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} actions={paletteActions} />
     </div>
   );
 }

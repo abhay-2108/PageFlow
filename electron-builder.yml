@@ -1,0 +1,32 @@
+appId: com.pagegrove.app
+productName: Pagegrove
+directories:
+  output: release
+  buildResources: build
+files:
+  - "!**/.vscode/*"
+  - "!src/*"
+  - "!electron.vite.config.{js,ts,mjs,cjs}"
+  - "!{.gitignore,.npmrc,pnpm-lock.yaml,pnpm-workspace.yaml}"
+  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+  - "!{playwright.config.ts,vitest.config.ts}"
+  - "!{e2e,scripts,docs}/**"
+  - "!test-results/**"
+  - "!release/**"
+asarUnpack:
+  - "**/*.node"
+npmRebuild: false
+afterPack: scripts/afterPack.cjs
+win:
+  target:
+    - nsis
+    - portable
+  icon: build/icon.ico
+  artifactName: ${productName}-${version}-${arch}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: Pagegrove
+portable:
+  artifactName: ${productName}-${version}-portable.${ext}
