@@ -1849,4 +1849,81 @@ body {
   opacity: 0.55;
 }
 
+/* M6.4: tables */
+
+.pg-editor .tableWrapper {
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.pg-editor table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.pg-editor th,
+.pg-editor td {
+  position: relative;
+  border: 1px solid var(--pg-border);
+  padding: 6px 9px;
+  vertical-align: top;
+  min-width: 72px;
+}
+
+.pg-editor th {
+  background: var(--pg-surface-2);
+  font-weight: 600;
+  text-align: left;
+}
+
+.pg-editor td > p,
+.pg-editor th > p {
+  margin: 0;
+}
+
+.pg-editor .selectedCell {
+  background: color-mix(in srgb, var(--pg-accent) 14%, transparent);
+}
+
+.pg-table-bar {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--pg-border);
+  border-radius: 9px;
+  background: var(--pg-surface);
+  box-shadow: var(--pg-shadow);
+}
+
+.pg-table-bar__btn {
+  appearance: none;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--pg-text);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 5px 7px;
+  white-space: nowrap;
+}
+
+.pg-table-bar__btn:hover {
+  background: var(--pg-hover-strong);
+}
+
+.pg-table-bar__btn:last-child {
+  color: #b4544a;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pg-table-bar__btn:last-child {
+    color: #e08c82;
+  }
+}
+
 

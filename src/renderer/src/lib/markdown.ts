@@ -54,6 +54,27 @@ const nodes = {
     const pageId = String(node.attrs.pageId ?? "");
     state.write(`[${label}](page/${pageId})`);
   },
+  table(state: MarkdownSerializerState, node: Node) {
+    const rows: string[][] = [];
+    node.forEach((row) => {
+      const cells: string[] = [];
+      row.forEach((cell) => {
+        cells.push(cell.textContent.replace(/\|/g, "\\|").replace(/\s+/g, " ").trim());
+      });
+      rows.push(cells);
+    });
+    if (rows.length === 0) {
+      return;
+    }
+    const header = rows[0] ?? [];
+    const separator = header.map(() => "---");
+    const lines: string[] = [];
+    for (const cells of [header, separator, ...rows.slice(1)]) {
+      lines.push(`| ${cells.join(" | ")} |`);
+    }
+    state.write(lines.join("\n"));
+    state.closeBlock(node);
+  },
 };
 
 type MarkSerializerSpec = (typeof defaults.marks)[string];

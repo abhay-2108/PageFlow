@@ -194,4 +194,17 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Known limitations (documented).** Comments are workspace-local in M6.3: LAN sessions and sync bundles carry pages/docs but not thread data. Consequence: opening a page that carries foreign anchors prunes those marks locally (they survive on the machine that owns the thread data); resolving/deleting/replying on one machine does not reach others. Deleting a page moves its threads out of reach of the UI (rows remain via the trash lifecycle); restoring the page restores its threads.
 
+## 14. M6.4 spec (slice 1): tables (Pagegrove — C, informed by A-web)
+
+**Insertion.** `/table` (aliases `grid`, `database`) inserts a 3×3 table with a header row at the cursor. Structure is standard table semantics: a `table` node of `tableRow`s whose first row is `tableHeader` cells and remaining rows are `tableCell` cells; every cell holds paragraph content, so inline marks (bold, code, links) work inside cells.
+
+**Cell editing.** `Tab` moves to the next cell, `Shift-Tab` to the previous. `Tab` in the last cell appends a new row and lands in its first cell (implemented in our `TableTools` extension because the underlying library stops at the table end); this is the fast path for typing a dataset row-by-row.
+
+**Table toolbar.** With the selection inside a table, a floating toolbar shows over the table's top-right corner (clamped into the viewport so it never leaves the screen): Add row, Add column, Delete row, Delete column, Delete table. Add/delete row operate on the cursor's row; add/delete column operate on the cursor's column (insert-after / delete-at semantics from the table library) — so "delete column" removes the column the caret is in, not the last column. Actions are `mousedown`-guarded so the text selection is preserved.
+
+**Markdown export.** Tables serialize to GitHub-flavored pipe tables: header row, `| --- |` separator, one line per row. Cell text is plain inline text (no nested block syntax). Reload and sync: tables are ordinary document nodes — they survive save/reload (Yjs replay verified) and travel with the doc over LAN sync and sync bundles.
+
+**Known limitations.** No merged cells, no column-width dragging (`resizable: false`), no cell background colors, no column types. Those belong to the database-lite slice that follows (M6.4 slice 2).
+
+
 

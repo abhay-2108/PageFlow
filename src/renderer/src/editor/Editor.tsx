@@ -9,6 +9,7 @@ import { CommentBubble } from "./comments/CommentBubble";
 import { buildExtensions } from "./editorExtensions";
 import { MentionMenu } from "./mention/MentionMenu";
 import { SlashMenu } from "./slash/SlashMenu";
+import { TableBar } from "./table/TableBar";
 
 const UPDATE_FLUSH_MS = 300;
 
@@ -110,6 +111,7 @@ export function Editor({
       ) : null}
       <SlashMenu />
       <MentionMenu />
+      <TableBar />
       {onCommentRequest ? <CommentBubble onRequest={onCommentRequest} /> : null}
     </div>
   );

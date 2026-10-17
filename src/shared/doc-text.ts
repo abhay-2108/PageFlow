@@ -11,6 +11,8 @@ const BLOCK_TYPES = new Set([
   "codeBlock",
   "toggle",
   "horizontalRule",
+  "table",
+  "tableCell",
 ]);
 
 export function extractDocText(doc: unknown): string {

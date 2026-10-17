@@ -86,6 +86,15 @@ export const slashItems: SlashItem[] = [
     },
   },
   {
+    id: "table",
+    title: "Table",
+    aliases: ["grid", "database"],
+    hint: "Simple editable table",
+    run: (editor, range) => {
+      replaceBlock(editor, range).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+    },
+  },
+  {
     id: "divider",
     title: "Divider",
     aliases: ["hr", "line"],
