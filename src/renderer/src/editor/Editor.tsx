@@ -6,6 +6,7 @@ import type { TipTapDocument } from "../../../shared/types";
 import { getApi } from "../lib/api";
 import { colorFor, session, type DocBinding } from "../lib/session";
 import { CommentBubble } from "./comments/CommentBubble";
+import { BlockGutter } from "./blocks/BlockGutter";
 import { buildExtensions } from "./editorExtensions";
 import { MentionMenu } from "./mention/MentionMenu";
 import { SlashMenu } from "./slash/SlashMenu";
@@ -112,6 +113,7 @@ export function Editor({
       <SlashMenu />
       <MentionMenu />
       <TableBar />
+      <BlockGutter />
       {onCommentRequest ? <CommentBubble onRequest={onCommentRequest} /> : null}
     </div>
   );

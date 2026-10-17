@@ -216,5 +216,19 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Known limitations.** The table view is read-only (no inline rename, no sorting/filtering, no custom properties, no per-row menus) and lists direct children only, not deeper descendants. Those remain out of scope for M6.
 
+## 16. M7.1 spec: block gutter and block menu (Pagegrove — C, informed by A-web)
+
+**Gutter.** Hovering any top-level block reveals a two-button gutter at the block's left edge: `+` (Insert block below — inserts an empty paragraph after the block and moves the caret into it) and a grip button (Block options). The gutter persists while the pointer is over the block or the gutter itself (a short grace period covers the gap), and hides when the pointer leaves or a drag starts.
+
+**Block menu.** Clicking the grip opens a "Block menu": Duplicate, Delete, Move up, Move down, and — for turnable blocks (anything except tables and horizontal rules) — a "Turn into" section listing Text, Heading 1–3, Bulleted list, Numbered list, To-do list, Toggle, Quote, Code. Turning into a list/toggle/quote wraps the block's inline text in the appropriate structure; turning into Code keeps text only (marks stripped). Menu supports arrow-key navigation, Enter to activate, Escape or an outside click or scrolling to close. Duplicate/delete/move operate on the block the hover tracked. Move operations move the whole block (lists and toggles move as a unit) and drop the caret inside the moved block.
+
+**Drag to reorder.** Dragging the grip vertically picks the block up: a 2px accent line shows the drop position (top or bottom half of the hovered block decides above/below), and releasing moves the block there. A plain click (pointer travel under 4px) opens the menu instead. Dragging adds `pg-block-dragging` to `body` (grabbing cursor, no text selection); the drop indicator hides on release, Escape, or window resize.
+
+**Keyboard.** `Mod-Shift-ArrowUp` / `Mod-Shift-ArrowDown` move the current block up/down (Notion's binding; the earlier `Alt-Shift-*` bindings remain). Document focus and selection survive every operation.
+
+**Persistence.** All operations are plain ProseMirror transactions — they ride the normal save debounce (250ms), Yjs updates, LAN sync, and sync bundles; content survives reload and converges over sessions like any other edit.
+
+**Known limitations.** No multi-block selection (single top-level block per operation), no cross-Pagegrove drop targets (blocks reorder within one document only), no drag handle at nested list-item level (drags move the whole list), no "Turn into" preview icons.
+
 
 

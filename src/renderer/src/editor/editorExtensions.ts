@@ -13,6 +13,7 @@ import StarterKit from "@tiptap/starter-kit";
 import type { WebrtcProvider } from "y-webrtc";
 import type * as Y from "yjs";
 import { BRAND } from "../../../shared/brand";
+import { BlockTools } from "./blocks/extension";
 import { CommentAnchor } from "./comments/CommentAnchor";
 import { CommentTools } from "./comments/extension";
 import { KeyboardShortcuts } from "./extensions/KeyboardShortcuts";
@@ -60,6 +61,7 @@ export function buildExtensions(
     CommentAnchor,
     CommentTools,
     TableTools,
+    BlockTools,
   ];
   if (collaboration) {
     extensions.push(Collaboration.configure({ document: collaboration.document }));
