@@ -15,7 +15,7 @@ export interface PagegroveApi {
     readonly node: string;
   };
   readonly workspace: {
-    info(): Promise<{ dir: string }>;
+    info(): Promise<{ dir: string; userName: string }>;
   };
   readonly pages: {
     list(): Promise<PageMeta[]>;
@@ -30,5 +30,19 @@ export interface PagegroveApi {
   };
   readonly search: {
     query(query: string): Promise<SearchHit[]>;
+  };
+  readonly sync: {
+    loadDocUpdates(pageId: string): Promise<number[][]>;
+    appendDocUpdates(pageId: string, updates: number[][]): Promise<void>;
+    applyMeta(entries: PageMeta[]): Promise<void>;
+    exportBundle(): Promise<{ ok: boolean; path?: string }>;
+    importBundle(): Promise<{ ok: boolean; applied: number }>;
+  };
+  readonly session: {
+    start(): Promise<{ port: number; code: string }>;
+    stop(): Promise<void>;
+  };
+  readonly files: {
+    exportMarkdown(title: string, markdown: string): Promise<{ ok: boolean; path?: string }>;
   };
 }

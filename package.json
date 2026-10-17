@@ -18,6 +18,8 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "@tiptap/extension-collaboration": "^2.27.3",
+    "@tiptap/extension-collaboration-cursor": "^2.26.2",
     "@tiptap/extension-placeholder": "^2.11.5",
     "@tiptap/extension-task-item": "^2.11.5",
     "@tiptap/extension-task-list": "^2.11.5",
@@ -29,6 +31,10 @@
     "better-sqlite3": "^11.10.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "ws": "^8.22.0",
+    "y-prosemirror": "^1.3.7",
+    "y-webrtc": "^10.3.0",
+    "yjs": "^13.6.33",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -37,6 +43,7 @@
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/ws": "^8.18.2",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",

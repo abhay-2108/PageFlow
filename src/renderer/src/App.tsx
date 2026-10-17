@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { BRAND } from "../../shared/brand";
 import { childrenOf } from "../../shared/tree";
 import type { PageMeta, PageRecord, TipTapDocument } from "../../shared/types";
@@ -7,6 +7,8 @@ import { PageView } from "./PageView";
 import { Sidebar } from "./components/Sidebar";
 import { Toast, type ToastData } from "./components/Toast";
 import { getApi } from "./lib/api";
+import { onWorkspaceChanged } from "./lib/bus";
+import { session } from "./lib/session";
 
 const SAVE_DEBOUNCE_MS = 250;
 const RENAME_DEBOUNCE_MS = 400;
@@ -22,6 +24,9 @@ export default function App() {
   const [focusPageId, setFocusPageId] = useState<string | null>(null);
   const [workspaceDir, setWorkspaceDir] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [editorEpoch, setEditorEpoch] = useState(0);
+  const sessionState = useSyncExternalStore(session.subscribe, session.getState, session.getState);
 
   const pendingSave = useRef<{ id: string; doc: TipTapDocument } | null>(null);
   const saveTimer = useRef<number | null>(null);
@@ -117,6 +122,15 @@ export default function App() {
       setPages(nextPages);
       setTrash(nextTrash);
       setLoading(false);
+      await session.init({
+        userName: info.userName,
+        onRemoteMeta: () => {
+          void refreshLists();
+        },
+      });
+      if (!cancelled) {
+        setSessionReady(true);
+      }
       const first = childrenOf(nextPages, null)[0] ?? nextPages[0];
       if (first) {
         await openPage(first.id);
@@ -125,7 +139,32 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [api, openPage]);
+  }, [api, openPage, refreshLists]);
+
+  useEffect(() => {
+    if (!sessionReady) {
+      return;
+    }
+    session.reconcileMeta(pages, trash);
+    session.syncPages(pages);
+  }, [sessionReady, pages, trash, sessionState.status]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const unsubscribe = onWorkspaceChanged(() => {
+      void (async () => {
+        const nextPages = await refreshLists();
+        setEditorEpoch((epoch) => epoch + 1);
+        if (!cancelled && activeId !== null && nextPages.some((page) => page.id === activeId)) {
+          await openPage(activeId);
+        }
+      })();
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [activeId, openPage, refreshLists]);
 
   useEffect(() => {
     const onUnload = () => {
@@ -259,6 +298,7 @@ export default function App() {
         {activeRecord ? (
           <PageView
             record={activeRecord}
+            editorEpoch={editorEpoch}
             onDocChange={(doc) => queueSave(activeRecord.meta.id, doc)}
             onTitleChange={(title) => queueRename(activeRecord.meta.id, title)}
             autoFocusEditor={focusPageId !== null && focusPageId === activeRecord.meta.id}

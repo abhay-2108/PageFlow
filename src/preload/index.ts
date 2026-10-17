@@ -1,6 +1,13 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { PagegroveApi } from "../shared/api";
-import type { MovePageInput, NewPageInput, PageMeta, PageRecord, SearchHit, TipTapDocument } from "../shared/types";
+import type {
+  MovePageInput,
+  NewPageInput,
+  PageMeta,
+  PageRecord,
+  SearchHit,
+  TipTapDocument,
+} from "../shared/types";
 
 const api: PagegroveApi = {
   platform: process.platform,
@@ -10,7 +17,7 @@ const api: PagegroveApi = {
     node: process.versions.node,
   },
   workspace: {
-    info: () => ipcRenderer.invoke("pg:workspace:info") as Promise<{ dir: string }>,
+    info: () => ipcRenderer.invoke("pg:workspace:info") as Promise<{ dir: string; userName: string }>,
   },
   pages: {
     list: () => ipcRenderer.invoke("pg:pages:list") as Promise<PageMeta[]>,
@@ -27,6 +34,29 @@ const api: PagegroveApi = {
   },
   search: {
     query: (query: string) => ipcRenderer.invoke("pg:search:query", { query }) as Promise<SearchHit[]>,
+  },
+  sync: {
+    loadDocUpdates: (pageId: string) =>
+      ipcRenderer.invoke("pg:sync:load-updates", { pageId }) as Promise<number[][]>,
+    appendDocUpdates: (pageId: string, updates: number[][]) =>
+      ipcRenderer.invoke("pg:sync:append-updates", { pageId, updates }) as Promise<void>,
+    applyMeta: (entries: PageMeta[]) =>
+      ipcRenderer.invoke("pg:sync:apply-meta", { entries }) as Promise<void>,
+    exportBundle: () =>
+      ipcRenderer.invoke("pg:sync:export-bundle") as Promise<{ ok: boolean; path?: string }>,
+    importBundle: () =>
+      ipcRenderer.invoke("pg:sync:import-bundle") as Promise<{ ok: boolean; applied: number }>,
+  },
+  session: {
+    start: () => ipcRenderer.invoke("pg:session:start") as Promise<{ port: number; code: string }>,
+    stop: () => ipcRenderer.invoke("pg:session:stop") as Promise<void>,
+  },
+  files: {
+    exportMarkdown: (title: string, markdown: string) =>
+      ipcRenderer.invoke("pg:files:export-markdown", { title, markdown }) as Promise<{
+        ok: boolean;
+        path?: string;
+      }>,
   },
 };
 

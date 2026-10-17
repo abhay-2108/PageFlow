@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { BRAND } from "../shared/brand";
 import { registerIpc } from "./ipc";
+import { stopSession } from "./session/server";
 import { WorkspaceDb } from "./workspace/db";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -14,7 +15,7 @@ const PROD_CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self'",
+  "connect-src 'self' ws: wss:",
   "object-src 'none'",
   "base-uri 'none'",
   "form-action 'none'",
@@ -98,6 +99,7 @@ app.whenReady().then(() => {
 app.on("before-quit", () => {
   workspace?.close();
   workspace = null;
+  void stopSession();
 });
 
 app.on("window-all-closed", () => {

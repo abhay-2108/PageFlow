@@ -51,3 +51,35 @@ export const movePageInputSchema = z.object({
 export const searchInputSchema = z.object({
   query: z.string().max(200),
 });
+
+export const syncDocIdSchema = z.union([pageIdSchema, z.literal("__meta__")]);
+
+export const loadUpdatesInputSchema = z.object({
+  pageId: syncDocIdSchema,
+});
+
+export const appendUpdatesInputSchema = z.object({
+  pageId: syncDocIdSchema,
+  updates: z
+    .array(z.array(z.number().int().min(0).max(255)).max(1_000_000))
+    .max(100),
+});
+
+export const metaEntrySchema = z.object({
+  id: pageIdSchema,
+  parentId: pageIdSchema.nullable(),
+  title: z.string().max(500),
+  rank: z.number(),
+  createdAt: z.number().int(),
+  updatedAt: z.number().int(),
+  deletedAt: z.number().int().nullable(),
+});
+
+export const applyMetaInputSchema = z.object({
+  entries: z.array(metaEntrySchema).max(2000),
+});
+
+export const exportMarkdownInputSchema = z.object({
+  title: z.string().max(200),
+  markdown: z.string().max(5_000_000),
+});

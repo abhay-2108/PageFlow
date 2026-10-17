@@ -4,12 +4,13 @@ import { Editor } from "./editor/Editor";
 
 export interface PageViewProps {
   record: PageRecord;
+  editorEpoch: number;
   onDocChange: (doc: TipTapDocument) => void;
   onTitleChange: (title: string) => void;
   autoFocusEditor: boolean;
 }
 
-export function PageView({ record, onDocChange, onTitleChange, autoFocusEditor }: PageViewProps) {
+export function PageView({ record, editorEpoch, onDocChange, onTitleChange, autoFocusEditor }: PageViewProps) {
   const displayTitle = record.meta.title.length > 0 ? record.meta.title : BRAND.empty.untitled;
 
   return (
@@ -25,8 +26,8 @@ export function PageView({ record, onDocChange, onTitleChange, autoFocusEditor }
         data-page-title={displayTitle}
       />
       <Editor
-        key={record.meta.id}
-        document={record.doc}
+        key={`${record.meta.id}:${editorEpoch}`}
+        pageId={record.meta.id}
         onDocChange={onDocChange}
         autoFocus={autoFocusEditor}
       />

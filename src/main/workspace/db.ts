@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import Database from "better-sqlite3";
 import { extractDocText } from "../../shared/doc-text";
+import { sortEntriesByDepth } from "../../shared/meta";
 import { needsRebalance, rankAppend, rankBetween, rebalancedRanks } from "../../shared/rank";
 import { isDescendant } from "../../shared/tree";
 import type { MovePageInput, NewPageInput, PageMeta, PageRecord, SearchHit, TipTapDocument } from "../../shared/types";
@@ -57,31 +58,41 @@ export class WorkspaceDb {
 
   private migrate(): void {
     const version = this.db.pragma("user_version", { simple: true }) as number;
-    if (version >= 1) {
-      return;
+    if (version < 1) {
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS pages (
+          id TEXT PRIMARY KEY,
+          parent_id TEXT REFERENCES pages(id) ON DELETE CASCADE,
+          title TEXT NOT NULL DEFAULT '',
+          rank REAL NOT NULL,
+          doc TEXT NOT NULL,
+          text TEXT NOT NULL DEFAULT '',
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL,
+          deleted_at INTEGER
+        );
+        CREATE INDEX IF NOT EXISTS idx_pages_parent_rank ON pages(parent_id, rank);
+        CREATE INDEX IF NOT EXISTS idx_pages_deleted ON pages(deleted_at);
+        CREATE VIRTUAL TABLE IF NOT EXISTS pages_fts USING fts5(
+          title,
+          text,
+          content='pages',
+          content_rowid='rowid'
+        );
+      `);
+      this.db.pragma("user_version = 1");
     }
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS pages (
-        id TEXT PRIMARY KEY,
-        parent_id TEXT REFERENCES pages(id) ON DELETE CASCADE,
-        title TEXT NOT NULL DEFAULT '',
-        rank REAL NOT NULL,
-        doc TEXT NOT NULL,
-        text TEXT NOT NULL DEFAULT '',
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL,
-        deleted_at INTEGER
-      );
-      CREATE INDEX IF NOT EXISTS idx_pages_parent_rank ON pages(parent_id, rank);
-      CREATE INDEX IF NOT EXISTS idx_pages_deleted ON pages(deleted_at);
-      CREATE VIRTUAL TABLE IF NOT EXISTS pages_fts USING fts5(
-        title,
-        text,
-        content='pages',
-        content_rowid='rowid'
-      );
-    `);
-    this.db.pragma("user_version = 1");
+    if (version < 2) {
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS yupdates (
+          seq INTEGER PRIMARY KEY AUTOINCREMENT,
+          page_id TEXT NOT NULL,
+          bytes BLOB NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_yupdates_page ON yupdates(page_id, seq);
+      `);
+      this.db.pragma("user_version = 2");
+    }
   }
 
   private rowById(id: string): PageRow | undefined {
@@ -357,6 +368,124 @@ export class WorkspaceDb {
     return titles;
   }
 
+  loadDocUpdates(pageId: string): Buffer[] {
+    const rows = this.db
+      .prepare("SELECT bytes FROM yupdates WHERE page_id = ? ORDER BY seq ASC")
+      .all(pageId) as { bytes: Buffer }[];
+    return rows.map((row) => row.bytes);
+  }
+
+  appendDocUpdates(pageId: string, updates: Uint8Array[]): void {
+    const insert = this.db.prepare("INSERT INTO yupdates (page_id, bytes) VALUES (?, ?)");
+    this.db.transaction(() => {
+      for (const update of updates) {
+        if (update.length > 0) {
+          insert.run(pageId, Buffer.from(update));
+        }
+      }
+    })();
+  }
+
+  upsertMetaEntries(entries: PageMeta[]): number {
+    if (entries.length === 0) {
+      return 0;
+    }
+    const ordered = sortEntriesByDepth(entries);
+    const insertRow = this.db.prepare(
+      `INSERT INTO pages (id, parent_id, title, rank, doc, text, created_at, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, '', ?, ?, ?)`,
+    );
+    const updateRow = this.db.prepare(
+      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, created_at = ?, updated_at = ?, deleted_at = ?
+       WHERE id = ?`,
+    );
+    let applied = 0;
+    this.db.transaction(() => {
+      this.db.pragma("defer_foreign_keys = ON");
+      for (const entry of ordered) {
+        const row = this.rowById(entry.id);
+        if (!row) {
+          try {
+            insertRow.run(
+              entry.id,
+              entry.parentId,
+              entry.title,
+              entry.rank,
+              JSON.stringify(EMPTY_DOC),
+              entry.createdAt,
+              entry.updatedAt,
+              entry.deletedAt,
+            );
+          } catch {
+            continue;
+          }
+          const inserted = this.rowById(entry.id) as PageRow;
+          this.ftsInsert(inserted.rowid, inserted.title, inserted.text);
+          applied += 1;
+        } else {
+          this.ftsRemove(row);
+          updateRow.run(
+            entry.parentId,
+            entry.title,
+            entry.rank,
+            entry.createdAt,
+            entry.updatedAt,
+            entry.deletedAt,
+            entry.id,
+          );
+          this.ftsInsert(row.rowid, entry.title, row.text);
+          applied += 1;
+        }
+        if (entry.deletedAt === null) {
+          this.scheduleSnapshot(entry.id);
+        }
+      }
+    })();
+    return applied;
+  }
+
+  dumpCrdt(): {
+    version: 1;
+    exportedAt: number;
+    entries: PageMeta[];
+    updates: { pageId: string; data: string }[];
+  } {
+    const entries = [...this.listPages(), ...this.listTrash()];
+    const rows = this.db
+      .prepare("SELECT seq, page_id, bytes FROM yupdates ORDER BY seq ASC")
+      .all() as { seq: number; page_id: string; bytes: Buffer }[];
+    return {
+      version: 1,
+      exportedAt: Date.now(),
+      entries,
+      updates: rows.map((row) => ({
+        pageId: row.page_id,
+        data: row.bytes.toString("base64"),
+      })),
+    };
+  }
+
+  applyCrdtBundle(bundle: {
+    entries: PageMeta[];
+    updates: { pageId: string; data: string }[];
+  }): number {
+    const appliedEntries = this.upsertMetaEntries(bundle.entries);
+    const byPage = new Map<string, Uint8Array[]>();
+    for (const record of bundle.updates) {
+      const bytes = Buffer.from(record.data, "base64");
+      if (bytes.length === 0) {
+        continue;
+      }
+      const bucket = byPage.get(record.pageId) ?? [];
+      bucket.push(bytes);
+      byPage.set(record.pageId, bucket);
+    }
+    for (const [pageId, updates] of byPage) {
+      this.appendDocUpdates(pageId, updates);
+    }
+    return appliedEntries;
+  }
+
   private scheduleSnapshot(id: string): void {
     const existing = this.snapshotTimers.get(id);
     if (existing) {
@@ -397,6 +526,10 @@ export class WorkspaceDb {
         // Snapshot files are a portability mirror, never the source of truth.
       }
     }
+  }
+
+  isOpen(): boolean {
+    return !this.closed;
   }
 
   close(): void {

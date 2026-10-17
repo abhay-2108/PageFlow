@@ -3,6 +3,7 @@ import type { MouseEvent as ReactMouseEvent } from "react";
 import { BRAND, searchNoResults } from "../../../shared/brand";
 import type { PageMeta, SearchHit } from "../../../shared/types";
 import { getApi } from "../lib/api";
+import { SessionPanel } from "./SessionPanel";
 
 interface MenuState {
   id: string;
@@ -380,6 +381,10 @@ export function Sidebar(props: SidebarProps) {
             </ul>
           )
         ) : null}
+      </div>
+
+      <div className="sidebar__session">
+        <SessionPanel />
       </div>
 
       <div className="sidebar__footer" title={workspaceDir ?? undefined}>
