@@ -521,7 +521,12 @@ export function PageView({
         data-page-title={displayTitle}
       />
       {view === "table" ? (
-        <ChildrenTable parentId={record.meta.id} refreshKey={editorEpoch} onOpenPage={onOpenPage} />
+        <ChildrenTable
+          parentId={record.meta.id}
+          pages={pages}
+          refreshKey={editorEpoch}
+          onOpenPage={onOpenPage}
+        />
       ) : (
         <Editor
           key={`${record.meta.id}:${editorEpoch}`}

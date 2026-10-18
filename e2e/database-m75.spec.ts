@@ -64,6 +64,13 @@ test("database properties: add columns, edit cells, and persist", async () => {
     );
     await expect(taskRow(page).getByRole("button", { name: "Select value" })).toHaveText("Todo");
 
+    await taskRow(page).locator(".pg-children-table__open").click();
+    await setPageTitle(page, "Task one edited");
+    await page.locator(".tree-row__label", { hasText: "Tasks" }).first().click();
+    await expect(page.locator(".pg-db-row .pg-children-table__title").first()).toHaveText(
+      "Task one edited",
+    );
+
     await page.getByRole("button", { name: "Text property options" }).click();
     await page.getByRole("menuitem", { name: "Rename" }).click();
     const renameInput = page.getByLabel("Property name");

@@ -153,3 +153,51 @@ pnpm build
 npx playwright test
 ```
 
+## 7. M7 addendum — Notion-parity slices (gutter, format bar, images, chrome, databases)
+
+Date: 2026-10-18
+Scope: `m7.1` (`fcd9e47`), `m7.2` (`63a3f5d`), `m7.3` (`0eb6937`), `m7.4` (`5235a74`), `m7.5` (`5e1fc2e`), plus M7.6 polish in this milestone. Informed by the deep-RE addendum (`docs/behavior-spec.md` §16–§20) — behaviors only, original implementation throughout.
+
+**Verdict: PASS.** All gates green at M7.5 + M7.6 polish; no new security findings.
+
+| Gate | Result at M7.5/M7.6 |
+|---|---|
+| Typecheck | Clean (node + web) |
+| Lint | Clean |
+| Unit tests | 39/39 (rank, tree, doc-text, sync, database — 9 new schema/normalization tests) |
+| Build | 387 modules, renderer 1,980.06 kB |
+| E2E | 20 tests green (one spec-side assertion fix in `views-m64` for the new-row footer; `media-m73` title-typing and `packaged` flaked once each under load and passed on retry — same pre-existing flake class) |
+
+E2E inventory added in M7:
+
+| Spec | Covers |
+|---|---|
+| `blocks-m71.spec.ts` | block gutter — duplicate, turn into, drag move, delete, insert below |
+| `format-m72.spec.ts` | selection format bar styles; callout survives export and reload |
+| `media-m73.spec.ts` | image upload/paste via stubbed dialogs, cover upload, markdown export with asset paths, reload persistence |
+| `chrome-m74.spec.ts` | breadcrumbs, page options (copy link, duplicate, export), favorites across reload, searchable move-to picker |
+| `database-m75.spec.ts` | property add, typed cell editing, inline option creation, property rename/delete, new row, reload persistence |
+
+**Security deltas (M7).** Migrations v6 (`favorite`) and v7 (`properties`, `fields`) add columns only; every new handler (`pg:pages:set-favorite/duplicate/set-properties/set-field`) validates through zod at the same IPC boundary as M5. The `pgfile://` asset protocol is registered as a privileged scheme with a workspace-rooted resolver and a path-traversal guard; production CSP gained `img-src 'self' pgfile:`. Sync bundles and live-session meta entries now carry `favorite`/`properties`/`fields` with legacy-entry normalization (favorite coerced, JSON columns defaulted); no new advisories beyond the accepted M5 Tiptap finding.
+
+**Review notes.** One fix-forward: the committed `media-m73` spec was missing a DOM lib reference, failing `pnpm typecheck` at tag `m7.3`; fixed in the `m7.4` commit and verified clean since. M7.6 polish added: table view empty hubs render the full database shell (add property + new row), row list live-refreshes when page metadata changes elsewhere (sidebar rename, sync), number cells right-align, and the unused empty-state paragraph style was removed.
+
+**Known limitations added in M7** (cross-referenced in `docs/behavior-spec.md`):
+
+1. Assets travel with the workspace folder but not LAN bundles/live sessions (§18).
+2. Databases: no sorting, filtering, per-view config, property type changes, option colors, formulas, relations, or rollups; table lists direct children only (§20).
+3. Favorites cannot be manually reordered; `pagegrove://` links are reference-only (§19).
+4. Block operations act on a single top-level block; no cross-page block drags (§16).
+5. Markdown serializer unit tests still absent (MEDIUM carried from M5/M6).
+6. Flake pair carried: `media-m73` title typing and `packaged.spec.ts` under machine contention — both pass on retry with `retries: 1`; no product impact observed.
+
+Reproduce:
+
+```powershell
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+npx playwright test
+```
+

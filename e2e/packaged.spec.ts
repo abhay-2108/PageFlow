@@ -1,7 +1,7 @@
 import { _electron as electron, expect, test } from "@playwright/test";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { makeWorkspace, projectRoot, removeWorkspace } from "./helpers";
+import { makeWorkspace, projectRoot, removeWorkspace, setPageTitle } from "./helpers";
 
 const packagedExe = join(projectRoot, "release", "win-unpacked", "Pagegrove.exe");
 
@@ -26,17 +26,21 @@ test("packaged app launches, edits, and persists across relaunch", async () => {
     await page.waitForSelector(".shell", { timeout: 30_000 });
 
     await page.getByRole("button", { name: "Create a page" }).click();
-    await page.getByLabel("Page title").fill("Packaged");
-    await page.waitForTimeout(700);
+    await setPageTitle(page, "Packaged");
+    await expect(page.locator(".tree-row__title", { hasText: "Packaged" })).toBeVisible();
+    await page.waitForTimeout(1200);
     await page.locator(".pg-editor").click();
     await page.keyboard.type("packaged body", { delay: 20 });
-    await page.waitForTimeout(800);
+    await expect(page.locator(".pg-editor")).toContainText("packaged body");
+    await page.waitForTimeout(1200);
     await app.close();
 
     const relaunched = await launch();
     const page2 = await relaunched.firstWindow();
     await page2.waitForSelector(".shell", { timeout: 30_000 });
-    await page2.locator(".tree-row__title", { hasText: "Packaged" }).click();
+    const row = page2.locator(".tree-row__title", { hasText: "Packaged" });
+    await expect(row).toBeVisible({ timeout: 60_000 });
+    await row.click();
     await expect(page2.locator(".pg-editor")).toContainText("packaged body", { timeout: 15_000 });
     await relaunched.close();
   } finally {

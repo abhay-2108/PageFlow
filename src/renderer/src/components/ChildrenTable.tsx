@@ -42,6 +42,7 @@ function timeAgo(timestamp: number): string {
 
 export interface ChildrenTableProps {
   parentId: string;
+  pages: PageMeta[];
   refreshKey: number;
   onOpenPage: (id: string) => void;
 }
@@ -51,7 +52,7 @@ interface CellMenuState {
   propId: string;
 }
 
-export function ChildrenTable({ parentId, refreshKey, onOpenPage }: ChildrenTableProps) {
+export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: ChildrenTableProps) {
   const api = getApi();
   const [rows, setRows] = useState<PageMeta[]>([]);
   const [hub, setHub] = useState<PageMeta | null>(null);
@@ -66,17 +67,17 @@ export function ChildrenTable({ parentId, refreshKey, onOpenPage }: ChildrenTabl
     let cancelled = false;
     void api.pages
       .list()
-      .then((pages) => {
+      .then((listed) => {
         if (!cancelled) {
-          setHub(pages.find((page) => page.id === parentId) ?? null);
-          setRows(childrenOf(pages, parentId));
+          setHub(listed.find((page) => page.id === parentId) ?? null);
+          setRows(childrenOf(listed, parentId));
         }
       })
       .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [api, parentId, refreshKey]);
+  }, [api, parentId, refreshKey, pages]);
 
   const properties = useMemo(() => hub?.properties ?? [], [hub]);
 
@@ -384,10 +385,6 @@ export function ChildrenTable({ parentId, refreshKey, onOpenPage }: ChildrenTabl
     void commitProperties([...properties, def]);
   };
 
-  if (rows.length === 0 && properties.length === 0) {
-    return <p className="pg-children-table__empty">No pages inside yet.</p>;
-  }
-
   return (
     <div className="pg-children-table-wrap">
       <table className="pg-children-table" aria-label="Subpages">
@@ -432,6 +429,11 @@ export function ChildrenTable({ parentId, refreshKey, onOpenPage }: ChildrenTabl
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 ? (
+            <tr className="pg-db-hint">
+              <td colSpan={properties.length + 3}>No pages inside yet.</td>
+            </tr>
+          ) : null}
           {rows.map((page) => (
             <tr key={page.id} data-page-id={page.id} className="pg-db-row">
               <td>
@@ -445,7 +447,7 @@ export function ChildrenTable({ parentId, refreshKey, onOpenPage }: ChildrenTabl
                 </button>
               </td>
               {properties.map((def) => (
-                <td key={def.id} className="pg-db-cell">
+                <td key={def.id} className="pg-db-cell" data-type={def.type}>
                   {cellEditor(page, def)}
                 </td>
               ))}

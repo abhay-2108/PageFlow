@@ -2456,13 +2456,6 @@ body {
   white-space: nowrap;
 }
 
-.pg-children-table__empty {
-  margin: 28px auto 40px;
-  width: min(700px, calc(100% - 96px));
-  color: var(--pg-text-muted);
-  font-size: 0.9rem;
-}
-
 .pg-block-gutter {
   position: fixed;
   z-index: 45;
@@ -2770,6 +2763,16 @@ body.pg-block-dragging {
 
 .pg-db-cell {
   padding: 4px 8px;
+}
+
+.pg-db-cell[data-type="number"] {
+  text-align: right;
+}
+
+.pg-db-hint td {
+  color: var(--pg-text-faint);
+  font-size: 0.8125rem;
+  padding: 10px 8px;
 }
 
 .pg-db-input,
