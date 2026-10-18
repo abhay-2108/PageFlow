@@ -4,6 +4,8 @@ import { join } from "node:path";
 import Database from "better-sqlite3";
 import { coerceValue, parseFields, parseProperties } from "../../shared/database";
 import type { PropertyDef, PropertyType, PropertyValue } from "../../shared/database";
+import { parseDatabaseConfig } from "../../shared/database-view";
+import type { DatabaseConfig } from "../../shared/database-view";
 import { extractDocText } from "../../shared/doc-text";
 import { sortEntriesByDepth } from "../../shared/meta";
 import { needsRebalance, rankAppend, rankBetween, rebalancedRanks } from "../../shared/rank";
@@ -38,6 +40,7 @@ interface PageRow {
   favorite: number;
   properties: string;
   fields: string;
+  db_config: string | null;
   doc: string;
   text: string;
   created_at: number;
@@ -65,7 +68,7 @@ interface CommentMessageRow {
 const SNAPSHOT_DEBOUNCE_MS = 1500;
 
 const SELECT_COLUMNS =
-  "rowid, id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, doc, text, created_at, updated_at, deleted_at";
+  "rowid, id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, db_config, doc, text, created_at, updated_at, deleted_at";
 
 function toMeta(row: PageRow): PageMeta {
   return {
@@ -79,6 +82,7 @@ function toMeta(row: PageRow): PageMeta {
     favorite: row.favorite !== 0,
     properties: parseProperties(row.properties),
     fields: parseFields(row.fields),
+    dbConfig: parseDatabaseConfig(row.db_config),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -185,6 +189,12 @@ export class WorkspaceDb {
         ALTER TABLE pages ADD COLUMN fields TEXT NOT NULL DEFAULT '{}';
       `);
       this.db.pragma("user_version = 7");
+    }
+    if (version < 8) {
+      this.db.exec(`
+        ALTER TABLE pages ADD COLUMN db_config TEXT;
+      `);
+      this.db.pragma("user_version = 8");
     }
   }
 
@@ -486,6 +496,21 @@ export class WorkspaceDb {
     })();
   }
 
+  setPageDbConfig(id: string, config: DatabaseConfig): PageMeta {
+    return this.db.transaction(() => {
+      const row = this.rowById(id);
+      if (!row || row.deleted_at !== null) {
+        throw new Error("Page not found");
+      }
+      const now = Date.now();
+      this.db
+        .prepare("UPDATE pages SET db_config = ?, updated_at = ? WHERE id = ?")
+        .run(JSON.stringify(config), now, id);
+      this.scheduleSnapshot(id);
+      return this.metaById(id);
+    })();
+  }
+
   setPageField(id: string, propId: string, value: PropertyValue): PageMeta {
     return this.db.transaction(() => {
       const row = this.rowById(id);
@@ -519,8 +544,8 @@ export class WorkspaceDb {
       const rank = rankBetween(source.rank, nextSibling ? nextSibling.rank : null);
       const now = Date.now();
       const insertRow = this.db.prepare(
-        `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, doc, text, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, db_config, doc, text, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)`,
       );
       const clone = (row: PageRow, parentId: string | null, childRank: number, title: string): string => {
         const cloneId = randomUUID();
@@ -534,6 +559,7 @@ export class WorkspaceDb {
           row.view,
           row.properties,
           row.fields,
+          row.db_config,
           row.doc,
           row.text,
           now,
@@ -794,11 +820,11 @@ export class WorkspaceDb {
     }
     const ordered = sortEntriesByDepth(entries);
     const insertRow = this.db.prepare(
-      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, doc, text, created_at, updated_at, deleted_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`,
+      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, db_config, doc, text, created_at, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?)`,
     );
     const updateRow = this.db.prepare(
-      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, icon = ?, cover = ?, view = ?, favorite = ?, properties = ?, fields = ?, created_at = ?, updated_at = ?, deleted_at = ?
+      `UPDATE pages SET parent_id = ?, title = ?, rank = ?, icon = ?, cover = ?, view = ?, favorite = ?, properties = ?, fields = ?, db_config = ?, created_at = ?, updated_at = ?, deleted_at = ?
        WHERE id = ?`,
     );
     let applied = 0;
@@ -811,6 +837,7 @@ export class WorkspaceDb {
         const favorite = entry.favorite === true ? 1 : 0;
         const properties = JSON.stringify(entry.properties ?? []);
         const fields = JSON.stringify(entry.fields ?? {});
+        const dbConfig = entry.dbConfig ? JSON.stringify(entry.dbConfig) : null;
         const row = this.rowById(entry.id);
         if (!row) {
           try {
@@ -825,6 +852,7 @@ export class WorkspaceDb {
               favorite,
               properties,
               fields,
+              dbConfig,
               JSON.stringify(EMPTY_DOC),
               entry.createdAt,
               entry.updatedAt,
@@ -848,6 +876,7 @@ export class WorkspaceDb {
             favorite,
             properties,
             fields,
+            dbConfig,
             entry.createdAt,
             entry.updatedAt,
             entry.deletedAt,

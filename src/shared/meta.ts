@@ -11,6 +11,7 @@ export function entriesEqual(a: PageMeta, b: PageMeta): boolean {
     a.favorite === b.favorite &&
     JSON.stringify(a.properties ?? []) === JSON.stringify(b.properties ?? []) &&
     JSON.stringify(a.fields ?? {}) === JSON.stringify(b.fields ?? {}) &&
+    JSON.stringify(a.dbConfig ?? null) === JSON.stringify(b.dbConfig ?? null) &&
     a.createdAt === b.createdAt &&
     a.updatedAt === b.updatedAt &&
     a.deletedAt === b.deletedAt

@@ -145,3 +145,75 @@ test("database property types: change type with coercion and color options", asy
     removeWorkspace(dir);
   }
 });
+
+test("database views: sort and filter rows", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "pagegrove-e2e-"));
+  const { app, page } = await openApp(dir);
+
+  try {
+    await page.getByRole("button", { name: "Create a page" }).click();
+    await setPageTitle(page, "Board");
+    await page.getByRole("button", { name: "Table" }).click();
+    await createSubpage(page, "Board", "Charlie");
+    await createSubpage(page, "Board", "Alpha");
+    await createSubpage(page, "Board", "Bravo");
+    await page.locator(".tree-row__label", { hasText: "Board" }).first().click();
+    await expect(page.getByLabel("Page title")).toHaveValue("Board");
+
+    const titles = page.locator(".pg-db-row .pg-children-table__title");
+    await expect(titles).toHaveText(["Charlie", "Alpha", "Bravo"]);
+
+    await addProperty(page, "Number");
+    const setNumber = async (rowTitle: string, value: string) => {
+      const cell = page.locator(".pg-db-row", { hasText: rowTitle }).first().getByLabel("Number");
+      await cell.click();
+      await cell.fill(value);
+      await cell.press("Enter");
+    };
+    await setNumber("Charlie", "30");
+    await setNumber("Alpha", "10");
+    await setNumber("Bravo", "20");
+
+    await page.getByRole("button", { name: /^Sort/ }).click();
+    await page.getByRole("menuitem", { name: "Number", exact: true }).click();
+    await expect(titles).toHaveText(["Alpha", "Bravo", "Charlie"]);
+
+    await page.getByRole("menuitem", { name: "Number ↑", exact: true }).click();
+    await expect(titles).toHaveText(["Charlie", "Bravo", "Alpha"]);
+
+    await addProperty(page, "Select");
+    const setStatus = async (rowTitle: string, option: string) => {
+      const row = page.locator(".pg-db-row", { hasText: rowTitle }).first();
+      await row.getByRole("button", { name: "Select value" }).click();
+      const search = page.getByLabel("Option search");
+      await search.fill(option);
+      const existing = page.getByRole("menuitem", { name: option, exact: true });
+      if ((await existing.count()) > 0) {
+        await existing.first().click();
+      } else {
+        await page.getByRole("menuitem", { name: `Create "${option}"` }).click();
+      }
+    };
+    await setStatus("Charlie", "Todo");
+    await setStatus("Alpha", "Done");
+    await setStatus("Bravo", "Todo");
+
+    await page.getByRole("button", { name: /^Filter/ }).click();
+    await page.getByLabel("Filter property").selectOption({ label: "Select" });
+    await page.getByLabel("Filter operator").selectOption("contains");
+    await page.getByLabel("Filter value").fill("Todo");
+    await page.getByRole("menuitem", { name: "Add filter" }).click();
+    await expect(titles).toHaveText(["Charlie", "Bravo"]);
+
+    await page.waitForTimeout(700);
+    await page.reload();
+    await page.waitForSelector(".shell");
+    await expect(page.locator(".pg-db-row .pg-children-table__title")).toHaveText([
+      "Charlie",
+      "Bravo",
+    ]);
+  } finally {
+    await app.close();
+    removeWorkspace(dir);
+  }
+});

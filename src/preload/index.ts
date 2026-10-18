@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { PagegroveApi } from "../shared/api";
 import type { PropertyDef, PropertyValue } from "../shared/database";
+import type { DatabaseConfig } from "../shared/database-view";
 import type {
   AssetImportResult,
   BacklinkHit,
@@ -49,6 +50,8 @@ const api: PagegroveApi = {
       ipcRenderer.invoke("pg:pages:duplicate", { id }) as Promise<PageMeta>,
     setProperties: (id: string, properties: PropertyDef[]) =>
       ipcRenderer.invoke("pg:pages:set-properties", { id, properties }) as Promise<PageMeta>,
+    setDbConfig: (id: string, config: DatabaseConfig) =>
+      ipcRenderer.invoke("pg:pages:set-db-config", { id, config }) as Promise<PageMeta>,
     setField: (id: string, propId: string, value: PropertyValue) =>
       ipcRenderer.invoke("pg:pages:set-field", { id, propId, value }) as Promise<PageMeta>,
     trash: (id: string) => ipcRenderer.invoke("pg:pages:trash", { id }) as Promise<boolean>,

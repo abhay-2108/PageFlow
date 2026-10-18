@@ -7,6 +7,15 @@ import {
   valueToText,
 } from "../../../shared/database";
 import type { PropertyDef, PropertyType } from "../../../shared/database";
+import {
+  applyDatabaseView,
+  defaultDatabaseConfig,
+} from "../../../shared/database-view";
+import type {
+  DatabaseConfig,
+  DatabaseView,
+  FilterOperator,
+} from "../../../shared/database-view";
 import { BRAND } from "../../../shared/brand";
 import { childrenOf } from "../../../shared/tree";
 import type { PageMeta } from "../../../shared/types";
@@ -66,6 +75,10 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
   const [typeMenuFor, setTypeMenuFor] = useState<string | null>(null);
   const [colorMenuFor, setColorMenuFor] = useState<string | null>(null);
   const [colorOptionFor, setColorOptionFor] = useState<string | null>(null);
+  const [toolMenu, setToolMenu] = useState<"sort" | "filter" | null>(null);
+  const [filterProp, setFilterProp] = useState("");
+  const [filterOp, setFilterOp] = useState<FilterOperator>("contains");
+  const [filterValue, setFilterValue] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -85,8 +98,70 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
 
   const properties = useMemo(() => hub?.properties ?? [], [hub]);
 
+  const activeConfig = useMemo(() => hub?.dbConfig ?? defaultDatabaseConfig(), [hub]);
+  const fallbackView: DatabaseView = { id: "default", name: "Table", sorts: [], filters: [] };
+  const matchedView = activeConfig.views.find((view) => view.id === activeConfig.activeViewId);
+  const activeView: DatabaseView = matchedView ?? activeConfig.views[0] ?? fallbackView;
+  const visibleRows = useMemo(
+    () => applyDatabaseView(rows, properties, activeView),
+    [rows, properties, activeView],
+  );
+
+  const updateView = (view: DatabaseView) => {
+    if (!hub) {
+      return;
+    }
+    const next: DatabaseConfig = {
+      ...activeConfig,
+      views: activeConfig.views.map((entry) => (entry.id === view.id ? view : entry)),
+    };
+    void api.pages
+      .setDbConfig(hub.id, next)
+      .then((meta) => setHub(meta))
+      .catch(() => undefined);
+  };
+
+  const toggleSort = (propId: string) => {
+    const existing = activeView.sorts.find((sort) => sort.propId === propId);
+    let sorts: DatabaseView["sorts"];
+    if (!existing) {
+      sorts = [...activeView.sorts, { propId, dir: "asc" }];
+    } else if (existing.dir === "asc") {
+      sorts = activeView.sorts.map((sort) =>
+        sort.propId === propId ? { ...sort, dir: "desc" } : sort,
+      );
+    } else {
+      sorts = activeView.sorts.filter((sort) => sort.propId !== propId);
+    }
+    updateView({ ...activeView, sorts });
+  };
+
+  const addFilter = () => {
+    if (!filterProp) {
+      return;
+    }
+    const filter = { propId: filterProp, op: filterOp, value: filterValue };
+    if (
+      activeView.filters.some(
+        (entry) =>
+          entry.propId === filter.propId && entry.op === filter.op && entry.value === filter.value,
+      )
+    ) {
+      return;
+    }
+    updateView({ ...activeView, filters: [...activeView.filters, filter] });
+    setFilterValue("");
+  };
+
+  const removeFilter = (index: number) => {
+    updateView({
+      ...activeView,
+      filters: activeView.filters.filter((_filter, i) => i !== index),
+    });
+  };
+
   useEffect(() => {
-    if (!cellMenu && !propMenu && !addMenuOpen && !typeMenuFor && !colorMenuFor) {
+    if (!cellMenu && !propMenu && !addMenuOpen && !typeMenuFor && !colorMenuFor && !toolMenu) {
       return;
     }
     const close = () => {
@@ -96,6 +171,10 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
       setTypeMenuFor(null);
       setColorMenuFor(null);
       setColorOptionFor(null);
+      setToolMenu(null);
+      setFilterProp("");
+      setFilterOp("contains");
+      setFilterValue("");
       setCellQuery("");
     };
     const onKeyDown = (event: KeyboardEvent) => {
@@ -109,7 +188,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
       window.removeEventListener("mousedown", close);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [addMenuOpen, cellMenu, colorMenuFor, propMenu, typeMenuFor]);
+  }, [addMenuOpen, cellMenu, colorMenuFor, propMenu, toolMenu, typeMenuFor]);
 
   const rowLabel = (page: PageMeta) =>
     page.title.trim().length > 0 ? page.title : BRAND.empty.untitled;
@@ -521,6 +600,124 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
 
   return (
     <div className="pg-children-table-wrap">
+      <div className="pg-db-toolbar">
+        <span className="pg-db-view-name">{activeView.name}</span>
+        <button
+          type="button"
+          className="pg-db-tool"
+          aria-expanded={toolMenu === "sort"}
+          onMouseDown={stop}
+          onClick={() => setToolMenu(toolMenu === "sort" ? null : "sort")}
+        >
+          Sort{activeView.sorts.length > 0 ? ` (${activeView.sorts.length})` : ""}
+        </button>
+        <button
+          type="button"
+          className="pg-db-tool"
+          aria-expanded={toolMenu === "filter"}
+          onMouseDown={stop}
+          onClick={() => setToolMenu(toolMenu === "filter" ? null : "filter")}
+        >
+          Filter{activeView.filters.length > 0 ? ` (${activeView.filters.length})` : ""}
+        </button>
+        {toolMenu === "sort" ? (
+          <div className="menu-popover pg-db-tool-menu" role="menu" onMouseDown={stop}>
+            {properties.length === 0 ? (
+              <p className="menu-popover__empty">Add a property to sort by</p>
+            ) : null}
+            {properties.map((def) => {
+              const sort = activeView.sorts.find((entry) => entry.propId === def.id);
+              return (
+                <button
+                  key={def.id}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => toggleSort(def.id)}
+                >
+                  {def.name}
+                  {sort ? (sort.dir === "asc" ? " ↑" : " ↓") : ""}
+                </button>
+              );
+            })}
+            {activeView.sorts.length > 0 ? (
+              <button
+                type="button"
+                role="menuitem"
+                className="menu-popover__danger"
+                onClick={() => updateView({ ...activeView, sorts: [] })}
+              >
+                Clear sort
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+        {toolMenu === "filter" ? (
+          <div className="menu-popover pg-db-tool-menu" role="menu" onMouseDown={stop}>
+            {properties.length === 0 ? (
+              <p className="menu-popover__empty">Add a property to filter by</p>
+            ) : (
+              <>
+                <select
+                  className="pg-db-select"
+                  aria-label="Filter property"
+                  value={filterProp}
+                  onChange={(event) => setFilterProp(event.target.value)}
+                >
+                  <option value="">Property…</option>
+                  {properties.map((def) => (
+                    <option key={def.id} value={def.id}>
+                      {def.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="pg-db-select"
+                  aria-label="Filter operator"
+                  value={filterOp}
+                  onChange={(event) => setFilterOp(event.target.value as FilterOperator)}
+                >
+                  <option value="contains">Contains</option>
+                  <option value="not_contains">Does not contain</option>
+                  <option value="is">Is</option>
+                  <option value="is_not">Is not</option>
+                  <option value="is_empty">Is empty</option>
+                  <option value="is_not_empty">Is not empty</option>
+                </select>
+                <input
+                  className="pg-db-input"
+                  aria-label="Filter value"
+                  value={filterValue}
+                  onChange={(event) => setFilterValue(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      addFilter();
+                    }
+                  }}
+                />
+                <button type="button" role="menuitem" onClick={addFilter}>
+                  Add filter
+                </button>
+              </>
+            )}
+            {activeView.filters.map((filter, index) => {
+              const def = properties.find((entry) => entry.id === filter.propId);
+              return (
+                <button
+                  key={`${filter.propId}-${filter.op}-${filter.value}-${index}`}
+                  type="button"
+                  role="menuitem"
+                  className="menu-popover__danger"
+                  onClick={() => removeFilter(index)}
+                >
+                  {`${def?.name ?? filter.propId} ${filter.op}${
+                    filter.value ? ` "${filter.value}"` : ""
+                  } ✕`}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
       <table className="pg-children-table" aria-label="Subpages">
         <thead>
           <tr>
@@ -567,8 +764,12 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
             <tr className="pg-db-hint">
               <td colSpan={properties.length + 3}>No pages inside yet.</td>
             </tr>
+          ) : visibleRows.length === 0 ? (
+            <tr className="pg-db-hint">
+              <td colSpan={properties.length + 3}>No pages match the current filter.</td>
+            </tr>
           ) : null}
-          {rows.map((page) => (
+          {visibleRows.map((page) => (
             <tr key={page.id} data-page-id={page.id} className="pg-db-row">
               <td>
                 <button

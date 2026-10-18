@@ -1,4 +1,5 @@
 import type { PropertyDef, PropertyFields } from "./database";
+import type { DatabaseConfig } from "./database-view";
 
 export interface TipTapMark {
   type: string;
@@ -31,6 +32,7 @@ export interface PageMeta {
   favorite: boolean;
   properties: PropertyDef[];
   fields: PropertyFields;
+  dbConfig?: DatabaseConfig;
   createdAt: number;
   updatedAt: number;
   deletedAt: number | null;

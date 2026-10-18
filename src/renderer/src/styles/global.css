@@ -2849,6 +2849,61 @@ body.pg-block-dragging {
 .pg-db-swatch--pink { background-color: var(--pg-c-pink-bg); }
 .pg-db-swatch--red { background-color: var(--pg-c-red-bg); }
 
+.pg-db-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.pg-db-view-name {
+  font-size: 0.8125rem;
+  font-weight: 650;
+  color: var(--pg-text-muted);
+  margin-right: 2px;
+}
+
+.pg-db-tool {
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border: 1px solid var(--pg-border);
+  border-radius: 4px;
+  background: var(--pg-surface-2);
+  color: var(--pg-text);
+  cursor: pointer;
+}
+
+.pg-db-tool[aria-expanded="true"] {
+  border-color: var(--pg-accent);
+  color: var(--pg-accent);
+}
+
+.pg-db-tool-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 210px;
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 60;
+}
+
+.pg-db-select {
+  display: block;
+  width: 100%;
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 5px 8px;
+  margin-bottom: 5px;
+  border: 1px solid var(--pg-border);
+  border-radius: 6px;
+  background: var(--pg-surface-2);
+  color: var(--pg-text);
+}
+
 .pg-db-input,
 .pg-db-date {
   width: 100%;

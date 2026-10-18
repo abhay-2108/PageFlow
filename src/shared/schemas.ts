@@ -93,6 +93,34 @@ export const propertyDefSchema = z.object({
   optionColors: z.record(z.string(), selectColorSchema).optional(),
 });
 
+export const databaseSortSchema = z.object({
+  propId: z.string().min(1).max(64),
+  dir: z.enum(["asc", "desc"]),
+});
+
+export const databaseFilterSchema = z.object({
+  propId: z.string().min(1).max(64),
+  op: z.enum(["is", "is_not", "contains", "not_contains", "is_empty", "is_not_empty"]),
+  value: z.string().max(2000),
+});
+
+export const databaseViewSchema = z.object({
+  id: z.string().min(1).max(64),
+  name: z.string().max(200),
+  sorts: z.array(databaseSortSchema).max(20),
+  filters: z.array(databaseFilterSchema).max(20),
+});
+
+export const databaseConfigSchema = z.object({
+  views: z.array(databaseViewSchema).min(1).max(20),
+  activeViewId: z.string().min(1).max(64),
+});
+
+export const setPageDbConfigInputSchema = z.object({
+  id: pageIdSchema,
+  config: databaseConfigSchema,
+});
+
 export const propertyValueSchema = z.union([
   z.string().max(2000),
   z.number(),
@@ -145,6 +173,7 @@ export const metaEntrySchema = z.object({
   favorite: z.boolean().optional(),
   properties: z.array(propertyDefSchema).max(50).optional(),
   fields: z.record(z.string(), propertyValueSchema).optional(),
+  dbConfig: databaseConfigSchema.optional(),
   createdAt: z.number().int(),
   updatedAt: z.number().int(),
   deletedAt: z.number().int().nullable(),

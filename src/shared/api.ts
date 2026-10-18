@@ -1,4 +1,5 @@
 import type { PropertyDef, PropertyValue } from "./database";
+import type { DatabaseConfig } from "./database-view";
 import type {
   AssetImportResult,
   BacklinkHit,
@@ -39,6 +40,7 @@ export interface PagegroveApi {
     setFavorite(id: string, favorite: boolean): Promise<PageMeta>;
     duplicate(id: string): Promise<PageMeta>;
     setProperties(id: string, properties: PropertyDef[]): Promise<PageMeta>;
+    setDbConfig(id: string, config: DatabaseConfig): Promise<PageMeta>;
     setField(id: string, propId: string, value: PropertyValue): Promise<PageMeta>;
     trash(id: string): Promise<boolean>;
     restore(id: string): Promise<boolean>;

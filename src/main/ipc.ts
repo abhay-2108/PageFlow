@@ -20,6 +20,7 @@ import {
   renamePageInputSchema,
   searchInputSchema,
   setPageCoverInputSchema,
+  setPageDbConfigInputSchema,
   setPageFavoriteInputSchema,
   setPageFieldInputSchema,
   setPageIconInputSchema,
@@ -148,6 +149,11 @@ export function registerIpc(db: WorkspaceDb): void {
   ipcMain.handle("pg:pages:set-properties", (_event, raw: unknown) => {
     const { id, properties } = parse(setPagePropertiesInputSchema, raw);
     return guarded(db, () => db.setPageProperties(id, properties));
+  });
+
+  ipcMain.handle("pg:pages:set-db-config", (_event, raw: unknown) => {
+    const { id, config } = parse(setPageDbConfigInputSchema, raw);
+    return guarded(db, () => db.setPageDbConfig(id, config));
   });
 
   ipcMain.handle("pg:pages:set-field", (_event, raw: unknown) => {
