@@ -1,10 +1,29 @@
 export type PropertyType = "text" | "number" | "select" | "multi_select" | "date" | "checkbox";
 
+export const SELECT_COLORS = [
+  "gray",
+  "brown",
+  "orange",
+  "yellow",
+  "green",
+  "blue",
+  "purple",
+  "pink",
+  "red",
+] as const;
+
+export type SelectColor = (typeof SELECT_COLORS)[number];
+
+export function isSelectColor(value: string): value is SelectColor {
+  return (SELECT_COLORS as readonly string[]).includes(value);
+}
+
 export interface PropertyDef {
   id: string;
   name: string;
   type: PropertyType;
   options: string[];
+  optionColors?: Record<string, string>;
 }
 
 export type PropertyValue = string | number | boolean | string[] | null;
@@ -36,7 +55,14 @@ function isPropertyDef(value: unknown): value is PropertyDef {
     typeof record.type === "string" &&
     isPropertyType(record.type) &&
     Array.isArray(record.options) &&
-    record.options.every((option) => typeof option === "string")
+    record.options.every((option) => typeof option === "string") &&
+    (record.optionColors === undefined ||
+      (typeof record.optionColors === "object" &&
+        record.optionColors !== null &&
+        !Array.isArray(record.optionColors) &&
+        Object.values(record.optionColors as Record<string, unknown>).every(
+          (color) => typeof color === "string" && isSelectColor(color),
+        )))
   );
 }
 
@@ -51,6 +77,7 @@ export function parseProperties(raw: string): PropertyDef[] {
       name: def.name,
       type: def.type,
       options: [...def.options],
+      ...(def.optionColors ? { optionColors: { ...def.optionColors } } : {}),
     }));
   } catch {
     return [];
@@ -125,5 +152,30 @@ export function valueToText(type: PropertyType, value: PropertyValue): string {
       return typeof value === "string" ? value : "";
     case "multi_select":
       return Array.isArray(value) ? value.join(", ") : "";
+  }
+}
+
+export function coerceValue(
+  from: PropertyType,
+  to: PropertyType,
+  value: PropertyValue,
+): PropertyValue {
+  if (from === to) {
+    return value;
+  }
+  const asText = valueToText(from, value);
+  switch (to) {
+    case "text":
+    case "select":
+    case "number":
+    case "date":
+      return normalizeValue(to, asText);
+    case "checkbox":
+      return value === true;
+    case "multi_select": {
+      const normalized = normalizeValue("text", asText);
+      const text = typeof normalized === "string" ? normalized : null;
+      return text ? [text] : [];
+    }
   }
 }

@@ -2,8 +2,8 @@ import { mkdirSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import Database from "better-sqlite3";
-import { parseFields, parseProperties } from "../../shared/database";
-import type { PropertyDef, PropertyValue } from "../../shared/database";
+import { coerceValue, parseFields, parseProperties } from "../../shared/database";
+import type { PropertyDef, PropertyType, PropertyValue } from "../../shared/database";
 import { extractDocText } from "../../shared/doc-text";
 import { sortEntriesByDepth } from "../../shared/meta";
 import { needsRebalance, rankAppend, rankBetween, rebalancedRanks } from "../../shared/rank";
@@ -447,10 +447,40 @@ export class WorkspaceDb {
       if (!row || row.deleted_at !== null) {
         throw new Error("Page not found");
       }
+      const previous = parseProperties(row.properties);
+      const previousById = new Map(previous.map((def) => [def.id, def]));
+      const changed = new Map<string, { from: PropertyType; to: PropertyType }>();
+      for (const def of properties) {
+        const before = previousById.get(def.id);
+        if (before && before.type !== def.type) {
+          changed.set(def.id, { from: before.type, to: def.type });
+        }
+      }
       const now = Date.now();
       this.db
         .prepare("UPDATE pages SET properties = ?, updated_at = ? WHERE id = ?")
         .run(JSON.stringify(properties), now, id);
+      if (changed.size > 0) {
+        const updateFields = this.db.prepare(
+          "UPDATE pages SET fields = ?, updated_at = ? WHERE id = ?",
+        );
+        for (const child of this.childRows(id)) {
+          const fields = parseFields(child.fields);
+          let dirty = false;
+          for (const [propId, types] of changed) {
+            const raw = fields[propId];
+            if (raw === undefined) {
+              continue;
+            }
+            fields[propId] = coerceValue(types.from, types.to, raw);
+            dirty = true;
+          }
+          if (dirty) {
+            updateFields.run(JSON.stringify(fields), now, child.id);
+            this.scheduleSnapshot(child.id);
+          }
+        }
+      }
       this.scheduleSnapshot(id);
       return this.metaById(id);
     })();

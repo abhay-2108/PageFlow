@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import {
   PROPERTY_TYPE_LABELS,
+  SELECT_COLORS,
   normalizeValue,
   valueToText,
 } from "../../../shared/database";
@@ -62,6 +63,9 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
   const [renamingProp, setRenamingProp] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const [typeMenuFor, setTypeMenuFor] = useState<string | null>(null);
+  const [colorMenuFor, setColorMenuFor] = useState<string | null>(null);
+  const [colorOptionFor, setColorOptionFor] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,13 +86,16 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
   const properties = useMemo(() => hub?.properties ?? [], [hub]);
 
   useEffect(() => {
-    if (!cellMenu && !propMenu && !addMenuOpen) {
+    if (!cellMenu && !propMenu && !addMenuOpen && !typeMenuFor && !colorMenuFor) {
       return;
     }
     const close = () => {
       setCellMenu(null);
       setPropMenu(null);
       setAddMenuOpen(false);
+      setTypeMenuFor(null);
+      setColorMenuFor(null);
+      setColorOptionFor(null);
       setCellQuery("");
     };
     const onKeyDown = (event: KeyboardEvent) => {
@@ -102,7 +109,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
       window.removeEventListener("mousedown", close);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [addMenuOpen, cellMenu, propMenu]);
+  }, [addMenuOpen, cellMenu, colorMenuFor, propMenu, typeMenuFor]);
 
   const rowLabel = (page: PageMeta) =>
     page.title.trim().length > 0 ? page.title : BRAND.empty.untitled;
@@ -131,6 +138,18 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
     } catch {
       // Keep the previous schema on failure.
     }
+  };
+
+  const setOptionColor = (def: PropertyDef, option: string, color: string | null) => {
+    const next = { ...(def.optionColors ?? {}) };
+    if (color === null) {
+      delete next[option];
+    } else {
+      next[option] = color;
+    }
+    void commitProperties(
+      properties.map((entry) => (entry.id === def.id ? { ...entry, optionColors: next } : entry)),
+    );
   };
 
   const createRow = async () => {
@@ -197,6 +216,14 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
         def.type === "select"
           ? valueToText("select", normalizeValue("select", value))
           : (normalizeValue("multi_select", value) as string[]).join(", ");
+      const selected = normalizeValue(def.type, value);
+      const selectedOption =
+        typeof selected === "string"
+          ? selected
+          : Array.isArray(selected) && typeof selected[0] === "string"
+            ? selected[0]
+            : undefined;
+      const dotColor = selectedOption ? def.optionColors?.[selectedOption] : undefined;
       const options =
         cellMenu && cellMenu.pageId === page.id && cellMenu.propId === def.id
           ? def.options
@@ -216,6 +243,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
               );
             }}
           >
+            {dotColor ? <span className={`pg-db-dot pg-db-dot--${dotColor}`} /> : null}
             {text.length > 0 ? text : "Empty"}
           </button>
           {options ? (
@@ -241,16 +269,22 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
                   .filter((option) =>
                     option.toLowerCase().includes(cellQuery.trim().toLowerCase()),
                   )
-                  .map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => toggleSelect(page, def, option)}
-                    >
-                      {option}
-                    </button>
-                  ))}
+                  .map((option) => {
+                    const optionColor = def.optionColors?.[option];
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => toggleSelect(page, def, option)}
+                      >
+                        {optionColor ? (
+                          <span className={`pg-db-dot pg-db-dot--${optionColor}`} />
+                        ) : null}
+                        {option}
+                      </button>
+                    );
+                  })}
                 {cellQuery.trim().length > 0 &&
                 !def.options.some(
                   (option) => option.toLowerCase() === cellQuery.trim().toLowerCase(),
@@ -338,7 +372,12 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
           type="button"
           className="pg-db-header-btn"
           aria-label={`${def.name} property options`}
-          onClick={() => setPropMenu(propMenu === def.id ? null : def.id)}
+          onClick={() => {
+            setPropMenu(propMenu === def.id ? null : def.id);
+            setTypeMenuFor(null);
+            setColorMenuFor(null);
+            setColorOptionFor(null);
+          }}
         >
           {def.name}
         </button>
@@ -355,6 +394,101 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
             >
               Rename
             </button>
+            {typeMenuFor === def.id ? (
+              <div className="pg-db-submenu" role="menu">
+                {PROPERTY_TYPE_ORDER.map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    role="menuitem"
+                    disabled={type === def.type}
+                    onClick={() => {
+                      setTypeMenuFor(null);
+                      setPropMenu(null);
+                      void commitProperties(
+                        properties.map((entry) => (entry.id === def.id ? { ...entry, type } : entry)),
+                      );
+                    }}
+                  >
+                    {PROPERTY_TYPE_LABELS[type]}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setTypeMenuFor(def.id);
+                  setColorMenuFor(null);
+                  setColorOptionFor(null);
+                }}
+              >
+                Change type
+              </button>
+            )}
+            {def.type === "select" || def.type === "multi_select" ? (
+              colorMenuFor === def.id ? (
+                <div className="pg-db-submenu" role="menu">
+                  {def.options.length === 0 ? (
+                    <p className="menu-popover__empty">Add options in a cell first</p>
+                  ) : null}
+                  {def.options.map((option) => {
+                    const optionColor = def.optionColors?.[option];
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => setColorOptionFor(colorOptionFor === option ? null : option)}
+                      >
+                        <span
+                          className={
+                            optionColor
+                              ? `pg-db-dot pg-db-dot--${optionColor}`
+                              : "pg-db-dot pg-db-dot--none"
+                          }
+                        />
+                        {option}
+                      </button>
+                    );
+                  })}
+                  {colorOptionFor ? (
+                    <div className="pg-db-colors" role="menu">
+                      {SELECT_COLORS.map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          role="menuitem"
+                          aria-label={color}
+                          className={`pg-db-swatch pg-db-swatch--${color}`}
+                          onClick={() => setOptionColor(def, colorOptionFor, color)}
+                        />
+                      ))}
+                      <button
+                        type="button"
+                        role="menuitem"
+                        aria-label="Clear color"
+                        className="pg-db-swatch pg-db-swatch--none"
+                        onClick={() => setOptionColor(def, colorOptionFor, null)}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setColorMenuFor(def.id);
+                    setTypeMenuFor(null);
+                    setColorOptionFor(null);
+                  }}
+                >
+                  Option colors
+                </button>
+              )
+            ) : null}
             <button
               type="button"
               role="menuitem"

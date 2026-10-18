@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { COVER_IDS } from "./covers";
+import { SELECT_COLORS } from "./database";
 import type { TipTapNode } from "./types";
 
 const markSchema = z.object({
@@ -82,11 +83,14 @@ export const propertyTypeSchema = z.enum([
   "checkbox",
 ]);
 
+export const selectColorSchema = z.enum(SELECT_COLORS);
+
 export const propertyDefSchema = z.object({
   id: z.string().min(1).max(64),
   name: z.string().max(200),
   type: propertyTypeSchema,
   options: z.array(z.string().max(200)).max(200),
+  optionColors: z.record(z.string(), selectColorSchema).optional(),
 });
 
 export const propertyValueSchema = z.union([

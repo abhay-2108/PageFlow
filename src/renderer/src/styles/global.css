@@ -2775,6 +2775,80 @@ body.pg-block-dragging {
   padding: 10px 8px;
 }
 
+.pg-db-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--pg-border);
+  vertical-align: middle;
+}
+
+.pg-db-dot--none {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--pg-border);
+}
+
+.pg-db-dot--gray { background-color: var(--pg-c-gray-bg); }
+.pg-db-dot--brown { background-color: var(--pg-c-brown-bg); }
+.pg-db-dot--orange { background-color: var(--pg-c-orange-bg); }
+.pg-db-dot--yellow { background-color: var(--pg-c-yellow-bg); }
+.pg-db-dot--green { background-color: var(--pg-c-green-bg); }
+.pg-db-dot--blue { background-color: var(--pg-c-blue-bg); }
+.pg-db-dot--purple { background-color: var(--pg-c-purple-bg); }
+.pg-db-dot--pink { background-color: var(--pg-c-pink-bg); }
+.pg-db-dot--red { background-color: var(--pg-c-red-bg); }
+
+.pg-db-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 4px 10px;
+  padding-left: 8px;
+  border-left: 1px solid var(--pg-border);
+}
+
+.pg-db-submenu button {
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.pg-db-menu .menu-popover__list button {
+  display: flex;
+  align-items: center;
+}
+
+.pg-db-colors {
+  display: grid;
+  grid-template-columns: repeat(5, 18px);
+  gap: 4px;
+  margin: 6px 0 2px 10px;
+}
+
+.pg-db-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--pg-border);
+}
+
+.pg-db-swatch--none {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--pg-border);
+}
+
+.pg-db-swatch--gray { background-color: var(--pg-c-gray-bg); }
+.pg-db-swatch--brown { background-color: var(--pg-c-brown-bg); }
+.pg-db-swatch--orange { background-color: var(--pg-c-orange-bg); }
+.pg-db-swatch--yellow { background-color: var(--pg-c-yellow-bg); }
+.pg-db-swatch--green { background-color: var(--pg-c-green-bg); }
+.pg-db-swatch--blue { background-color: var(--pg-c-blue-bg); }
+.pg-db-swatch--purple { background-color: var(--pg-c-purple-bg); }
+.pg-db-swatch--pink { background-color: var(--pg-c-pink-bg); }
+.pg-db-swatch--red { background-color: var(--pg-c-red-bg); }
+
 .pg-db-input,
 .pg-db-date {
   width: 100%;

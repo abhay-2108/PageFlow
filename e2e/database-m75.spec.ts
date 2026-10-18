@@ -96,3 +96,52 @@ test("database properties: add columns, edit cells, and persist", async () => {
     removeWorkspace(dir);
   }
 });
+
+test("database property types: change type with coercion and color options", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "pagegrove-e2e-"));
+  const { app, page } = await openApp(dir);
+
+  try {
+    await page.getByRole("button", { name: "Create a page" }).click();
+    await setPageTitle(page, "Types");
+    await page.getByRole("button", { name: "Table" }).click();
+    await createSubpage(page, "Types", "Row one");
+    await page.locator(".tree-row__label", { hasText: "Types" }).first().click();
+    await expect(page.getByLabel("Page title")).toHaveValue("Types");
+
+    await addProperty(page, "Text");
+    await addProperty(page, "Select");
+
+    const row = page.locator(".pg-db-row").first();
+    const textCell = row.getByLabel("Text");
+    await textCell.click();
+    await textCell.pressSequentially("5", { delay: 15 });
+    await textCell.press("Enter");
+
+    await row.getByRole("button", { name: "Select value" }).click();
+    const optionSearch = page.getByLabel("Option search");
+    await optionSearch.pressSequentially("Todo", { delay: 15 });
+    await page.getByRole("menuitem", { name: 'Create "Todo"' }).click();
+    await expect(row.getByRole("button", { name: "Select value" })).toHaveText("Todo");
+
+    await page.getByRole("button", { name: "Select property options" }).click();
+    await page.getByRole("menuitem", { name: "Option colors" }).click();
+    await page.getByRole("menuitem", { name: "Todo", exact: true }).click();
+    await page.getByRole("menuitem", { name: "red" }).click();
+    await expect(row.locator(".pg-db-dot--red")).toBeVisible();
+
+    await page.getByRole("button", { name: "Text property options" }).click();
+    await page.getByRole("menuitem", { name: "Change type" }).click();
+    await page.getByRole("menuitem", { name: "Number", exact: true }).click();
+    await expect(row.getByLabel("Text")).toHaveValue("5");
+
+    await page.waitForTimeout(700);
+    await page.reload();
+    await page.waitForSelector(".shell");
+    await expect(page.locator(".pg-db-row").first().getByLabel("Text")).toHaveValue("5");
+    await expect(page.locator(".pg-db-row").first().locator(".pg-db-dot--red")).toBeVisible();
+  } finally {
+    await app.close();
+    removeWorkspace(dir);
+  }
+});

@@ -274,5 +274,17 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Known limitations.** No sorting, filtering, or per-view configuration; no property type changes after creation; no select option colors, formulas, relations, or rollups; the table lists direct children only.
 
+## 21. M8 spec: database depth (Pagegrove — C, informed by A-web)
+
+**Property type change (M8.1).** A column's type can be changed at any time from its header menu (Change type). The change keeps the column id, name, options, and option colors, and re-normalizes every stored value through `coerceValue` in the main process: text/number/date route through their text form, select keeps its string, multi-select collapses to its first value, checkbox becomes `false` unless already `true`, and unparseable numbers drop to empty. Coercion runs in the main process so LAN peers and sync bundles converge on the same values.
+
+**Select option colors (M8.1).** Each select/multi-select option carries an optional color from a fixed nine-color palette (gray, brown, orange, yellow, green, blue, purple, pink, red), stored as `optionColors` on the property definition. Colors ride on page metadata (LAN sync, sync bundles) and render as a dot in the cell chip and in the option list; the property header menu exposes an "Option colors" submenu listing the options and a swatch palette.
+
+**Sorting, filtering, and views (M8.2–M8.3).** Each database hub stores a `dbConfig` on its page metadata: an ordered list of named views, each with its own sort specs and filter specs. Sorting and filtering apply to the direct-child rows; a hub always has at least one default view. View state travels with the page over LAN meta sync and sync bundles.
+
+**Formulas (M8.4).** A `formula` property computes a value from other properties on the same row with a small safe expression language (arithmetic, comparison, `and`/`or`/`not`, `if`, and aggregations over multi-select). Formulas are read-only, recomputed on render and after any field change, and never persisted as row data.
+
+**Relations and rollups (M8.5).** A `relation` property links rows to another database hub; a `rollup` property aggregates a chosen property across the related rows (count, sum, average, min, max, or "show original"). Relation/rollup values are computed on demand from the linked hub's rows.
+
 
 
