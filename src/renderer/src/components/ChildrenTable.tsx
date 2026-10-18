@@ -79,6 +79,9 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
   const [filterProp, setFilterProp] = useState("");
   const [filterOp, setFilterOp] = useState<FilterOperator>("contains");
   const [filterValue, setFilterValue] = useState("");
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
+  const [renamingView, setRenamingView] = useState(false);
+  const [viewName, setViewName] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +118,58 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
       ...activeConfig,
       views: activeConfig.views.map((entry) => (entry.id === view.id ? view : entry)),
     };
+    void api.pages
+      .setDbConfig(hub.id, next)
+      .then((meta) => setHub(meta))
+      .catch(() => undefined);
+  };
+
+  const switchView = (id: string) => {
+    if (!hub || id === activeView.id) {
+      return;
+    }
+    const next: DatabaseConfig = { ...activeConfig, activeViewId: id };
+    void api.pages
+      .setDbConfig(hub.id, next)
+      .then((meta) => setHub(meta))
+      .catch(() => undefined);
+  };
+
+  const addView = () => {
+    if (!hub) {
+      return;
+    }
+    const id = crypto.randomUUID();
+    const name = `View ${activeConfig.views.length + 1}`;
+    const next: DatabaseConfig = {
+      views: [...activeConfig.views, { id, name, sorts: [], filters: [] }],
+      activeViewId: id,
+    };
+    void api.pages
+      .setDbConfig(hub.id, next)
+      .then((meta) => setHub(meta))
+      .catch(() => undefined);
+  };
+
+  const commitViewName = () => {
+    const trimmed = viewName.trim();
+    setRenamingView(false);
+    if (!hub || trimmed.length === 0 || trimmed === activeView.name) {
+      return;
+    }
+    updateView({ ...activeView, name: trimmed });
+  };
+
+  const deleteView = () => {
+    if (!hub || activeConfig.views.length <= 1) {
+      return;
+    }
+    const remaining = activeConfig.views.filter((view) => view.id !== activeView.id);
+    const next: DatabaseConfig = {
+      views: remaining,
+      activeViewId: remaining[0]?.id ?? activeView.id,
+    };
+    setViewMenuOpen(false);
     void api.pages
       .setDbConfig(hub.id, next)
       .then((meta) => setHub(meta))
@@ -161,7 +216,15 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
   };
 
   useEffect(() => {
-    if (!cellMenu && !propMenu && !addMenuOpen && !typeMenuFor && !colorMenuFor && !toolMenu) {
+    if (
+      !cellMenu &&
+      !propMenu &&
+      !addMenuOpen &&
+      !typeMenuFor &&
+      !colorMenuFor &&
+      !toolMenu &&
+      !viewMenuOpen
+    ) {
       return;
     }
     const close = () => {
@@ -172,6 +235,8 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
       setColorMenuFor(null);
       setColorOptionFor(null);
       setToolMenu(null);
+      setViewMenuOpen(false);
+      setRenamingView(false);
       setFilterProp("");
       setFilterOp("contains");
       setFilterValue("");
@@ -188,7 +253,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
       window.removeEventListener("mousedown", close);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [addMenuOpen, cellMenu, colorMenuFor, propMenu, toolMenu, typeMenuFor]);
+  }, [addMenuOpen, cellMenu, colorMenuFor, propMenu, toolMenu, typeMenuFor, viewMenuOpen]);
 
   const rowLabel = (page: PageMeta) =>
     page.title.trim().length > 0 ? page.title : BRAND.empty.untitled;
@@ -601,7 +666,84 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
   return (
     <div className="pg-children-table-wrap">
       <div className="pg-db-toolbar">
-        <span className="pg-db-view-name">{activeView.name}</span>
+        {renamingView ? (
+          <input
+            className="pg-db-rename"
+            aria-label="View name"
+            value={viewName}
+            autoFocus
+            onMouseDown={stop}
+            onChange={(event) => setViewName(event.target.value)}
+            onBlur={commitViewName}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.currentTarget.blur();
+              }
+              if (event.key === "Escape") {
+                setRenamingView(false);
+              }
+            }}
+          />
+        ) : (
+          <>
+            <select
+              className="pg-db-select pg-db-view-select"
+              aria-label="Database view"
+              value={activeView.id}
+              onMouseDown={stop}
+              onChange={(event) => switchView(event.target.value)}
+            >
+              {activeConfig.views.map((view) => (
+                <option key={view.id} value={view.id}>
+                  {view.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="pg-db-tool"
+              aria-label="Add view"
+              onMouseDown={stop}
+              onClick={addView}
+            >
+              + View
+            </button>
+            <button
+              type="button"
+              className="pg-db-tool"
+              aria-label="View options"
+              aria-expanded={viewMenuOpen}
+              onMouseDown={stop}
+              onClick={() => setViewMenuOpen((open) => !open)}
+            >
+              …
+            </button>
+            {viewMenuOpen ? (
+              <div className="menu-popover pg-db-tool-menu" role="menu" onMouseDown={stop}>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setViewMenuOpen(false);
+                    setViewName(activeView.name);
+                    setRenamingView(true);
+                  }}
+                >
+                  Rename view
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="menu-popover__danger"
+                  disabled={activeConfig.views.length <= 1}
+                  onClick={deleteView}
+                >
+                  Delete view
+                </button>
+              </div>
+            ) : null}
+          </>
+        )}
         <button
           type="button"
           className="pg-db-tool"

@@ -2858,11 +2858,11 @@ body.pg-block-dragging {
   flex-wrap: wrap;
 }
 
-.pg-db-view-name {
-  font-size: 0.8125rem;
+.pg-db-view-select {
+  width: auto;
+  max-width: 160px;
+  margin-bottom: 0;
   font-weight: 650;
-  color: var(--pg-text-muted);
-  margin-right: 2px;
 }
 
 .pg-db-tool {

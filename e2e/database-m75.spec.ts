@@ -217,3 +217,47 @@ test("database views: sort and filter rows", async () => {
     removeWorkspace(dir);
   }
 });
+
+test("database views: add, rename, and switch views", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "pagegrove-e2e-"));
+  const { app, page } = await openApp(dir);
+
+  try {
+    await page.getByRole("button", { name: "Create a page" }).click();
+    await setPageTitle(page, "Views");
+    await page.getByRole("button", { name: "Table" }).click();
+    await createSubpage(page, "Views", "Row one");
+    await page.locator(".tree-row__label", { hasText: "Views" }).first().click();
+    await expect(page.getByLabel("Page title")).toHaveValue("Views");
+
+    const viewSelect = page.getByLabel("Database view");
+    await expect(viewSelect.locator("option")).toHaveCount(1);
+    await expect(viewSelect).toHaveValue("default");
+
+    await page.getByRole("button", { name: "Add view" }).click();
+    await expect(viewSelect.locator("option")).toHaveCount(2);
+    const newViewId = await viewSelect.inputValue();
+    expect(newViewId).not.toBe("default");
+
+    await page.getByRole("button", { name: "View options" }).click();
+    await page.getByRole("menuitem", { name: "Rename view" }).click();
+    const nameInput = page.getByLabel("View name");
+    await nameInput.press("Control+a");
+    await nameInput.pressSequentially("Active", { delay: 15 });
+    await nameInput.press("Enter");
+    await expect(viewSelect.locator("option", { hasText: "Active" })).toHaveCount(1);
+    await expect(viewSelect).toHaveValue(newViewId);
+
+    await viewSelect.selectOption({ label: "Table" });
+    await expect(viewSelect).toHaveValue("default");
+
+    await page.waitForTimeout(700);
+    await page.reload();
+    await page.waitForSelector(".shell");
+    await expect(viewSelect).toHaveValue("default");
+    await expect(viewSelect.locator("option", { hasText: "Active" })).toHaveCount(1);
+  } finally {
+    await app.close();
+    removeWorkspace(dir);
+  }
+});
