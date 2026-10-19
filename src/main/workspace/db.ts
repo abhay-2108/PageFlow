@@ -661,23 +661,45 @@ export class WorkspaceDb {
   }
 
   listBacklinks(targetId: string): BacklinkHit[] {
+    const escaped = targetId.replace(/([%_\\])/g, "\\$1");
+    const patternNoSpace = `%"pageId":"${escaped}"%`;
+    const patternWithSpace = `%"pageId": "${escaped}"%`;
     const rows = this.db
       .prepare(
         `SELECT id, title FROM pages
-         WHERE deleted_at IS NULL AND id != ? AND doc LIKE ?
+         WHERE deleted_at IS NULL AND id != ? AND (doc LIKE ? ESCAPE '\\' OR doc LIKE ? ESCAPE '\\')
          ORDER BY updated_at DESC
          LIMIT 50`,
       )
-      .all(targetId, `%"pageId":"${targetId}"%`) as { id: string; title: string }[];
+      .all(targetId, patternNoSpace, patternWithSpace) as { id: string; title: string }[];
     if (rows.length === 0) {
       return [];
     }
-    const metas = this.listPages();
+    const metas = this.listPagesCached();
     return rows.map((row) => ({
       id: row.id,
       title: row.title,
       path: this.pathTitles(metas, row.id),
     }));
+  }
+
+  private _pageListCache: { data: PageMeta[]; timestamp: number } | null = null;
+  private _pageListCacheTTL = 5000;
+
+  listPagesCached(): PageMeta[] {
+    if (
+      this._pageListCache &&
+      Date.now() - this._pageListCache.timestamp < this._pageListCacheTTL
+    ) {
+      return this._pageListCache.data;
+    }
+    const result = this.listPages();
+    this._pageListCache = { data: result, timestamp: Date.now() };
+    return result;
+  }
+
+  invalidatePageListCache(): void {
+    this._pageListCache = null;
   }
 
   createCommentThread(input: NewCommentThreadInput): CommentThread {

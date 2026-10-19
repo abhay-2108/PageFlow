@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { DragEvent as ReactDragEvent, MouseEvent as ReactMouseEvent } from "react";
 import { BRAND, searchNoResults } from "../../../shared/brand";
 import { isDescendant } from "../../../shared/tree";
@@ -54,7 +54,7 @@ interface TreeRowProps {
   onDropRow: (event: ReactDragEvent<HTMLElement>, id: string) => void;
 }
 
-function TreeRow(props: TreeRowProps) {
+const TreeRow = memo(function TreeRow(props: TreeRowProps) {
   const {
     page,
     depth,
@@ -184,16 +184,9 @@ function TreeRow(props: TreeRowProps) {
           </span>
         ) : null}
       </div>
-      {hasChildren && isExpanded ? (
-        <ul className="tree-children">
-          {children.map((child) => (
-            <TreeRow key={child.id} {...props} page={child} depth={depth + 1} />
-          ))}
-        </ul>
-      ) : null}
     </li>
   );
-}
+});
 
 function RenameInput({
   initialValue,
@@ -297,6 +290,21 @@ export function Sidebar(props: SidebarProps) {
     }
     return map;
   }, [pages]);
+
+  const visibleNodes = useMemo(() => {
+    const result: Array<{ page: PageMeta; depth: number }> = [];
+    const walk = (parentId: string | null, depth: number) => {
+      const children = childrenMap.get(parentId) ?? [];
+      for (const child of children) {
+        result.push({ page: child, depth });
+        if (expanded.has(child.id)) {
+          walk(child.id, depth + 1);
+        }
+      }
+    };
+    walk(null, 0);
+    return result;
+  }, [childrenMap, expanded]);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -608,13 +616,13 @@ export function Sidebar(props: SidebarProps) {
                 ) : null}
               </section>
             ) : null}
-            {rootPages.length > 0 ? (
+            {visibleNodes.length > 0 ? (
               <ul className="tree">
-                {rootPages.map((page) => (
+                {visibleNodes.map(({ page, depth }) => (
                   <TreeRow
                     key={page.id}
                     page={page}
-                    depth={0}
+                    depth={depth}
                     childrenMap={childrenMap}
                     activeId={activeId}
                     expanded={expanded}

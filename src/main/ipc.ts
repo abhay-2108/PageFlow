@@ -96,7 +96,7 @@ function parseBundle(raw: string): BundleShape {
 export function registerIpc(db: WorkspaceDb): void {
   ipcMain.handle("pg:workspace:info", () => ({ dir: db.directory, userName: userInfo().username }));
 
-  ipcMain.handle("pg:pages:list", () => guarded(db, () => db.listPages()));
+  ipcMain.handle("pg:pages:list", () => guarded(db, () => db.listPagesCached()));
   ipcMain.handle("pg:pages:list-trash", () => guarded(db, () => db.listTrash()));
 
   ipcMain.handle("pg:pages:get", (_event, raw: unknown) => {

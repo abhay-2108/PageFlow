@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   BacklinkHit,
   CommentThread,
@@ -59,6 +59,7 @@ export function PageView({
   onFavoriteChange,
 }: PageViewProps) {
   const api = getApi();
+  const editorContainerRef = useRef<HTMLDivElement>(null);
   const [picker, setPicker] = useState<"icon" | "cover" | null>(null);
   const [crumbsMenuOpen, setCrumbsMenuOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -103,11 +104,9 @@ export function PageView({
     };
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("pageflow:toggle-ai", onToggleAiEvent);
-    window.addEventListener("notionflow:toggle-ai", onToggleAiEvent);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("pageflow:toggle-ai", onToggleAiEvent);
-      window.removeEventListener("notionflow:toggle-ai", onToggleAiEvent);
     };
   }, [handleToggleAiDrawer]);
 
@@ -120,7 +119,7 @@ export function PageView({
     async (text: string) => {
       let ed = activeEditor.get();
       if (!ed || ed.isDestroyed) {
-        const editorEl = document.querySelector<HTMLElement>(".pg-editor");
+        const editorEl = editorContainerRef.current?.querySelector<HTMLElement>(".pg-editor");
         if (editorEl) {
           editorEl.focus();
         }
@@ -823,15 +822,17 @@ export function PageView({
           onOpenPage={onOpenPage}
         />
       ) : (
-        <Editor
-          key={`${record.meta.id}:${editorEpoch}`}
-          pageId={record.meta.id}
-          onDocChange={onDocChange}
-          autoFocus={autoFocusEditor}
-          onOpenPage={onOpenPage}
-          onCommentRequest={handleCommentRequest}
-          onCommentClick={handleCommentClick}
-        />
+        <div ref={editorContainerRef} className="page__editor-container">
+          <Editor
+            key={`${record.meta.id}:${editorEpoch}`}
+            pageId={record.meta.id}
+            onDocChange={onDocChange}
+            autoFocus={autoFocusEditor}
+            onOpenPage={onOpenPage}
+            onCommentRequest={handleCommentRequest}
+            onCommentClick={handleCommentClick}
+          />
+        </div>
       )}
       {view === "doc" && backlinks.length > 0 ? (
         <section className="page__backlinks" aria-label="Linked from">

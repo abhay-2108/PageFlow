@@ -107,8 +107,8 @@ class SessionManager {
     for (const update of stored) {
       try {
         Y.applyUpdate(doc, Uint8Array.from(update), "init");
-      } catch {
-        // Skip corrupt updates; later updates in the log may still apply.
+      } catch (err) {
+        console.error("[PageFlow] Skipping corrupt meta update:", err);
       }
     }
 
@@ -235,8 +235,8 @@ class SessionManager {
     for (const update of stored) {
       try {
         Y.applyUpdate(doc, Uint8Array.from(update), "init");
-      } catch {
-        // Skip corrupt updates; later updates in the log may still apply.
+      } catch (err) {
+        console.error("[PageFlow] Skipping corrupt doc update:", err);
       }
     }
     const fragment = doc.getXmlFragment(EDITOR_FIELD);
@@ -249,8 +249,8 @@ class SessionManager {
         const seeded = prosemirrorJSONToYDoc(editorSchema, record.doc, EDITOR_FIELD);
         Y.applyUpdate(doc, Y.encodeStateAsUpdate(seeded), "init");
         seeded.destroy();
-      } catch {
-        // Unrepresentable legacy content stays available via the JSON snapshot.
+      } catch (err) {
+        console.error("[PageFlow] Could not seed legacy content:", err);
       }
     }
   }
@@ -322,8 +322,8 @@ class SessionManager {
       if (this.signalingUrl !== signalingUrl || this.payload !== payload) {
         try {
           provider.destroy();
-        } catch {
-          // Already destroyed.
+        } catch (err) {
+          console.error("[PageFlow] Error destroying stale provider:", err);
         }
         return null;
       }
@@ -414,21 +414,21 @@ class SessionManager {
       this.sharedDocs.delete(pageId);
       try {
         shared.provider.destroy();
-      } catch {
-        // Already destroyed.
+      } catch (err) {
+        console.error("[PageFlow] Error destroying provider:", err);
       }
       try {
         shared.doc.destroy();
-      } catch {
-        // Already destroyed.
+      } catch (err) {
+        console.error("[PageFlow] Error destroying doc:", err);
       }
     }
     this.sharedPromises.clear();
     if (this.metaProvider) {
       try {
         this.metaProvider.destroy();
-      } catch {
-        // Already destroyed.
+      } catch (err) {
+        console.error("[PageFlow] Error destroying meta provider:", err);
       }
       this.metaProvider = null;
     }

@@ -12,14 +12,34 @@ import { getApi } from "./lib/api";
 import { emitWorkspaceChanged, onWorkspaceChanged } from "./lib/bus";
 import { exportMarkdown } from "./lib/markdown";
 import { session } from "./lib/session";
-
-export interface DesktopTab {
-  id: string;
-  pageId: string;
-}
+import { debounce } from "../../shared/debounce";
+import { useTabs, type DesktopTab } from "./hooks/useTabs";
 
 const SAVE_DEBOUNCE_MS = 250;
 const RENAME_DEBOUNCE_MS = 400;
+
+const debouncedSave = debounce((id: string, doc: TipTapDocument) => {
+  void getApi().pages.updateDoc(id, doc).catch(() => undefined);
+}, SAVE_DEBOUNCE_MS);
+
+const debouncedRename = debounce((id: string, title: string) => {
+  void getApi().pages.rename(id, title).catch(() => undefined);
+}, RENAME_DEBOUNCE_MS);
+
+function LoadingSkeleton() {
+  return (
+    <div className="app__scroll app__loading" aria-label="Loading workspace" role="status">
+      <div className="loading-skeleton">
+        <div className="loading-skeleton__title" />
+        <div className="loading-skeleton__line" />
+        <div className="loading-skeleton__line" />
+        <div className="loading-skeleton__line loading-skeleton__line--short" />
+        <div className="loading-skeleton__line" />
+        <div className="loading-skeleton__line loading-skeleton__line--short" />
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const api = getApi();
@@ -28,8 +48,6 @@ export default function App() {
   const [trash, setTrash] = useState<PageMeta[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeRecord, setActiveRecord] = useState<PageRecord | null>(null);
-  const [tabs, setTabs] = useState<DesktopTab[]>([]);
-  const [activeTabId, setActiveTabId] = useState<string>("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [focusPageId, setFocusPageId] = useState<string | null>(null);
   const [workspaceDir, setWorkspaceDir] = useState<string | null>(null);
@@ -38,49 +56,22 @@ export default function App() {
   const [editorEpoch, setEditorEpoch] = useState(0);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const sessionState = useSyncExternalStore(session.subscribe, session.getState, session.getState);
-  const latestDoc = useRef<{ id: string; doc: TipTapDocument } | null>(null);
-
-  const pendingSave = useRef<{ id: string; doc: TipTapDocument } | null>(null);
-  const saveTimer = useRef<number | null>(null);
-  const pendingRename = useRef<{ id: string; title: string } | null>(null);
-  const renameTimer = useRef<number | null>(null);
+  const latestDocRef = useRef<{ id: string; doc: TipTapDocument } | null>(null);
 
   const flushSave = useCallback(() => {
-    if (saveTimer.current !== null) {
-      window.clearTimeout(saveTimer.current);
-      saveTimer.current = null;
-    }
-    const pending = pendingSave.current;
-    pendingSave.current = null;
-    if (pending) {
-      void api.pages.updateDoc(pending.id, pending.doc).catch(() => undefined);
-    }
-  }, [api]);
+    debouncedSave.flush();
+  }, []);
 
   const flushRename = useCallback(() => {
-    if (renameTimer.current !== null) {
-      window.clearTimeout(renameTimer.current);
-      renameTimer.current = null;
-    }
-    const pending = pendingRename.current;
-    pendingRename.current = null;
-    if (pending) {
-      void api.pages.rename(pending.id, pending.title).catch(() => undefined);
-    }
-  }, [api]);
+    debouncedRename.flush();
+  }, []);
 
   const queueSave = useCallback(
     (id: string, doc: TipTapDocument) => {
-      pendingSave.current = { id, doc };
-      if (saveTimer.current !== null) {
-        window.clearTimeout(saveTimer.current);
-      }
-      saveTimer.current = window.setTimeout(() => {
-        saveTimer.current = null;
-        flushSave();
-      }, SAVE_DEBOUNCE_MS);
+      latestDocRef.current = { id, doc };
+      debouncedSave(id, doc);
     },
-    [flushSave],
+    [],
   );
 
   const queueRename = useCallback(
@@ -89,16 +80,9 @@ export default function App() {
       setActiveRecord((prev) =>
         prev && prev.meta.id === id ? { ...prev, meta: { ...prev.meta, title } } : prev,
       );
-      pendingRename.current = { id, title };
-      if (renameTimer.current !== null) {
-        window.clearTimeout(renameTimer.current);
-      }
-      renameTimer.current = window.setTimeout(() => {
-        renameTimer.current = null;
-        flushRename();
-      }, RENAME_DEBOUNCE_MS);
+      debouncedRename(id, title);
     },
-    [flushRename],
+    [],
   );
 
   const refreshLists = useCallback(async () => {
@@ -198,60 +182,31 @@ export default function App() {
     document.title = trimmed.length > 0 ? `${trimmed} — ${BRAND.name}` : BRAND.name;
   }, [activeRecord?.meta.title]);
 
+  const onBeforeTabSwitch = useCallback(() => {
+    flushSave();
+    flushRename();
+  }, [flushRename, flushSave]);
+
+  const {
+    tabs,
+    setTabs,
+    activeTabId,
+    setActiveTabId,
+    selectTab,
+    switchTab,
+    closeTab,
+    openNewTab,
+  } = useTabs({
+    onOpenPage: openPage,
+    onBeforeSwitch: onBeforeTabSwitch,
+  });
+
   const selectPage = useCallback(
     async (id: string, inNewTab = false) => {
-      flushSave();
-      flushRename();
       setFocusPageId(null);
-      if (inNewTab || tabs.length === 0) {
-        const tabId = crypto.randomUUID();
-        setTabs((prev) => [...prev, { id: tabId, pageId: id }]);
-        setActiveTabId(tabId);
-      } else {
-        setTabs((prev) =>
-          prev.map((t) => (t.id === activeTabId ? { ...t, pageId: id } : t)),
-        );
-      }
-      await openPage(id);
+      await selectTab(id, inNewTab);
     },
-    [activeTabId, flushRename, flushSave, openPage, tabs.length],
-  );
-
-  const switchTab = useCallback(
-    async (tabId: string) => {
-      if (tabId === activeTabId) {
-        return;
-      }
-      const target = tabs.find((t) => t.id === tabId);
-      if (target) {
-        flushSave();
-        flushRename();
-        setActiveTabId(tabId);
-        await openPage(target.pageId);
-      }
-    },
-    [activeTabId, flushRename, flushSave, openPage, tabs],
-  );
-
-  const closeTab = useCallback(
-    async (tabId: string) => {
-      if (tabs.length <= 1) {
-        return;
-      }
-      flushSave();
-      flushRename();
-      const index = tabs.findIndex((t) => t.id === tabId);
-      const remaining = tabs.filter((t) => t.id !== tabId);
-      setTabs(remaining);
-      if (tabId === activeTabId) {
-        const nextActive = remaining[Math.min(index, remaining.length - 1)];
-        if (nextActive) {
-          setActiveTabId(nextActive.id);
-          await openPage(nextActive.pageId);
-        }
-      }
-    },
-    [activeTabId, flushRename, flushSave, openPage, tabs],
+    [selectTab],
   );
 
   const createPage = useCallback(
@@ -472,8 +427,8 @@ export default function App() {
     try {
       const id = activeRecord.meta.id;
       const doc =
-        latestDoc.current && latestDoc.current.id === id
-          ? latestDoc.current.doc
+        latestDocRef.current && latestDocRef.current.id === id
+          ? latestDocRef.current.doc
           : ((await api.pages.get(id))?.doc ?? null);
       if (!doc) {
         return;
@@ -730,7 +685,9 @@ export default function App() {
           </div>
         ) : null}
         <div className="app__scroll">
-          {!loading && pages.length === 0 ? (
+          {loading ? (
+            <LoadingSkeleton />
+          ) : pages.length === 0 ? (
             <EmptyWorkspace
               onCreate={() => {
                 void createPage(null);
@@ -743,7 +700,7 @@ export default function App() {
               pages={pages}
               editorEpoch={editorEpoch}
               onDocChange={(doc) => {
-                latestDoc.current = { id: activeRecord.meta.id, doc };
+                latestDocRef.current = { id: activeRecord.meta.id, doc };
                 queueSave(activeRecord.meta.id, doc);
               }}
               onTitleChange={(title) => queueRename(activeRecord.meta.id, title)}
