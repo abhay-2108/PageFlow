@@ -65,11 +65,38 @@ describe("database config parsing", () => {
         {
           id: "v1",
           name: "Table",
+          layout: "table",
           sorts: [{ propId: "count", dir: "desc" }],
           filters: [{ propId: "status", op: "is", value: "Todo" }],
         },
       ],
       activeViewId: "v1",
+    });
+  });
+
+  it("parses board view config with groupByPropId", () => {
+    const config = parseDatabaseConfig(
+      JSON.stringify({
+        views: [
+          {
+            id: "b1",
+            name: "Board",
+            layout: "board",
+            groupByPropId: "status",
+            sorts: [],
+            filters: [],
+          },
+        ],
+        activeViewId: "b1",
+      }),
+    );
+    expect(config?.views[0]).toEqual({
+      id: "b1",
+      name: "Board",
+      layout: "board",
+      groupByPropId: "status",
+      sorts: [],
+      filters: [],
     });
   });
 
@@ -95,7 +122,7 @@ describe("database config parsing", () => {
 
   it("provides a default single-view config", () => {
     expect(defaultDatabaseConfig()).toEqual({
-      views: [{ id: "default", name: "Table", sorts: [], filters: [] }],
+      views: [{ id: "default", name: "Table", layout: "table", sorts: [], filters: [] }],
       activeViewId: "default",
     });
   });

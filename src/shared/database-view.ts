@@ -1,5 +1,5 @@
 import { normalizeValue, valueToText } from "./database";
-import type { PropertyDef } from "./database";
+import type { PropertyDef, PropertyValue } from "./database";
 import type { PageMeta } from "./types";
 
 export interface DatabaseSort {
@@ -21,9 +21,13 @@ export interface DatabaseFilter {
   value: string;
 }
 
+export type ViewLayout = "table" | "board" | "gallery";
+
 export interface DatabaseView {
   id: string;
   name: string;
+  layout?: ViewLayout;
+  groupByPropId?: string;
   sorts: DatabaseSort[];
   filters: DatabaseFilter[];
 }
@@ -35,7 +39,7 @@ export interface DatabaseConfig {
 
 export function defaultDatabaseConfig(): DatabaseConfig {
   return {
-    views: [{ id: "default", name: "Table", sorts: [], filters: [] }],
+    views: [{ id: "default", name: "Table", layout: "table", sorts: [], filters: [] }],
     activeViewId: "default",
   };
 }
@@ -80,10 +84,20 @@ function isView(value: unknown): value is DatabaseView {
     return false;
   }
   const record = value as Record<string, unknown>;
+  const validLayout =
+    record.layout === undefined ||
+    record.layout === "table" ||
+    record.layout === "board" ||
+    record.layout === "gallery";
+  const validGroupBy =
+    record.groupByPropId === undefined || typeof record.groupByPropId === "string";
+
   return (
     typeof record.id === "string" &&
     record.id.length > 0 &&
     typeof record.name === "string" &&
+    validLayout &&
+    validGroupBy &&
     Array.isArray(record.sorts) &&
     record.sorts.every(isSort) &&
     Array.isArray(record.filters) &&
@@ -109,6 +123,8 @@ export function parseDatabaseConfig(
     const views = (parsed as { views: unknown[] }).views.filter(isView).map((view) => ({
       id: view.id,
       name: view.name,
+      layout: view.layout ?? "table",
+      ...(view.groupByPropId ? { groupByPropId: view.groupByPropId } : {}),
       sorts: view.sorts.map((sort) => ({ propId: sort.propId, dir: sort.dir })),
       filters: view.filters.map((filter) => ({
         propId: filter.propId,
@@ -133,11 +149,24 @@ export function parseDatabaseConfig(
   }
 }
 
+function getRawValue(def: PropertyDef | undefined, row: PageMeta, propId: string): PropertyValue {
+  if (!def) {
+    return null;
+  }
+  if (def.type === "created_time") {
+    return row.createdAt;
+  }
+  if (def.type === "last_edited_time") {
+    return row.updatedAt;
+  }
+  return normalizeValue(def.type, row.fields[propId] ?? null);
+}
+
 function cellIsEmpty(def: PropertyDef | undefined, row: PageMeta, propId: string): boolean {
   if (!def) {
     return true;
   }
-  const value = normalizeValue(def.type, row.fields[propId] ?? null);
+  const value = getRawValue(def, row, propId);
   if (value === null) {
     return true;
   }
@@ -154,7 +183,7 @@ function cellText(def: PropertyDef | undefined, row: PageMeta, propId: string): 
   if (!def) {
     return "";
   }
-  return valueToText(def.type, normalizeValue(def.type, row.fields[propId] ?? null));
+  return valueToText(def.type, getRawValue(def, row, propId));
 }
 
 function matchesFilter(
@@ -186,8 +215,8 @@ function compareValues(
   b: PageMeta,
   propId: string,
 ): number {
-  const av = def ? normalizeValue(def.type, a.fields[propId] ?? null) : null;
-  const bv = def ? normalizeValue(def.type, b.fields[propId] ?? null) : null;
+  const av = def ? getRawValue(def, a, propId) : null;
+  const bv = def ? getRawValue(def, b, propId) : null;
   if (typeof av === "number" && typeof bv === "number") {
     return av - bv;
   }

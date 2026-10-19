@@ -1,7 +1,7 @@
 {
-  "name": "pagegrove",
+  "name": "notionflow",
   "version": "0.1.0",
-  "description": "Local-first, multiplayer-capable notes. Your workspace is a folder you own.",
+  "description": "Fluid, local-first notes with AI assistance. Your workspace is a folder you own.",
   "private": true,
   "type": "module",
   "main": "out/main/index.mjs",
@@ -15,9 +15,14 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "pnpm build && playwright test",
+    "seed": "node -e \"const { spawnSync } = require('child_process'); const electron = require('electron'); spawnSync(electron, ['scripts/seed-dummy-data.mjs'], { stdio: 'inherit', env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' } });\"",
     "make-icon": "node scripts/make-icon.mjs",
+    "predist": "node scripts/kill-running.mjs",
     "dist": "pnpm make-icon && electron-vite build && electron-builder --win",
+    "predist:dir": "node scripts/kill-running.mjs",
     "dist:dir": "pnpm make-icon && electron-vite build && electron-builder --win --dir",
+    "postdist:dir": "node scripts/sync-release.mjs",
+    "app": "dist-win\\win-unpacked\\NotionFlow.exe",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {

@@ -5,6 +5,7 @@ import { userInfo } from "node:os";
 import { basename, extname, join } from "node:path";
 import type { z } from "zod";
 import {
+  aiGenerateInputSchema,
   applyMetaInputSchema,
   appendUpdatesInputSchema,
   commentDeleteInputSchema,
@@ -29,6 +30,8 @@ import {
   updateDocInputSchema,
 } from "../shared/schemas";
 import type { AssetImportResult, PageMeta } from "../shared/types";
+import { ollama } from "./ai/ollama";
+import { logger } from "./logger";
 import { startSession, stopSession } from "./session/server";
 import type { WorkspaceDb } from "./workspace/db";
 
@@ -77,7 +80,7 @@ function parseBundle(raw: string): BundleShape {
     updates?: unknown;
   };
   if (parsed.version !== 1 || !Array.isArray(parsed.entries) || !Array.isArray(parsed.updates)) {
-    throw new Error("Not a Pagegrove sync bundle");
+    throw new Error("Not a NotionFlow sync bundle");
   }
   const entries = parsed.entries as PageMeta[];
   const updates: { pageId: string; data: string }[] = [];
@@ -244,8 +247,8 @@ export function registerIpc(db: WorkspaceDb): void {
     const stamp = new Date().toISOString().slice(0, 10);
     const result = await dialog.showSaveDialog({
       title: "Export sync bundle",
-      defaultPath: join(db.directory, `pagegrove-${stamp}.sync`),
-      filters: [{ name: "Pagegrove sync bundle", extensions: ["sync"] }],
+      defaultPath: join(db.directory, `notionflow-${stamp}.sync`),
+      filters: [{ name: "NotionFlow sync bundle", extensions: ["sync"] }],
     });
     if (result.canceled || !result.filePath) {
       return { ok: false };
@@ -259,7 +262,7 @@ export function registerIpc(db: WorkspaceDb): void {
     const result = await dialog.showOpenDialog({
       title: "Import sync bundle",
       properties: ["openFile"],
-      filters: [{ name: "Pagegrove sync bundle", extensions: ["sync"] }],
+      filters: [{ name: "NotionFlow sync bundle", extensions: ["sync"] }],
     });
     const filePath = result.filePaths[0];
     if (result.canceled || !filePath) {
@@ -336,4 +339,54 @@ export function registerIpc(db: WorkspaceDb): void {
       return { ok: false, error: "Could not save the image" };
     }
   });
+
+  ipcMain.handle("pg:ai:status", async () => {
+    return await ollama.getStatus();
+  });
+
+  ipcMain.handle("pg:ai:generate", async (event, raw: unknown) => {
+    try {
+      const input = parse(aiGenerateInputSchema, raw);
+      return await ollama.generate(input, (chunk) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send("pg:ai:stream-chunk", chunk);
+        }
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (
+        msg.includes("TimeoutError") ||
+        msg.includes("aborted") ||
+        msg.includes("timeout")
+      ) {
+        throw new Error(
+          "The local AI model timed out. Ollama may still be loading model weights into memory. Please retry in a few moments.",
+        );
+      }
+      if (
+        msg.includes("ECONNREFUSED") ||
+        msg.includes("fetch failed") ||
+        msg.includes("not running") ||
+        msg.includes("ENOTFOUND")
+      ) {
+        throw new Error(
+          "Local AI service (Ollama) is not running at http://127.0.0.1:11434. Please launch the Ollama desktop application or run 'ollama serve'.",
+        );
+      }
+      throw new Error(msg);
+    }
+  });
+
+  ipcMain.handle("pg:ai:stop", () => {
+    ollama.stopGeneration();
+  });
+
+  ipcMain.handle("pg:app:open-logs", () => {
+    logger.openLogFolder();
+  });
+
+  ipcMain.handle("pg:app:get-log-path", () => {
+    return logger.getLogPath();
+  });
 }
+

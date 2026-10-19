@@ -3,6 +3,7 @@ import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { BRAND } from "../shared/brand";
 import { registerIpc } from "./ipc";
+import { logger } from "./logger";
 import { stopSession } from "./session/server";
 import { WorkspaceDb } from "./workspace/db";
 
@@ -48,12 +49,19 @@ function registerAssetProtocol(workspaceDir: string): void {
   });
 }
 
+import { existsSync } from "node:fs";
+
 function resolveWorkspaceDir(): string {
-  const override = process.env["PAGEGROVE_WORKSPACE"];
+  const override = process.env["NOTIONFLOW_WORKSPACE"] || process.env["PAGEGROVE_WORKSPACE"];
   if (override && override.trim().length > 0) {
     return override;
   }
-  return join(app.getPath("documents"), BRAND.name);
+  const defaultDir = join(app.getPath("documents"), BRAND.name);
+  const legacyDir = join(app.getPath("documents"), "Pagegrove");
+  if (!existsSync(defaultDir) && existsSync(legacyDir)) {
+    return legacyDir;
+  }
+  return defaultDir;
 }
 
 function applyCsp(): void {
@@ -93,6 +101,29 @@ function createWindow(): void {
 
   window.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
 
+  window.webContents.on("console-message", (_event, level, message, line, sourceId) => {
+    console.log(`[Renderer Log level=${level}] ${message} (${sourceId}:${line})`);
+  });
+
+  window.webContents.on("did-fail-load", (_event, errorCode, errorDescription, validatedURL) => {
+    console.error(`[Renderer Load Failed] ${errorCode}: ${errorDescription} (${validatedURL})`);
+  });
+
+  window.webContents.on("render-process-gone", (_event, details) => {
+    console.error("[Renderer Process Gone]", details);
+  });
+
+  window.webContents.on("before-input-event", (event, input) => {
+    if (input.key === "F12" || ((input.control || input.meta) && input.shift && input.key.toLowerCase() === "i")) {
+      if (window.webContents.isDevToolsOpened()) {
+        window.webContents.closeDevTools();
+      } else {
+        window.webContents.openDevTools({ mode: "detach" });
+      }
+      event.preventDefault();
+    }
+  });
+
   if (isDev && process.env["ELECTRON_RENDERER_URL"]) {
     void window.loadURL(process.env["ELECTRON_RENDERER_URL"]);
   } else {
@@ -100,10 +131,12 @@ function createWindow(): void {
   }
 }
 
-app.setAppUserModelId("com.pagegrove.app");
+app.setAppUserModelId("com.notionflow.app");
 
 app.whenReady().then(() => {
+  logger.init();
   const workspaceDir = resolveWorkspaceDir();
+  logger.info(`Resolved workspace directory: ${workspaceDir}`);
   workspace = new WorkspaceDb(workspaceDir);
   registerIpc(workspace);
   registerAssetProtocol(workspaceDir);

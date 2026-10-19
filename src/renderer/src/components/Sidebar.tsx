@@ -248,6 +248,8 @@ export interface SidebarProps {
   onMove: (id: string, parentId: string | null, beforeId: string | null) => void;
   onFavorite: (id: string, favorite: boolean) => void;
   onDuplicate: (id: string) => void;
+  onOpenSearch?: () => void;
+  onToggleAi?: () => void;
 }
 
 export function Sidebar(props: SidebarProps) {
@@ -266,6 +268,8 @@ export function Sidebar(props: SidebarProps) {
     onMove,
     onFavorite,
     onDuplicate,
+    onOpenSearch,
+    onToggleAi,
   } = props;
 
   const api = getApi();
@@ -460,15 +464,59 @@ export function Sidebar(props: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
-        <span className="sidebar__logo" aria-hidden="true" />
-        <span className="sidebar__name">{BRAND.name}</span>
+        <div className="sidebar__workspace-card">
+          <div className="sidebar__workspace-avatar">N</div>
+          <div className="sidebar__workspace-details">
+            <span className="sidebar__workspace-title">{BRAND.name}</span>
+            <span className="sidebar__workspace-sub">Local Workspace</span>
+          </div>
+        </div>
       </div>
+
+      <div className="sidebar__quick-nav">
+        {onOpenSearch ? (
+          <button
+            type="button"
+            className="sidebar__nav-item"
+            onClick={onOpenSearch}
+            title="Quick Find (Ctrl+P / Ctrl+K)"
+          >
+            <span className="sidebar__nav-icon">🔍</span>
+            <span className="sidebar__nav-label">Search</span>
+            <span className="sidebar__nav-shortcut">Ctrl+P</span>
+          </button>
+        ) : null}
+        {onToggleAi ? (
+          <button
+            type="button"
+            className="sidebar__nav-item"
+            onClick={onToggleAi}
+            title="Ask NotionFlow AI (Ctrl+Shift+J)"
+          >
+            <span className="sidebar__nav-icon" style={{ color: "#a855f7" }}>✦</span>
+            <span className="sidebar__nav-label">NotionFlow AI</span>
+            <span className="sidebar__nav-shortcut">Ctrl+Shift+J</span>
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className="sidebar__nav-item"
+          onClick={() => onCreate(null)}
+          title="New Page (Ctrl+N)"
+        >
+          <span className="sidebar__nav-icon">➕</span>
+          <span className="sidebar__nav-label">New page</span>
+          <span className="sidebar__nav-shortcut">Ctrl+N</span>
+        </button>
+      </div>
+
+      <div className="sidebar__divider" />
 
       <div className="sidebar__search">
         <input
           type="search"
-          placeholder="Search pages"
-          aria-label="Search pages"
+          placeholder="Filter tree..."
+          aria-label="Filter tree"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => {

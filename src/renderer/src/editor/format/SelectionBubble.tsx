@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import { inlineAi } from "../ai/controller";
 import { commentTools } from "../comments/controller";
 import { formatTools, type FormatAction, type FormatState } from "./controller";
 import { COLOR_PALETTE } from "./marks";
@@ -77,6 +78,24 @@ export function SelectionBubble({ onCommentRequest }: SelectionBubbleProps) {
       style={{ left: position.left, top: position.top, visibility: pos ? "visible" : "hidden" }}
     >
       <div className="pg-format-bar__row">
+        <button
+          type="button"
+          className="pg-format-bar__btn pg-format-bar__btn--ai"
+          aria-label="Ask AI"
+          title="Ask AI (Ctrl+J)"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => {
+            const editor = formatTools.getEditor();
+            if (editor) {
+              const { from, to } = editor.state.selection;
+              const selectedText = editor.state.doc.textBetween(from, to, " ");
+              inlineAi.openWithSelection(editor, { from, to }, selectedText);
+            }
+          }}
+        >
+          Ask AI
+        </button>
+        <span className="pg-format-bar__divider" />
         {TOGGLES.map(({ action, label, glyph, key }) => (
           <button
             key={label}

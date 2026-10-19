@@ -18,6 +18,7 @@ import { CommentAnchor } from "./comments/CommentAnchor";
 import { CommentTools } from "./comments/extension";
 import { Callout } from "./extensions/Callout";
 import { KeyboardShortcuts } from "./extensions/KeyboardShortcuts";
+import { NotionInputRules } from "./extensions/NotionInputRules";
 import { PgImage } from "./extensions/PgImage";
 import { Toggle } from "./extensions/Toggle";
 import { FormatTools } from "./format/extension";
@@ -64,6 +65,7 @@ export function buildExtensions(
     PageMention,
     Placeholder.configure({ placeholder: BRAND.empty.editorPlaceholder }),
     KeyboardShortcuts,
+    NotionInputRules,
     SlashCommand,
     MentionCommand.configure({ currentPageId: options.currentPageId ?? null }),
     CommentAnchor,

@@ -13,6 +13,10 @@ import { MentionMenu } from "./mention/MentionMenu";
 import { SlashMenu } from "./slash/SlashMenu";
 import { TableBar } from "./table/TableBar";
 
+import { InlineAiMenu } from "./ai/InlineAiMenu";
+import { inlineAi } from "./ai/controller";
+import { activeEditor } from "./activeEditor";
+
 const UPDATE_FLUSH_MS = 300;
 
 export interface EditorProps {
@@ -116,6 +120,7 @@ export function Editor({
       <TableBar />
       <BlockGutter />
       <SelectionBubble onCommentRequest={onCommentRequest} />
+      <InlineAiMenu />
     </div>
   );
 }
@@ -177,6 +182,25 @@ function BoundEditor({
         }
         return false;
       },
+      handleKeyDown: (view, event) => {
+        if (
+          event.key === " " &&
+          !event.ctrlKey &&
+          !event.metaKey &&
+          !event.altKey &&
+          !event.shiftKey
+        ) {
+          const { $from, empty } = view.state.selection;
+          if (empty && $from.parent.isTextblock && $from.parent.content.size === 0) {
+            event.preventDefault();
+            if (editor && !editor.isDestroyed) {
+              inlineAi.openAtCursor(editor);
+            }
+            return true;
+          }
+        }
+        return false;
+      },
       handlePaste: (view, event) => {
         const files = Array.from(event.clipboardData?.files ?? []).filter((file) =>
           file.type.startsWith("image/"),
@@ -207,5 +231,32 @@ function BoundEditor({
     },
   });
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        if (editor && !editor.isDestroyed) {
+          const { from, to } = editor.state.selection;
+          if (from < to) {
+            const selectedText = editor.state.doc.textBetween(from, to, " ");
+            inlineAi.openWithSelection(editor, { from, to }, selectedText);
+          } else {
+            inlineAi.openAtCursor(editor);
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [editor]);
+
+  useEffect(() => {
+    activeEditor.set(editor);
+    return () => {
+      activeEditor.set(null);
+    };
+  }, [editor]);
+
   return <EditorContent editor={editor} />;
 }
+

@@ -16,12 +16,23 @@ import type {
   TipTapDocument,
 } from "./types";
 
+import type {
+  AiGenerateInput,
+  AiGenerateResult,
+  AiStatus,
+  AiStreamChunk,
+} from "./ai";
+
 export interface PagegroveApi {
   readonly platform: string;
   readonly versions: {
     readonly electron: string;
     readonly chrome: string;
     readonly node: string;
+  };
+  readonly app: {
+    openLogs(): Promise<void>;
+    getLogPath(): Promise<string>;
   };
   readonly workspace: {
     info(): Promise<{ dir: string; userName: string }>;
@@ -73,5 +84,11 @@ export interface PagegroveApi {
   readonly assets: {
     pickImage(): Promise<AssetImportResult>;
     importImage(input: { name: string; bytes: Uint8Array }): Promise<AssetImportResult>;
+  };
+  readonly ai: {
+    status(): Promise<AiStatus>;
+    generate(input: AiGenerateInput): Promise<AiGenerateResult>;
+    stop(): Promise<void>;
+    onStream(listener: (data: AiStreamChunk) => void): () => void;
   };
 }

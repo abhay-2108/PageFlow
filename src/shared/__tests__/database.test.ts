@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   coerceValue,
+  evaluateRollup,
   normalizeValue,
   parseFields,
   parseProperties,
@@ -67,6 +68,31 @@ describe("properties parsing", () => {
       ),
     ).toEqual([]);
   });
+
+  it("parses formula and status properties with groups", () => {
+    const defs = parseProperties(
+      JSON.stringify([
+        { id: "f1", name: "Total", type: "formula", options: [], formula: 'prop("Price") * 2' },
+        {
+          id: "s1",
+          name: "Status",
+          type: "status",
+          options: ["Todo", "Done"],
+          statusGroups: { Todo: "todo", Done: "complete" },
+        },
+      ]),
+    );
+    expect(defs).toEqual([
+      { id: "f1", name: "Total", type: "formula", options: [], formula: 'prop("Price") * 2' },
+      {
+        id: "s1",
+        name: "Status",
+        type: "status",
+        options: ["Todo", "Done"],
+        statusGroups: { Todo: "todo", Done: "complete" },
+      },
+    ]);
+  });
 });
 
 describe("value coercion on type change", () => {
@@ -131,5 +157,95 @@ describe("value normalization", () => {
     expect(valueToText("checkbox", false)).toBe("");
     expect(valueToText("multi_select", ["a", "b"])).toBe("a, b");
     expect(valueToText("select", null)).toBe("");
+    expect(valueToText("url", "https://notion.so")).toBe("https://notion.so");
+    expect(valueToText("email", "user@notion.so")).toBe("user@notion.so");
+    expect(valueToText("status", "In progress")).toBe("In progress");
+  });
+
+  it("normalizes rich property types", () => {
+    expect(normalizeValue("url", "  https://example.com  ")).toBe("https://example.com");
+    expect(normalizeValue("email", " test@example.com ")).toBe("test@example.com");
+    expect(normalizeValue("phone", " +1-555-0199 ")).toBe("+1-555-0199");
+    expect(normalizeValue("status", " Done ")).toBe("Done");
+    expect(normalizeValue("formula", "1+1")).toBeNull();
+  });
+});
+
+describe("rollup evaluation", () => {
+  const properties = [
+    { id: "rel1", name: "Tasks", type: "relation" as const, options: [] },
+    {
+      id: "roll_count",
+      name: "Task Count",
+      type: "rollup" as const,
+      options: [],
+      relationPropId: "rel1",
+      rollupPropId: "price",
+      rollupOp: "count" as const,
+    },
+    {
+      id: "roll_sum",
+      name: "Total Cost",
+      type: "rollup" as const,
+      options: [],
+      relationPropId: "rel1",
+      rollupPropId: "price",
+      rollupOp: "sum" as const,
+    },
+    {
+      id: "roll_avg",
+      name: "Avg Cost",
+      type: "rollup" as const,
+      options: [],
+      relationPropId: "rel1",
+      rollupPropId: "price",
+      rollupOp: "avg" as const,
+    },
+    {
+      id: "roll_orig",
+      name: "All Names",
+      type: "rollup" as const,
+      options: [],
+      relationPropId: "rel1",
+      rollupPropId: "title",
+      rollupOp: "show_original" as const,
+    },
+  ];
+
+  const allPages = [
+    { id: "t1", fields: { price: 10, title: "Design" } },
+    { id: "t2", fields: { price: 20, title: "Code" } },
+    { id: "t3", fields: { price: 30, title: "Ship" } },
+  ];
+
+  const parentPage = {
+    fields: {
+      rel1: ["t1", "t2", "t3"],
+    },
+  };
+
+  it("calculates count correctly", () => {
+    const rollDef = properties.find((p) => p.id === "roll_count")!;
+    expect(evaluateRollup(rollDef, parentPage, properties, allPages)).toBe(3);
+  });
+
+  it("calculates sum correctly", () => {
+    const rollDef = properties.find((p) => p.id === "roll_sum")!;
+    expect(evaluateRollup(rollDef, parentPage, properties, allPages)).toBe(60);
+  });
+
+  it("calculates avg correctly", () => {
+    const rollDef = properties.find((p) => p.id === "roll_avg")!;
+    expect(evaluateRollup(rollDef, parentPage, properties, allPages)).toBe(20);
+  });
+
+  it("shows original values correctly", () => {
+    const rollDef = properties.find((p) => p.id === "roll_orig")!;
+    expect(evaluateRollup(rollDef, parentPage, properties, allPages)).toBe("Design, Code, Ship");
+  });
+
+  it("returns null when relation has no targets or no target property", () => {
+    const rollDef = properties.find((p) => p.id === "roll_sum")!;
+    expect(evaluateRollup(rollDef, { fields: { rel1: [] } }, properties, allPages)).toBe(null);
   });
 });

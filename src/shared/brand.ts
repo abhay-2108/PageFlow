@@ -1,8 +1,8 @@
 export const BRAND = {
-  name: "Pagegrove",
-  tagline: "Local-first notes. Your workspace is a folder you own.",
+  name: "NotionFlow",
+  tagline: "Fluid, local-first notes with AI assistance. Your workspace is a folder you own.",
   empty: {
-    editorPlaceholder: "Press / for blocks, or just start writing. Autosaves locally.",
+    editorPlaceholder: "Type '/' for commands, or 'Space' for AI...",
     workspace: "No pages yet. Create your first page — everything stays on this machine.",
     workspaceAction: "Create a page",
     trash: "Nothing here. Deleted pages rest in Trash until you say otherwise.",

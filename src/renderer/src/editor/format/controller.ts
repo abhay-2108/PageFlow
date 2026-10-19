@@ -64,10 +64,13 @@ function sameState(a: FormatState, b: FormatState): boolean {
   );
 }
 
+import type { Editor } from "@tiptap/core";
+
 class FormatToolsController {
   private state: FormatState = CLOSED;
   private listeners = new Set<Listener>();
   private runner: FormatRunner | null = null;
+  private editor: Editor | null = null;
 
   subscribe = (listener: Listener): (() => void) => {
     this.listeners.add(listener);
@@ -77,6 +80,14 @@ class FormatToolsController {
   };
 
   getState = (): FormatState => this.state;
+
+  getEditor(): Editor | null {
+    return this.editor;
+  }
+
+  setEditor(editor: Editor | null): void {
+    this.editor = editor;
+  }
 
   setRunner(runner: FormatRunner | null): void {
     this.runner = runner;
@@ -103,8 +114,10 @@ class FormatToolsController {
 
   reset(): void {
     this.runner = null;
+    this.editor = null;
     this.sync(CLOSED);
   }
 }
 
 export const formatTools = new FormatToolsController();
+

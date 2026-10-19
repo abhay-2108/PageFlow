@@ -5,12 +5,18 @@ import type { PageMeta, PageRecord, PageViewMode, TipTapDocument } from "../../s
 import { EmptyWorkspace } from "./EmptyWorkspace";
 import { PageView } from "./PageView";
 import { CommandPalette, type PaletteAction } from "./components/CommandPalette";
+import { OllamaOfflineModal } from "./components/OllamaOfflineModal";
 import { Sidebar } from "./components/Sidebar";
 import { Toast, type ToastData } from "./components/Toast";
 import { getApi } from "./lib/api";
 import { emitWorkspaceChanged, onWorkspaceChanged } from "./lib/bus";
 import { exportMarkdown } from "./lib/markdown";
 import { session } from "./lib/session";
+
+export interface DesktopTab {
+  id: string;
+  pageId: string;
+}
 
 const SAVE_DEBOUNCE_MS = 250;
 const RENAME_DEBOUNCE_MS = 400;
@@ -22,6 +28,8 @@ export default function App() {
   const [trash, setTrash] = useState<PageMeta[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeRecord, setActiveRecord] = useState<PageRecord | null>(null);
+  const [tabs, setTabs] = useState<DesktopTab[]>([]);
+  const [activeTabId, setActiveTabId] = useState<string>("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [focusPageId, setFocusPageId] = useState<string | null>(null);
   const [workspaceDir, setWorkspaceDir] = useState<string | null>(null);
@@ -137,6 +145,9 @@ export default function App() {
       }
       const first = childrenOf(nextPages, null)[0] ?? nextPages[0];
       if (first) {
+        const initialTabId = crypto.randomUUID();
+        setTabs([{ id: initialTabId, pageId: first.id }]);
+        setActiveTabId(initialTabId);
         await openPage(first.id);
       }
     })();
@@ -188,13 +199,59 @@ export default function App() {
   }, [activeRecord?.meta.title]);
 
   const selectPage = useCallback(
-    async (id: string) => {
+    async (id: string, inNewTab = false) => {
       flushSave();
       flushRename();
       setFocusPageId(null);
+      if (inNewTab || tabs.length === 0) {
+        const tabId = crypto.randomUUID();
+        setTabs((prev) => [...prev, { id: tabId, pageId: id }]);
+        setActiveTabId(tabId);
+      } else {
+        setTabs((prev) =>
+          prev.map((t) => (t.id === activeTabId ? { ...t, pageId: id } : t)),
+        );
+      }
       await openPage(id);
     },
-    [flushSave, flushRename, openPage],
+    [activeTabId, flushRename, flushSave, openPage, tabs.length],
+  );
+
+  const switchTab = useCallback(
+    async (tabId: string) => {
+      if (tabId === activeTabId) {
+        return;
+      }
+      const target = tabs.find((t) => t.id === tabId);
+      if (target) {
+        flushSave();
+        flushRename();
+        setActiveTabId(tabId);
+        await openPage(target.pageId);
+      }
+    },
+    [activeTabId, flushRename, flushSave, openPage, tabs],
+  );
+
+  const closeTab = useCallback(
+    async (tabId: string) => {
+      if (tabs.length <= 1) {
+        return;
+      }
+      flushSave();
+      flushRename();
+      const index = tabs.findIndex((t) => t.id === tabId);
+      const remaining = tabs.filter((t) => t.id !== tabId);
+      setTabs(remaining);
+      if (tabId === activeTabId) {
+        const nextActive = remaining[Math.min(index, remaining.length - 1)];
+        if (nextActive) {
+          setActiveTabId(nextActive.id);
+          await openPage(nextActive.pageId);
+        }
+      }
+    },
+    [activeTabId, flushRename, flushSave, openPage, tabs],
   );
 
   const createPage = useCallback(
@@ -207,10 +264,25 @@ export default function App() {
         setExpanded((prev) => new Set(prev).add(parentId));
       }
       setFocusPageId(meta.id);
+      const tabId = crypto.randomUUID();
+      setTabs((prev) => [...prev, { id: tabId, pageId: meta.id }]);
+      setActiveTabId(tabId);
       await openPage(meta.id);
     },
     [api, flushSave, flushRename, openPage, refreshLists],
   );
+
+  const addNewTab = useCallback(async () => {
+    const defaultPage = childrenOf(pages, null)[0] ?? pages[0];
+    if (defaultPage) {
+      const tabId = crypto.randomUUID();
+      setTabs((prev) => [...prev, { id: tabId, pageId: defaultPage.id }]);
+      setActiveTabId(tabId);
+      await openPage(defaultPage.id);
+    } else {
+      await createPage(null);
+    }
+  }, [createPage, openPage, pages]);
 
   const trashPage = useCallback(
     async (id: string) => {
@@ -223,6 +295,15 @@ export default function App() {
         setActiveId(null);
         setActiveRecord(null);
       }
+      const remainingTabs = tabs.filter((t) => t.pageId !== id);
+      if (remainingTabs.length > 0) {
+        setTabs(remainingTabs);
+        const next = remainingTabs[0];
+        if (activeId === id && next) {
+          setActiveTabId(next.id);
+          await openPage(next.pageId);
+        }
+      }
       setToast({
         message: `Moved "${label && label.length > 0 ? label : BRAND.empty.untitled}" to Trash`,
         actionLabel: "Undo",
@@ -234,7 +315,7 @@ export default function App() {
         },
       });
     },
-    [activeId, api, flushSave, flushRename, pages, refreshLists],
+    [activeId, api, flushSave, flushRename, openPage, pages, refreshLists, tabs],
   );
 
   const restorePage = useCallback(
@@ -357,16 +438,32 @@ export default function App() {
         void createPage(null);
         return;
       }
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        (event.key.toLowerCase() === "k" || event.key.toLowerCase() === "p")
+      ) {
         event.preventDefault();
         setPaletteOpen(true);
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "t") {
+        event.preventDefault();
+        void addNewTab();
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "w") {
+        event.preventDefault();
+        if (activeTabId) {
+          void closeTab(activeTabId);
+        }
+        return;
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [createPage]);
+  }, [activeTabId, addNewTab, closeTab, createPage]);
 
   const exportCurrentPageMarkdown = useCallback(async () => {
     if (!activeRecord) {
@@ -417,21 +514,58 @@ export default function App() {
   }, [api]);
 
   const paletteActions = useMemo<PaletteAction[]>(() => {
-    const actions: PaletteAction[] = [
+    const pageActions: PaletteAction[] = pages.map((page) => ({
+      id: `page-${page.id}`,
+      group: "Pages",
+      label: page.title.trim().length > 0 ? page.title : BRAND.empty.untitled,
+      icon: page.icon ?? "📄",
+      keywords: [page.title, "page", "note", "doc"],
+      onRun: () => {
+        void openPage(page.id);
+      },
+    }));
+
+    const commandActions: PaletteAction[] = [
       {
         id: "new-page",
+        group: "Actions",
         label: "New page",
+        icon: "➕",
         keywords: ["create", "add"],
         onRun: () => {
           void createPage(null);
         },
       },
+      {
+        id: "new-tab",
+        group: "Actions",
+        label: "New tab",
+        icon: "📑",
+        keywords: ["tab", "open", "window"],
+        onRun: () => {
+          void addNewTab();
+        },
+      },
+      {
+        id: "close-tab",
+        group: "Actions",
+        label: "Close current tab",
+        icon: "✕",
+        keywords: ["tab", "close"],
+        onRun: () => {
+          if (activeTabId) {
+            void closeTab(activeTabId);
+          }
+        },
+      },
     ];
     if (activeRecord) {
-      actions.push(
+      commandActions.push(
         {
           id: "export-markdown",
+          group: "Actions",
           label: "Export page as Markdown",
+          icon: "📥",
           keywords: ["download", "md"],
           onRun: () => {
             void exportCurrentPageMarkdown();
@@ -439,7 +573,9 @@ export default function App() {
         },
         {
           id: "trash-page",
+          group: "Actions",
           label: "Move current page to trash",
+          icon: "🗑️",
           keywords: ["delete", "remove"],
           onRun: () => {
             void trashPage(activeRecord.meta.id);
@@ -447,10 +583,12 @@ export default function App() {
         },
       );
     }
-    actions.push(
+    commandActions.push(
       {
         id: "export-bundle",
+        group: "Actions",
         label: "Export sync bundle",
+        icon: "📦",
         keywords: ["backup", "sync", "file"],
         onRun: () => {
           void exportBundle();
@@ -458,15 +596,41 @@ export default function App() {
       },
       {
         id: "import-bundle",
+        group: "Actions",
         label: "Import sync bundle",
+        icon: "🔄",
         keywords: ["merge", "sync", "file"],
         onRun: () => {
           void importBundle();
         },
       },
+      {
+        id: "open-logs",
+        group: "Actions",
+        label: "Open Diagnostic Logs (app.log)",
+        icon: "📋",
+        keywords: ["logs", "debug", "diagnostic", "error"],
+        onRun: () => {
+          void api.app.openLogs().catch(() => {
+            setToast({ message: "Could not open log folder." });
+          });
+        },
+      },
     );
-    return actions;
-  }, [activeRecord, createPage, exportBundle, exportCurrentPageMarkdown, importBundle, trashPage]);
+    return [...pageActions, ...commandActions];
+  }, [
+    pages,
+    openPage,
+    activeRecord,
+    activeTabId,
+    addNewTab,
+    closeTab,
+    createPage,
+    exportBundle,
+    exportCurrentPageMarkdown,
+    importBundle,
+    trashPage,
+  ]);
 
   return (
     <div className="shell">
@@ -509,55 +673,115 @@ export default function App() {
         onDuplicate={(id) => {
           void duplicatePage(id);
         }}
+        onOpenSearch={() => {
+          setPaletteOpen(true);
+        }}
+        onToggleAi={() => {
+          window.dispatchEvent(new CustomEvent("notionflow:toggle-ai"));
+        }}
       />
-      <div className="app__scroll">
-        {!loading && pages.length === 0 ? (
-          <EmptyWorkspace
-            onCreate={() => {
-              void createPage(null);
-            }}
-          />
+      <div className="app__main-column">
+        {tabs.length > 0 ? (
+          <div className="pg-tabs-bar" role="tablist" aria-label="Desktop tabs">
+            <div className="pg-tabs-scroll">
+              {tabs.map((tab) => {
+                const tabMeta = pages.find((p) => p.id === tab.pageId);
+                const isActive = tab.id === activeTabId;
+                const title = tabMeta?.title?.trim() ? tabMeta.title : BRAND.empty.untitled;
+                return (
+                  <div
+                    key={tab.id}
+                    role="tab"
+                    aria-selected={isActive}
+                    className={isActive ? "pg-tab pg-tab--active" : "pg-tab"}
+                    onClick={() => void switchTab(tab.id)}
+                  >
+                    <span className="pg-tab__icon">{tabMeta?.icon ?? "📄"}</span>
+                    <span className="pg-tab__title" title={title}>
+                      {title}
+                    </span>
+                    {tabs.length > 1 ? (
+                      <button
+                        type="button"
+                        className="pg-tab__close"
+                        aria-label={`Close ${title} tab`}
+                        title="Close tab (Ctrl+W)"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void closeTab(tab.id);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="pg-tab__new-btn"
+              aria-label="New tab (Ctrl+T)"
+              title="New tab (Ctrl+T)"
+              onClick={() => void addNewTab()}
+            >
+              +
+            </button>
+          </div>
         ) : null}
-        {activeRecord ? (
-          <PageView
-            record={activeRecord}
-            pages={pages}
-            editorEpoch={editorEpoch}
-            onDocChange={(doc) => {
-              latestDoc.current = { id: activeRecord.meta.id, doc };
-              queueSave(activeRecord.meta.id, doc);
-            }}
-            onTitleChange={(title) => queueRename(activeRecord.meta.id, title)}
-            autoFocusEditor={focusPageId !== null && focusPageId === activeRecord.meta.id}
-            onIconChange={(icon) => {
-              void setPageIcon(activeRecord.meta.id, icon);
-            }}
-            onCoverChange={(cover) => {
-              void setPageCover(activeRecord.meta.id, cover);
-            }}
-            onViewChange={(view) => {
-              void setPageView(activeRecord.meta.id, view);
-            }}
-            onOpenPage={(id) => {
-              void selectPage(id);
-            }}
-            onDuplicatePage={(id) => {
-              void duplicatePage(id);
-            }}
-            onTrashPage={(id) => {
-              void trashPage(id);
-            }}
-            onExportMarkdown={() => {
-              void exportCurrentPageMarkdown();
-            }}
-            onCopyLink={(id) => {
-              void copyPageLink(id);
-            }}
-          />
-        ) : null}
+        <div className="app__scroll">
+          {!loading && pages.length === 0 ? (
+            <EmptyWorkspace
+              onCreate={() => {
+                void createPage(null);
+              }}
+            />
+          ) : null}
+          {activeRecord ? (
+            <PageView
+              record={activeRecord}
+              pages={pages}
+              editorEpoch={editorEpoch}
+              onDocChange={(doc) => {
+                latestDoc.current = { id: activeRecord.meta.id, doc };
+                queueSave(activeRecord.meta.id, doc);
+              }}
+              onTitleChange={(title) => queueRename(activeRecord.meta.id, title)}
+              autoFocusEditor={focusPageId !== null && focusPageId === activeRecord.meta.id}
+              onIconChange={(icon) => {
+                void setPageIcon(activeRecord.meta.id, icon);
+              }}
+              onCoverChange={(cover) => {
+                void setPageCover(activeRecord.meta.id, cover);
+              }}
+              onViewChange={(view) => {
+                void setPageView(activeRecord.meta.id, view);
+              }}
+              onOpenPage={(id) => {
+                void selectPage(id);
+              }}
+              onDuplicatePage={(id) => {
+                void duplicatePage(id);
+              }}
+              onTrashPage={(id) => {
+                void trashPage(id);
+              }}
+              onExportMarkdown={() => {
+                void exportCurrentPageMarkdown();
+              }}
+              onCopyLink={(id) => {
+                void copyPageLink(id);
+              }}
+              onFavoriteChange={(favorite) => {
+                void setPageFavorite(activeRecord.meta.id, favorite);
+              }}
+            />
+          ) : null}
+        </div>
       </div>
       <Toast toast={toast} onDismiss={() => setToast(null)} />
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} actions={paletteActions} />
+      <OllamaOfflineModal />
     </div>
   );
 }

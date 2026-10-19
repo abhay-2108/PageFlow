@@ -1,5 +1,6 @@
 import type { Editor, Range } from "@tiptap/core";
 import { getApi } from "../../lib/api";
+import { inlineAi } from "../ai/controller";
 
 export interface SlashItem {
   id: string;
@@ -33,6 +34,16 @@ async function insertImageFromPicker(editor: Editor, range: Range) {
 
 export const slashItems: SlashItem[] = [
   {
+    id: "ai",
+    title: "Ask AI...",
+    aliases: ["ai", "ollama", "qwen", "write", "generate"],
+    hint: "Draft or edit with local Ollama AI",
+    run: (editor, range) => {
+      replaceBlock(editor, range).run();
+      inlineAi.openAtCursor(editor);
+    },
+  },
+  {
     id: "text",
     title: "Text",
     aliases: ["p", "paragraph"],
@@ -41,6 +52,7 @@ export const slashItems: SlashItem[] = [
       replaceBlock(editor, range).setParagraph().run();
     },
   },
+
   {
     id: "heading-1",
     title: "Heading 1",

@@ -100,7 +100,10 @@ export class WorkspaceDb {
     mkdirSync(join(directory, "pages"), { recursive: true });
     this.db = new Database(join(directory, "workspace.db"));
     this.db.pragma("journal_mode = WAL");
-    this.db.pragma("synchronous = FULL");
+    this.db.pragma("synchronous = NORMAL");
+    this.db.pragma("busy_timeout = 5000");
+    this.db.pragma("wal_autocheckpoint = 1000");
+    this.db.pragma("temp_store = MEMORY");
     this.db.pragma("foreign_keys = ON");
     this.migrate();
   }
@@ -242,15 +245,31 @@ export class WorkspaceDb {
   }
 
   private ftsRemove(row: PageRow): void {
-    this.db
-      .prepare("INSERT INTO pages_fts (pages_fts, rowid, title, text) VALUES ('delete', ?, ?, ?)")
-      .run(row.rowid, row.title, row.text);
+    try {
+      this.db
+        .prepare("INSERT INTO pages_fts (pages_fts, rowid, title, text) VALUES ('delete', ?, ?, ?)")
+        .run(row.rowid, row.title, row.text);
+    } catch {
+      try {
+        this.db.exec("INSERT INTO pages_fts(pages_fts) VALUES('rebuild')");
+      } catch {
+        // ignore
+      }
+    }
   }
 
   private ftsInsert(rowid: number, title: string, text: string): void {
-    this.db
-      .prepare("INSERT INTO pages_fts (rowid, title, text) VALUES (?, ?, ?)")
-      .run(rowid, title, text);
+    try {
+      this.db
+        .prepare("INSERT INTO pages_fts (rowid, title, text) VALUES (?, ?, ?)")
+        .run(rowid, title, text);
+    } catch {
+      try {
+        this.db.exec("INSERT INTO pages_fts(pages_fts) VALUES('rebuild')");
+      } catch {
+        // ignore
+      }
+    }
   }
 
   listPages(): PageMeta[] {

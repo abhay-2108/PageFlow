@@ -34,6 +34,7 @@ export const FormatTools = Extension.create<Record<string, never>, FormatToolsSt
   onCreate() {
     const editor = this.editor;
     const storage = this.storage;
+    formatTools.setEditor(editor);
 
     formatTools.setRunner((action) => {
       const chain = editor.chain().focus();

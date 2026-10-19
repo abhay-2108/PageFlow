@@ -218,3 +218,25 @@ export const importImageInputSchema = z.object({
     message: "Image must be between 1 byte and 40 MB",
   }),
 });
+
+export const aiGenerateInputSchema = z.object({
+  prompt: z.string().max(100_000),
+  action: z
+    .enum([
+      "continue",
+      "summarize",
+      "improve",
+      "shorter",
+      "longer",
+      "action_items",
+      "brainstorm",
+      "explain",
+      "custom",
+    ])
+    .optional(),
+  context: z.string().max(500_000).optional(),
+  pageTitle: z.string().max(1000).optional(),
+  model: z.string().max(200).optional(),
+  systemPrompt: z.string().max(10_000).optional(),
+});
+

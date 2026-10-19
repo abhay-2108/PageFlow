@@ -282,9 +282,47 @@ Still unknown (A-web limits): exact interaction geometry (drop zones, indicator 
 
 **Sorting, filtering, and views (M8.2–M8.3).** Each database hub stores a `dbConfig` on its page metadata: an ordered list of named views, each with its own sort specs and filter specs. Sorting and filtering apply to the direct-child rows; a hub always has at least one default view. View state travels with the page over LAN meta sync and sync bundles.
 
-**Formulas (M8.4).** A `formula` property computes a value from other properties on the same row with a small safe expression language (arithmetic, comparison, `and`/`or`/`not`, `if`, and aggregations over multi-select). Formulas are read-only, recomputed on render and after any field change, and never persisted as row data.
+**Formulas (M8.4).** A `formula` property computes a value from other properties on the same row with a small safe expression language (arithmetic, comparison, `and`/`or`/`not`, `if`, math aggregations `sum`/`avg`/`min`/`max`, string functions `upper`/`lower`/`len`/`concat`, and `round`). Formulas are read-only, recomputed on render and after any field change, and never persisted as row data. Formula expressions can be edited in an interactive formula modal with live syntax validation and chip insertion helpers.
 
-**Relations and rollups (M8.5).** A `relation` property links rows to another database hub; a `rollup` property aggregates a chosen property across the related rows (count, sum, average, min, max, or "show original"). Relation/rollup values are computed on demand from the linked hub's rows.
+**Kanban Board View (M8.5).** Database views support a `layout: "table" | "board"` toggle and a configurable `groupByPropId`. In Board view, cards are organized into vertical columns grouped by a chosen Status or Select property (plus an unassigned column). Cards are draggable between columns to update property values on drop. Users can add new cards directly to any column via "+ New card".
+
+**Rich Property Types (M8.5).** Databases support:
+- `status`: Notion-style status with three semantic groups (To-do, In progress, Complete) and customizable options/colors.
+- `url`: Formatted URL input with a quick external open action.
+- `email`: Formatted email input with a quick `mailto:` link action.
+- `phone`: Formatted telephone input with a quick `tel:` link action.
+- `created_time` & `last_edited_time`: Automatic, read-only relative/formatted timestamps.
+
+**Editor Auto-Formatting & Notion Muscle-Memory (M8.6).** Notion markdown triggers allow seamless block transformation during typing:
+- `>` + Space converts paragraph to a Toggle list.
+- `[]` or `[ ]` + Space converts paragraph to a To-do checklist item.
+- `---` or `***` converts paragraph to a Divider (horizontal rule).
+- `"` + Space converts paragraph to a Blockquote.
+
+**Notion-Style Page Header Controls (M8.6).** Hovering the title area reveals subtle `+ Add icon`, `+ Add cover`, and `+ Add comment` prompt buttons when empty, matching Notion desktop interaction ergonomics.
+
+**Database Gallery View (M8.7).** Database views support `layout: "gallery"` in addition to `"table"` and `"board"`. Gallery view renders a responsive card grid (`pg-gallery-grid`) with:
+- Visual cover headers displaying user covers (preset color themes or uploaded images) or styled fallback placeholders.
+- Page icons and titles with direct click-to-open navigation.
+- Up to 3 visible property badges (status, tags, dates, relations, formulas).
+- An inline "+ New card" creator card.
+
+**Database Relations & Rollups Engine (M8.8).** Full relational database capabilities:
+- `relation`: Links items across databases or within the workspace. Cells render clickable pill chips with target page icons and titles; clicking opens a searchable page picker to link or unlink pages.
+- `rollup`: Computes dynamic aggregations from linked relations using `evaluateRollup()`. Supported operations include `count`, `sum`, `avg`, `min`, `max`, and `show_original`. Configured through an interactive Rollup modal selecting the relation property, target property, and calculation operator.
+
+**Desktop Multi-Tab Navigation Shell (M8.9).** Native desktop tab bar along the top header bar matching Notion Desktop 7.39.0's `tabsApi` capability:
+- Multiple concurrent tabs with independent page navigation.
+- Each tab displays page icon, page title, and active state indicator.
+- Tab close (`✕`) and "+ New tab" button.
+- Keyboard shortcuts: `Ctrl+T` (New tab), `Ctrl+W` (Close tab), and Command Palette actions ("New tab", "Close current tab").
+
+**In-App Theme Switcher & Page Formatting Options (M8.10).** Notion-style page options (`…` menu in header):
+- Typography styling: Default (Sans-serif), Serif, and Mono typeface toggles.
+- Small text: scales down editor body font to 14px and title to 32px.
+- Full width: expands the reading pane to 100% viewport width with comfortable edge padding.
+- Color Theme: instant toggling between Light, Dark, and System mode via `data-theme` attribute and `localStorage` persistence.
+
 
 
 

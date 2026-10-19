@@ -25,6 +25,10 @@ const api: PagegroveApi = {
     chrome: process.versions.chrome,
     node: process.versions.node,
   },
+  app: {
+    openLogs: () => ipcRenderer.invoke("pg:app:open-logs") as Promise<void>,
+    getLogPath: () => ipcRenderer.invoke("pg:app:get-log-path") as Promise<string>,
+  },
   workspace: {
     info: () => ipcRenderer.invoke("pg:workspace:info") as Promise<{ dir: string; userName: string }>,
   },
@@ -101,6 +105,19 @@ const api: PagegroveApi = {
     importImage: (input: { name: string; bytes: Uint8Array }) =>
       ipcRenderer.invoke("pg:assets:import-image", input) as Promise<AssetImportResult>,
   },
+  ai: {
+    status: () => ipcRenderer.invoke("pg:ai:status"),
+    generate: (input) => ipcRenderer.invoke("pg:ai:generate", input),
+    stop: () => ipcRenderer.invoke("pg:ai:stop"),
+    onStream: (listener) => {
+      const handler = (_event: unknown, chunk: unknown) => listener(chunk as never);
+      ipcRenderer.on("pg:ai:stream-chunk", handler);
+      return () => {
+        ipcRenderer.off("pg:ai:stream-chunk", handler);
+      };
+    },
+  },
 };
 
 contextBridge.exposeInMainWorld("pagegrove", api);
+

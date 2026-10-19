@@ -1,7 +1,7 @@
-appId: com.pagegrove.app
-productName: Pagegrove
+appId: com.notionflow.app
+productName: NotionFlow
 directories:
-  output: release
+  output: dist-win
   buildResources: build
 files:
   - "!**/.vscode/*"
@@ -19,14 +19,21 @@ npmRebuild: false
 afterPack: scripts/afterPack.cjs
 win:
   target:
-    - nsis
-    - portable
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
   icon: build/icon.ico
-  artifactName: ${productName}-${version}-${arch}.${ext}
+  artifactName: ${productName}-Setup-${version}.${ext}
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-  shortcutName: Pagegrove
+  shortcutName: NotionFlow
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  runAfterFinish: true
 portable:
   artifactName: ${productName}-${version}-portable.${ext}
