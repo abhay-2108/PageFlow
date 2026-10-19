@@ -1,4 +1,4 @@
-name: Release NotionFlow
+name: Release PageFlow
 
 on:
   push:
