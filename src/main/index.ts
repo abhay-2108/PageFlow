@@ -52,14 +52,23 @@ function registerAssetProtocol(workspaceDir: string): void {
 import { existsSync } from "node:fs";
 
 function resolveWorkspaceDir(): string {
-  const override = process.env["NOTIONFLOW_WORKSPACE"] || process.env["PAGEGROVE_WORKSPACE"];
+  const override =
+    process.env["PAGEFLOW_WORKSPACE"] ||
+    process.env["NOTIONFLOW_WORKSPACE"] ||
+    process.env["PAGEGROVE_WORKSPACE"];
   if (override && override.trim().length > 0) {
     return override;
   }
   const defaultDir = join(app.getPath("documents"), BRAND.name);
+  const notionflowDir = join(app.getPath("documents"), "NotionFlow");
   const legacyDir = join(app.getPath("documents"), "Pagegrove");
-  if (!existsSync(defaultDir) && existsSync(legacyDir)) {
-    return legacyDir;
+  if (!existsSync(defaultDir)) {
+    if (existsSync(notionflowDir)) {
+      return notionflowDir;
+    }
+    if (existsSync(legacyDir)) {
+      return legacyDir;
+    }
   }
   return defaultDir;
 }
@@ -131,7 +140,7 @@ function createWindow(): void {
   }
 }
 
-app.setAppUserModelId("com.notionflow.app");
+app.setAppUserModelId("com.pageflow.app");
 
 app.whenReady().then(() => {
   logger.init();

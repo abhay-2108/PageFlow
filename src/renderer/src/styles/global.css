@@ -37,7 +37,7 @@
   --pg-c-red-text: #d44c47;
   --pg-c-red-bg: #fdebec;
 
-  /* NotionFlow AI Theme Variables - Light */
+  /* PageFlow AI Theme Variables - Light */
   --pg-ai-accent: #7c3aed;
   --pg-ai-accent-hover: #6d28d9;
   --pg-ai-accent-subtle: rgba(124, 58, 237, 0.08);
@@ -101,7 +101,7 @@
     --pg-c-red-text: #df5452;
     --pg-c-red-bg: #6e3630;
 
-    /* NotionFlow AI Theme Variables - Dark */
+    /* PageFlow AI Theme Variables - Dark */
     --pg-ai-accent: #a78bfa;
     --pg-ai-accent-hover: #c4b5fd;
     --pg-ai-accent-subtle: rgba(167, 139, 250, 0.12);
@@ -161,7 +161,7 @@
   --pg-c-red-text: #d44c47;
   --pg-c-red-bg: #fdebec;
 
-  /* NotionFlow AI Theme Variables - Light */
+  /* PageFlow AI Theme Variables - Light */
   --pg-ai-accent: #7c3aed;
   --pg-ai-accent-hover: #6d28d9;
   --pg-ai-accent-subtle: rgba(124, 58, 237, 0.08);
@@ -220,7 +220,7 @@
   --pg-c-red-text: #df5452;
   --pg-c-red-bg: #6e3630;
 
-  /* NotionFlow AI Theme Variables - Dark */
+  /* PageFlow AI Theme Variables - Dark */
   --pg-ai-accent: #a78bfa;
   --pg-ai-accent-hover: #c4b5fd;
   --pg-ai-accent-subtle: rgba(167, 139, 250, 0.12);
@@ -4516,7 +4516,7 @@ body.pg-block-dragging {
 }
 
 /* ==========================================================================
-   NotionFlow AI Assistant Slide-over Drawer
+   PageFlow AI Assistant Slide-over Drawer
    ========================================================================== */
 @keyframes pgAiSlideIn {
   from {

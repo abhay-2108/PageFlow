@@ -1,5 +1,5 @@
-appId: com.notionflow.app
-productName: NotionFlow
+appId: com.pageflow.app
+productName: PageFlow
 directories:
   output: dist-win
   buildResources: build
@@ -31,7 +31,7 @@ nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
-  shortcutName: NotionFlow
+  shortcutName: PageFlow
   createDesktopShortcut: always
   createStartMenuShortcut: true
   runAfterFinish: true

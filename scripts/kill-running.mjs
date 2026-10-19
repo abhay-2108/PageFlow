@@ -3,6 +3,12 @@ import process from 'node:process'
 
 if (process.platform === 'win32') {
   try {
+    execSync('taskkill /F /IM PageFlow.exe /T', { stdio: 'ignore' })
+    console.log('[kill-running] Terminated running PageFlow processes.')
+  } catch {
+    // Process was not running
+  }
+  try {
     execSync('taskkill /F /IM NotionFlow.exe /T', { stdio: 'ignore' })
     console.log('[kill-running] Terminated running NotionFlow processes.')
   } catch {

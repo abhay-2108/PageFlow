@@ -54,7 +54,7 @@ describe("AI Shared Helpers", () => {
 
   it("builds system prompt prohibiting conversational fluff", () => {
     const system = buildSystemPrompt();
-    expect(system).toContain("NotionFlow AI");
+    expect(system).toContain("PageFlow AI");
     expect(system).toContain("Markdown");
   });
 });

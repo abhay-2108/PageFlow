@@ -79,7 +79,7 @@ export function OllamaOfflineModal() {
 
         <div className="pg-ollama-modal__body">
           <p className="pg-ollama-modal__desc">
-            NotionFlow could not connect to the local Ollama instance at <code>http://127.0.0.1:11434</code>.
+            PageFlow could not connect to the local Ollama instance at <code>http://127.0.0.1:11434</code>.
             Local models run completely on-device for total privacy and zero data leakage.
           </p>
 

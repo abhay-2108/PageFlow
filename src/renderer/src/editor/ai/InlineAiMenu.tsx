@@ -107,7 +107,7 @@ export function InlineAiMenu() {
       style={{ left, top, width: MENU_WIDTH }}
       onKeyDown={handleKeyDown}
       role="dialog"
-      aria-label="NotionFlow AI"
+      aria-label="PageFlow AI"
     >
       <div className="pg-inline-ai__header">
         <span className="pg-inline-ai__sparkle">✦</span>
@@ -118,8 +118,8 @@ export function InlineAiMenu() {
           onChange={(e) => inlineAi.setQuery(e.target.value)}
           placeholder={
             state.selectedText
-              ? "Ask NotionFlow AI to edit selection or give instructions..."
-              : "Ask NotionFlow AI to write anything, or pick an action..."
+              ? "Ask PageFlow AI to edit selection or give instructions..."
+              : "Ask PageFlow AI to write anything, or pick an action..."
           }
           disabled={state.loading}
         />

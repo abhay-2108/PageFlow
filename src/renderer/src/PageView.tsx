@@ -102,9 +102,11 @@ export function PageView({
       void handleToggleAiDrawer();
     };
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("pageflow:toggle-ai", onToggleAiEvent);
     window.addEventListener("notionflow:toggle-ai", onToggleAiEvent);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("pageflow:toggle-ai", onToggleAiEvent);
       window.removeEventListener("notionflow:toggle-ai", onToggleAiEvent);
     };
   }, [handleToggleAiDrawer]);

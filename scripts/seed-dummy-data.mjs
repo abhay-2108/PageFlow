@@ -8,8 +8,18 @@ if (existsSync(join(userProfile, "OneDrive", "Documents"))) {
   docsDir = join(userProfile, "OneDrive", "Documents");
 }
 
-const defaultDir = existsSync(join(docsDir, "Pagegrove")) ? join(docsDir, "Pagegrove") : join(docsDir, "NotionFlow");
-const workspaceDir = process.env.NOTIONFLOW_WORKSPACE || process.env.PAGEGROVE_WORKSPACE || defaultDir;
+const defaultDir = existsSync(join(docsDir, "PageFlow"))
+  ? join(docsDir, "PageFlow")
+  : existsSync(join(docsDir, "NotionFlow"))
+  ? join(docsDir, "NotionFlow")
+  : existsSync(join(docsDir, "Pagegrove"))
+  ? join(docsDir, "Pagegrove")
+  : join(docsDir, "PageFlow");
+const workspaceDir =
+  process.env.PAGEFLOW_WORKSPACE ||
+  process.env.NOTIONFLOW_WORKSPACE ||
+  process.env.PAGEGROVE_WORKSPACE ||
+  defaultDir;
 mkdirSync(workspaceDir, { recursive: true });
 const dbPath = join(workspaceDir, "workspace.db");
 

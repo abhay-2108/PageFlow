@@ -19,7 +19,7 @@ class Logger {
       this.initialized = true;
 
       this.info("--------------------------------------------------");
-      this.info(`NotionFlow starting: v${app.getVersion()}`);
+      this.info(`PageFlow starting: v${app.getVersion()}`);
       this.info(`OS: ${os.type()} ${os.release()} (${os.arch()})`);
       this.info(`Electron: ${process.versions.electron}, Node: ${process.versions.node}, Chrome: ${process.versions.chrome}`);
       this.info(`User Data Path: ${app.getPath("userData")}`);

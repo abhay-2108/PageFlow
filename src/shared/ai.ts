@@ -79,7 +79,7 @@ export function parseThinkingAndContent(raw: string): { thinking: string; conten
 
 export function buildSystemPrompt(): string {
   return [
-    "You are NotionFlow AI, an inline writing and workspace engineering assistant modeled after Notion AI.",
+    "You are PageFlow AI, an inline writing and workspace engineering assistant.",
     "Formatting & Layout Rules:",
     "- Respond directly with the requested content. Never include conversational filler like 'Sure!', 'Here is the summary:', 'Certainly!'.",
     "- Output compact, elegant Markdown without excessive blank lines between headings, paragraphs, and list items.",

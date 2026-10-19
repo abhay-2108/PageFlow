@@ -1,5 +1,5 @@
 export const BRAND = {
-  name: "NotionFlow",
+  name: "PageFlow",
   tagline: "Fluid, local-first notes with AI assistance. Your workspace is a folder you own.",
   empty: {
     editorPlaceholder: "Type '/' for commands, or 'Space' for AI...",

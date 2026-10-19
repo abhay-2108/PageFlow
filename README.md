@@ -1,4 +1,4 @@
-# NotionFlow
+# PageFlow
 
 > **Fluid, local-first notes with private on-device AI. Your workspace is a folder you own.**
 
@@ -38,7 +38,7 @@
 
 ## Overview
 
-**NotionFlow** is a modern desktop document platform designed as an offline-first, local alternative to cloud-tethered workspace tools like Notion. Built on high-performance SQLite write-ahead logging (WAL) and Yjs conflict-free replicated data types (CRDTs), NotionFlow provides frictionless document authoring, flexible database views, peer-to-peer real-time synchronization, and native on-device AI capabilities without exposing your private notes to third-party cloud servers.
+**PageFlow** is a modern desktop document platform designed as an offline-first, local-first alternative to cloud-tethered workspace tools, inspired by Notion. Built on high-performance SQLite write-ahead logging (WAL) and Yjs conflict-free replicated data types (CRDTs), PageFlow provides frictionless document authoring, flexible database views, peer-to-peer real-time synchronization, and native on-device AI capabilities without exposing your private notes to third-party cloud servers.
 
 ---
 
@@ -51,7 +51,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                       NotionFlow Desktop                    │
+│                        PageFlow Desktop                     │
 │                                                             │
 │  ┌───────────────────────┐       ┌───────────────────────┐  │
 │  │     React 18 UI       │       │    TipTap / Prose     │  │
@@ -121,7 +121,7 @@
 ### 4. Local-First Storage & CRDT Sync
 - **SQLite Engine**: High-performance storage managed via `better-sqlite3` with Write-Ahead Logging (`WAL`) enabled.
 - **Yjs CRDT Integration**: Document states are tracked as conflict-free replicated structures, enabling concurrent edits without collision or overwrite.
-- **Peer-to-Peer WebRTC Mesh**: Connect to other NotionFlow instances across local networks without central relays.
+- **Peer-to-Peer WebRTC Mesh**: Connect to other PageFlow instances across local networks without central relays.
 - **Offline Sync Bundles**: Export snapshot bundles (`.sync`) to transfer workspaces across machines air-gapped via USB or local storage.
 
 ### 5. Multi-Tab Workspace
@@ -176,8 +176,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/notionflow.git
-cd notionflow
+git clone https://github.com/your-username/pageflow.git
+cd pageflow
 
 # Install project dependencies and native SQLite bindings
 pnpm install
@@ -210,8 +210,8 @@ pnpm dist:dir
 ```
 
 The resulting release artifacts are output to `dist-win/`:
-- **`NotionFlow-Setup-<version>.exe`**: Standard Windows installer with Start Menu shortcuts, Desktop icon, and uninstaller.
-- **`NotionFlow-<version>-portable.exe`**: Zero-install standalone executable for USB drives or quick testing.
+- **`PageFlow-Setup-<version>.exe`**: Standard Windows installer with Start Menu shortcuts, Desktop icon, and uninstaller.
+- **`PageFlow-<version>-portable.exe`**: Zero-install standalone executable for USB drives or quick testing.
 - **`SHA256SUMS.txt`**: Cryptographic integrity checksums for verification.
 
 ### Automated GitHub Releases (CI/CD)
@@ -225,7 +225,7 @@ When a git version tag is pushed (e.g. `git tag v0.1.0 && git push origin v0.1.0
 
 ## Setting Up Local AI (Ollama)
 
-To enable on-device AI features in NotionFlow:
+To enable on-device AI features in PageFlow:
 
 1. Download and install [Ollama](https://ollama.ai/).
 2. Pull a recommended model:
@@ -243,33 +243,33 @@ To enable on-device AI features in NotionFlow:
    ```bash
    ollama serve
    ```
-4. Open **NotionFlow**. The model dropdown in the AI Assistant will automatically detect all downloaded models.
+4. Open **PageFlow**. The model dropdown in the AI Assistant will automatically detect all downloaded models.
 
 ---
 
 ## Data Storage & Workspace Continuity
 
-NotionFlow automatically locates or creates your workspace directory at:
+PageFlow automatically locates or creates your workspace directory at:
 
-- **Windows**: `%USERPROFILE%\Documents\NotionFlow` *(or `%USERPROFILE%\OneDrive\Documents\NotionFlow`)*
-- **macOS / Linux**: `~/Documents/NotionFlow`
+- **Windows**: `%USERPROFILE%\Documents\PageFlow` *(or `%USERPROFILE%\OneDrive\Documents\PageFlow`)*
+- **macOS / Linux**: `~/Documents/PageFlow`
 
 ### Backwards Compatibility
-If you previously used an existing workspace folder (e.g. `Documents/Pagegrove`), NotionFlow automatically detects and reads your existing `workspace.db` without requiring manual migration.
+If you previously used an existing workspace folder (e.g. `Documents/NotionFlow` or `Documents/Pagegrove`), PageFlow automatically detects and reads your existing `workspace.db` without requiring manual migration.
 
 ### OneDrive & Cloud Sync WAL Protection
-NotionFlow's SQLite engine uses WAL (Write-Ahead Logging) configured with `busy_timeout = 5000ms`, `synchronous = NORMAL`, and memory-backed temporary tables. If your `Documents` directory is managed by Microsoft OneDrive, NotionFlow automatically prevents lock timeouts and file contention during background syncs.
+PageFlow's SQLite engine uses WAL (Write-Ahead Logging) configured with `busy_timeout = 5000ms`, `synchronous = NORMAL`, and memory-backed temporary tables. If your `Documents` directory is managed by Microsoft OneDrive, PageFlow automatically prevents lock timeouts and file contention during background syncs.
 
 ### Diagnostic Logs & Troubleshooting
-If you encounter any unexpected issues, NotionFlow maintains a rotating local log file:
-- **Location**: `%APPDATA%\NotionFlow\logs\app.log`
+If you encounter any unexpected issues, PageFlow maintains a rotating local log file:
+- **Location**: `%APPDATA%\PageFlow\logs\app.log`
 - **Quick Access**: Open Quick Find (`Ctrl + P` or `Ctrl + K`) and run **"Open Diagnostic Logs (app.log)"** to immediately open the log directory in File Explorer.
 
 ---
 
 ## Testing & Quality Verification
 
-NotionFlow is backed by a comprehensive suite of unit, integration, and end-to-end tests:
+PageFlow is backed by a comprehensive suite of unit, integration, and end-to-end tests:
 
 ```bash
 # Run unit tests (Formula engine, CRDT sync, AI system prompts, Markdown transformations)

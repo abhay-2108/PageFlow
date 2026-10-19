@@ -1,5 +1,5 @@
 {
-  "name": "notionflow",
+  "name": "pageflow",
   "version": "0.1.0",
   "description": "Fluid, local-first notes with AI assistance. Your workspace is a folder you own.",
   "private": true,
@@ -22,7 +22,7 @@
     "predist:dir": "node scripts/kill-running.mjs",
     "dist:dir": "pnpm make-icon && electron-vite build && electron-builder --win --dir",
     "postdist:dir": "node scripts/sync-release.mjs",
-    "app": "dist-win\\win-unpacked\\NotionFlow.exe",
+    "app": "dist-win\\win-unpacked\\PageFlow.exe",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {

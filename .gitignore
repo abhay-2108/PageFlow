@@ -5,11 +5,7 @@ release/
 dist-win/
 *.log
 .rea.backup
-docs/rea/evidence.json
-docs/rea/evidence-webapp.json
-docs/rea/cache-extract/
+docs/rea/
 test-results/
 playwright-report/
-docs/rea/evidence-webapp-batch-*.json
-docs/rea/cache-batches/
 electron.vite.config.*.mjs

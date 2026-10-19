@@ -677,7 +677,7 @@ export default function App() {
           setPaletteOpen(true);
         }}
         onToggleAi={() => {
-          window.dispatchEvent(new CustomEvent("notionflow:toggle-ai"));
+          window.dispatchEvent(new CustomEvent("pageflow:toggle-ai"));
         }}
       />
       <div className="app__main-column">

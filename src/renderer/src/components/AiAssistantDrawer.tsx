@@ -245,7 +245,7 @@ export function AiAssistantDrawer({
   const isDefaultModel = activeModel === modelState.defaultModel;
 
   return (
-    <aside className="pg-ai-drawer" role="complementary" aria-label="NotionFlow AI Assistant">
+    <aside className="pg-ai-drawer" role="complementary" aria-label="PageFlow AI Assistant">
       {/* Header Bar */}
       <div className="pg-ai-drawer__header">
         <div className="pg-ai-drawer__title-wrap">
@@ -253,7 +253,7 @@ export function AiAssistantDrawer({
             <span className="pg-ai-drawer__icon">✦</span>
           </div>
           <div className="pg-ai-drawer__title-text">
-            <span className="pg-ai-drawer__title">NotionFlow AI</span>
+            <span className="pg-ai-drawer__title">PageFlow AI</span>
             <span className="pg-ai-drawer__badge">Local</span>
           </div>
         </div>
@@ -433,7 +433,7 @@ export function AiAssistantDrawer({
           >
             <div className="pg-ai-drawer__msg-header">
               <span className="pg-ai-drawer__msg-role">
-                {msg.role === "user" ? "You" : "NotionFlow AI"}
+                {msg.role === "user" ? "You" : "PageFlow AI"}
               </span>
               {msg.role === "assistant" && (
                 <span className="pg-ai-drawer__msg-model-tag">{activeModel}</span>
@@ -567,7 +567,7 @@ export function AiAssistantDrawer({
         </div>
 
         <div className="pg-ai-drawer__footer-caption">
-          NotionFlow AI runs locally on your device via Ollama • Zero cloud telemetry
+          PageFlow AI runs locally on your device via Ollama • Zero cloud telemetry
         </div>
       </div>
     </aside>

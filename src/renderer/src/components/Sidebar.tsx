@@ -491,10 +491,10 @@ export function Sidebar(props: SidebarProps) {
             type="button"
             className="sidebar__nav-item"
             onClick={onToggleAi}
-            title="Ask NotionFlow AI (Ctrl+Shift+J)"
+            title="Ask PageFlow AI (Ctrl+Shift+J)"
           >
             <span className="sidebar__nav-icon" style={{ color: "#a855f7" }}>✦</span>
-            <span className="sidebar__nav-label">NotionFlow AI</span>
+            <span className="sidebar__nav-label">PageFlow AI</span>
             <span className="sidebar__nav-shortcut">Ctrl+Shift+J</span>
           </button>
         ) : null}

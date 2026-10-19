@@ -80,7 +80,7 @@ function parseBundle(raw: string): BundleShape {
     updates?: unknown;
   };
   if (parsed.version !== 1 || !Array.isArray(parsed.entries) || !Array.isArray(parsed.updates)) {
-    throw new Error("Not a NotionFlow sync bundle");
+    throw new Error("Not a PageFlow sync bundle");
   }
   const entries = parsed.entries as PageMeta[];
   const updates: { pageId: string; data: string }[] = [];
@@ -247,8 +247,8 @@ export function registerIpc(db: WorkspaceDb): void {
     const stamp = new Date().toISOString().slice(0, 10);
     const result = await dialog.showSaveDialog({
       title: "Export sync bundle",
-      defaultPath: join(db.directory, `notionflow-${stamp}.sync`),
-      filters: [{ name: "NotionFlow sync bundle", extensions: ["sync"] }],
+      defaultPath: join(db.directory, `pageflow-${stamp}.sync`),
+      filters: [{ name: "PageFlow sync bundle", extensions: ["sync"] }],
     });
     if (result.canceled || !result.filePath) {
       return { ok: false };
@@ -262,7 +262,7 @@ export function registerIpc(db: WorkspaceDb): void {
     const result = await dialog.showOpenDialog({
       title: "Import sync bundle",
       properties: ["openFile"],
-      filters: [{ name: "NotionFlow sync bundle", extensions: ["sync"] }],
+      filters: [{ name: "PageFlow sync bundle", extensions: ["sync"] }],
     });
     const filePath = result.filePaths[0];
     if (result.canceled || !filePath) {
