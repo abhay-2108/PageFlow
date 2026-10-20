@@ -14,7 +14,11 @@ export function ToggleView({ node, updateAttributes }: NodeViewProps) {
         contentEditable={false}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => updateAttributes({ collapsed: !collapsed })}
-      />
+      >
+        <span className={collapsed ? "pg-toggle__icon pg-toggle__icon--collapsed" : "pg-toggle__icon"}>
+          ▶
+        </span>
+      </button>
       <NodeViewContent className="pg-toggle__content" />
     </NodeViewWrapper>
   );

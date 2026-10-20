@@ -162,12 +162,30 @@ export const slashItems: SlashItem[] = [
     },
   },
   {
+    id: "toc",
+    title: "Table of contents",
+    aliases: ["toc", "headings", "outline"],
+    hint: "Outline of headings on this page",
+    run: (editor, range) => {
+      replaceBlock(editor, range).insertContent({ type: "tableOfContents" }).run();
+    },
+  },
+  {
     id: "code",
     title: "Code",
     aliases: ["code block"],
     hint: "Fenced code block",
     run: (editor, range) => {
       replaceBlock(editor, range).toggleCodeBlock().run();
+    },
+  },
+  {
+    id: "embed",
+    title: "Embed",
+    aliases: ["embed", "youtube", "video", "figma", "iframe"],
+    hint: "Embed YouTube video, Figma, or webpage",
+    run: (editor, range) => {
+      replaceBlock(editor, range).insertContent({ type: "embed" }).run();
     },
   },
 ];

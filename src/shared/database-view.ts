@@ -21,7 +21,7 @@ export interface DatabaseFilter {
   value: string;
 }
 
-export type ViewLayout = "table" | "board" | "gallery";
+export type ViewLayout = "table" | "board" | "gallery" | "calendar";
 
 export interface DatabaseView {
   id: string;
@@ -88,7 +88,8 @@ function isView(value: unknown): value is DatabaseView {
     record.layout === undefined ||
     record.layout === "table" ||
     record.layout === "board" ||
-    record.layout === "gallery";
+    record.layout === "gallery" ||
+    record.layout === "calendar";
   const validGroupBy =
     record.groupByPropId === undefined || typeof record.groupByPropId === "string";
 

@@ -17,9 +17,12 @@ import { BlockTools } from "./blocks/extension";
 import { CommentAnchor } from "./comments/CommentAnchor";
 import { CommentTools } from "./comments/extension";
 import { Callout } from "./extensions/Callout";
+import { CodeBlockWithLang } from "./extensions/CodeBlockWithLang";
+import { Embed } from "./extensions/Embed";
 import { KeyboardShortcuts } from "./extensions/KeyboardShortcuts";
 import { NotionInputRules } from "./extensions/NotionInputRules";
 import { PgImage } from "./extensions/PgImage";
+import { TableOfContents } from "./extensions/TableOfContents";
 import { Toggle } from "./extensions/Toggle";
 import { FormatTools } from "./format/extension";
 import { BgColor, TextColor } from "./format/marks";
@@ -47,9 +50,10 @@ export function buildExtensions(
   const extensions: Extensions = [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },
-      codeBlock: { HTMLAttributes: { spellcheck: "false" } },
+      codeBlock: false,
       history: false,
     }),
+    CodeBlockWithLang,
     Underline,
     TaskList,
     TaskItem.configure({ nested: true }),
@@ -58,7 +62,9 @@ export function buildExtensions(
     TableHeader,
     TableCell,
     Toggle,
+    TableOfContents,
     Callout,
+    Embed,
     PgImage,
     TextColor,
     BgColor,

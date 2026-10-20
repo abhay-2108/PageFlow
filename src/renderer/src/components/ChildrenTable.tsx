@@ -28,6 +28,9 @@ import { childrenOf } from "../../../shared/tree";
 import type { PageMeta } from "../../../shared/types";
 import { getApi } from "../lib/api";
 import { assetUrl } from "../lib/assetUrl";
+import { PropertyConfigPopover } from "./PropertyConfigPopover";
+import { CalendarView } from "./CalendarView";
+import { TemplateGalleryModal } from "./TemplateGalleryModal";
 
 const PROPERTY_TYPE_ORDER: PropertyType[] = [
   "text",
@@ -168,6 +171,8 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
   const [cellMenu, setCellMenu] = useState<CellMenuState | null>(null);
   const [cellQuery, setCellQuery] = useState("");
   const [propMenu, setPropMenu] = useState<string | null>(null);
+  const [configuringProp, setConfiguringProp] = useState<PropertyDef | null>(null);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const [renamingProp, setRenamingProp] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [addMenuOpen, setAddMenuOpen] = useState(false);
@@ -258,7 +263,8 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
       return;
     }
     const id = crypto.randomUUID();
-    const layoutLabel = layout === "gallery" ? "Gallery" : layout === "board" ? "Board" : "Table";
+    const layoutLabel =
+      layout === "gallery" ? "Gallery" : layout === "board" ? "Board" : layout === "calendar" ? "Calendar" : "Table";
     const name = `${layoutLabel} ${activeConfig.views.length + 1}`;
     const next: DatabaseConfig = {
       views: [...activeConfig.views, { id, name, layout, sorts: [], filters: [] }],
@@ -986,6 +992,16 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
               role="menuitem"
               onClick={() => {
                 setPropMenu(null);
+                setConfiguringProp(def);
+              }}
+            >
+              ⚙️ Edit property
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setPropMenu(null);
                 setRenameValue(def.name);
                 setRenamingProp(def.id);
               }}
@@ -1280,6 +1296,18 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
               >
                 Gallery
               </button>
+              <button
+                type="button"
+                className={
+                  currentLayout === "calendar"
+                    ? "page__view-btn page__view-btn--active"
+                    : "page__view-btn"
+                }
+                aria-pressed={currentLayout === "calendar"}
+                onClick={() => toggleLayout("calendar")}
+              >
+                Calendar
+              </button>
             </div>
             <button
               type="button"
@@ -1355,6 +1383,14 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
             Group: {groupProp ? groupProp.name : "None"}
           </button>
         ) : null}
+        <button
+          type="button"
+          className="pg-db-tool"
+          onMouseDown={stop}
+          onClick={() => setTemplatePickerOpen(true)}
+        >
+          📑 Template
+        </button>
         {toolMenu === "sort" ? (
           <div className="menu-popover pg-db-tool-menu" role="menu" onMouseDown={stop}>
             {properties.length === 0 ? (
@@ -1646,6 +1682,16 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
             </button>
           </div>
         </div>
+      ) : currentLayout === "calendar" ? (
+        <CalendarView
+          pages={visibleRows}
+          properties={properties}
+          onOpenPage={onOpenPage}
+          onCreatePage={(dateStr) => {
+            const dateDef = properties.find((p) => p.type === "date");
+            void createRow(dateDef && dateStr ? { [dateDef.id]: dateStr } : undefined);
+          }}
+        />
       ) : (
         <table className="pg-children-table" aria-label="Subpages">
           <thead>
@@ -2061,6 +2107,49 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
             })()}
           </div>
         </div>
+      ) : null}
+      {configuringProp && hub ? (
+        <div className="pg-modal-overlay" onClick={() => setConfiguringProp(null)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <PropertyConfigPopover
+              pageId={hub.id}
+              property={configuringProp}
+              onUpdated={() => {
+                void api.pages
+                  .list()
+                  .then((listed) => {
+                    setHub(listed.find((page) => page.id === parentId) ?? null);
+                    setRows(childrenOf(listed, parentId));
+                  })
+                  .catch(() => undefined);
+              }}
+              onClose={() => setConfiguringProp(null)}
+            />
+          </div>
+        </div>
+      ) : null}
+      {templatePickerOpen ? (
+        <TemplateGalleryModal
+          onSelect={(template) => {
+            void (async () => {
+              const created = await api.pages.create({ parentId });
+              if (template.name) {
+                await api.pages.rename(created.id, template.name);
+              }
+              if (template.icon) {
+                await api.pages.setIcon(created.id, template.icon);
+              }
+              if (template.doc) {
+                await api.pages.updateDoc(created.id, template.doc);
+              }
+              const listed = await api.pages.list();
+              setHub(listed.find((page) => page.id === parentId) ?? null);
+              setRows(childrenOf(listed, parentId));
+              onOpenPage(created.id);
+            })();
+          }}
+          onClose={() => setTemplatePickerOpen(false)}
+        />
       ) : null}
     </div>
   );

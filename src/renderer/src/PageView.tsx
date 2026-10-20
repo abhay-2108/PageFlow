@@ -22,6 +22,8 @@ import { assetUrl } from "./lib/assetUrl";
 import { session } from "./lib/session";
 import { activeEditor } from "./editor/activeEditor";
 import { renderMarkdownToHtml } from "./components/AiMarkdownView";
+import { TemplateGalleryModal } from "./components/TemplateGalleryModal";
+import { saveCustomTemplate, type PageTemplate } from "../../shared/templates";
 
 export interface PageViewProps {
   record: PageRecord;
@@ -67,6 +69,7 @@ export function PageView({
   const [backlinks, setBacklinks] = useState<BacklinkHit[]>([]);
   const [threads, setThreads] = useState<CommentThread[]>([]);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
   const [draftQuote, setDraftQuote] = useState<string | null>(null);
   const [draftBody, setDraftBody] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
@@ -80,6 +83,7 @@ export function PageView({
   const [theme, setTheme] = useState<"system" | "light" | "dark">(
     () => (localStorage.getItem("pg_theme") as "system" | "light" | "dark") ?? "system",
   );
+  const [isLocked, setIsLocked] = useState(false);
 
   const handleToggleAiDrawer = useCallback(async () => {
     if (!aiDrawerOpen) {
@@ -600,6 +604,18 @@ export function PageView({
                 </span>
               </div>
 
+              <div
+                className="pg-menu-toggle-row"
+                onClick={() => {
+                  setIsLocked((prev) => !prev);
+                }}
+              >
+                <span>{isLocked ? "🔒 Locked" : "🔓 Lock page"}</span>
+                <span className={isLocked ? "pg-switch pg-switch--on" : "pg-switch"}>
+                  <span className="pg-switch__knob" />
+                </span>
+              </div>
+
               <div className="pg-menu-divider" />
 
               <div className="pg-menu-section-title">Theme</div>
@@ -660,6 +676,24 @@ export function PageView({
                 }}
               >
                 Duplicate
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOptionsOpen(false);
+                  const template: PageTemplate = {
+                    id: `custom-${crypto.randomUUID()}`,
+                    name: record.meta.title.trim() || BRAND.empty.untitled,
+                    category: "personal",
+                    description: `Custom template saved from ${record.meta.title || "page"}`,
+                    icon: record.meta.icon || "📄",
+                    doc: record.doc,
+                  };
+                  saveCustomTemplate(template);
+                }}
+              >
+                Save as template
               </button>
               <button
                 type="button"
@@ -747,14 +781,24 @@ export function PageView({
             </button>
           ) : null}
           {view === "doc" ? (
-            <button
-              type="button"
-              className="page__meta-btn"
-              aria-label="Add comment"
-              onClick={() => setCommentsOpen(true)}
-            >
-              {openThreads.length > 0 ? `Comments (${openThreads.length})` : "+ Add comment"}
-            </button>
+            <>
+              <button
+                type="button"
+                className="page__meta-btn"
+                aria-label="Add comment"
+                onClick={() => setCommentsOpen(true)}
+              >
+                {openThreads.length > 0 ? `Comments (${openThreads.length})` : "+ Add comment"}
+              </button>
+              <button
+                type="button"
+                className="page__meta-btn"
+                aria-label="Page templates"
+                onClick={() => setTemplateGalleryOpen(true)}
+              >
+                📑 Templates
+              </button>
+            </>
           ) : null}
           <div className="page__view-toggle" role="group" aria-label="Page view">
             <button
@@ -803,10 +847,27 @@ export function PageView({
             onClose={() => setPicker(null)}
           />
         ) : null}
+        {templateGalleryOpen ? (
+          <TemplateGalleryModal
+            onSelect={(template) => {
+              if (template.doc) {
+                onDocChange(template.doc);
+              }
+              if (template.icon && !record.meta.icon) {
+                onIconChange(template.icon);
+              }
+              if (template.name && !record.meta.title) {
+                onTitleChange(template.name);
+              }
+            }}
+            onClose={() => setTemplateGalleryOpen(false)}
+          />
+        ) : null}
       </div>
       <input
         className="page__title"
         value={record.meta.title}
+        disabled={isLocked}
         onChange={(event) => onTitleChange(event.target.value)}
         placeholder={BRAND.empty.untitled}
         aria-label="Page title"
@@ -814,6 +875,11 @@ export function PageView({
         autoComplete="off"
         data-page-title={displayTitle}
       />
+      {isLocked ? (
+        <div className="pg-locked-banner" style={{ padding: "6px 12px", background: "var(--pg-bg-subtle)", borderRadius: "4px", marginBottom: "12px", fontSize: "12px", color: "var(--pg-fg-muted)" }}>
+          🔒 This page is locked. Edits are disabled.
+        </div>
+      ) : null}
       {view === "table" ? (
         <ChildrenTable
           parentId={record.meta.id}
@@ -822,12 +888,16 @@ export function PageView({
           onOpenPage={onOpenPage}
         />
       ) : (
-        <div ref={editorContainerRef} className="page__editor-container">
+        <div
+          ref={editorContainerRef}
+          className={isLocked ? "page__editor-container page__editor-container--locked" : "page__editor-container"}
+          style={isLocked ? { pointerEvents: "none", opacity: 0.9 } : undefined}
+        >
           <Editor
             key={`${record.meta.id}:${editorEpoch}`}
             pageId={record.meta.id}
             onDocChange={onDocChange}
-            autoFocus={autoFocusEditor}
+            autoFocus={autoFocusEditor && !isLocked}
             onOpenPage={onOpenPage}
             onCommentRequest={handleCommentRequest}
             onCommentClick={handleCommentClick}

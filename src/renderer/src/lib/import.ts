@@ -28,6 +28,10 @@ function parseDomNode(node: Node): HtmlNode {
     }
   }
   const attrs: Record<string, unknown> = {};
+  if (el.getAttribute) {
+    const cls = el.getAttribute("class") || "";
+    if (cls) attrs.className = cls;
+  }
   if (tag === "strong" || tag === "b") attrs.bold = true;
   if (tag === "em" || tag === "i") attrs.italic = true;
   if (tag === "u") attrs.underline = true;
@@ -131,6 +135,22 @@ function nodesToTipTap(nodes: HtmlNode[]): TipTapDocument {
         type: "blockquote",
         content: extractParagraphs(node),
       });
+    } else if (node.type === "details") {
+      content.push({
+        type: "toggleBlock",
+        attrs: { open: true },
+        content: extractParagraphs(node),
+      });
+    } else if (
+      node.type === "div" &&
+      typeof node.attrs.className === "string" &&
+      (node.attrs.className.includes("callout") || node.attrs.className.includes("notion-callout"))
+    ) {
+      content.push({
+        type: "calloutBlock",
+        attrs: { icon: "💡" },
+        content: extractParagraphs(node),
+      });
     } else if (node.type === "pre") {
       content.push({
         type: "codeBlock",
@@ -213,6 +233,11 @@ export function importMarkdown(markdown: string): TipTapDocument {
 export function importHtml(html: string): TipTapDocument {
   const nodes = parseHtmlToNodes(html);
   return nodesToTipTap(nodes);
+}
+
+export function importNotionHtml(html: string): TipTapDocument {
+  // Notion wraps content in <article class="page"> or similar; importHtml already handles semantic nodes
+  return importHtml(html);
 }
 
 function markdownToSimpleHtml(markdown: string): string {
