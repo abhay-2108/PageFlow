@@ -587,6 +587,78 @@ export default function App() {
     trashPage,
   ]);
 
+  const handleToggleExpanded = useCallback(
+    (id: string) => {
+      setExpanded((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) {
+          next.delete(id);
+        } else {
+          next.add(id);
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      void selectPage(id);
+    },
+    [selectPage],
+  );
+
+  const handleCreate = useCallback(
+    (parentId: string | null) => {
+      void createPage(parentId);
+    },
+    [createPage],
+  );
+
+  const handleTrash = useCallback(
+    (id: string) => {
+      void trashPage(id);
+    },
+    [trashPage],
+  );
+
+  const handleRestore = useCallback(
+    (id: string) => {
+      void restorePage(id);
+    },
+    [restorePage],
+  );
+
+  const handleMove = useCallback(
+    (id: string, parentId: string | null, beforeId: string | null) => {
+      void movePage(id, parentId, beforeId);
+    },
+    [movePage],
+  );
+
+  const handleFavorite = useCallback(
+    (id: string, favorite: boolean) => {
+      void setPageFavorite(id, favorite);
+    },
+    [setPageFavorite],
+  );
+
+  const handleDuplicate = useCallback(
+    (id: string) => {
+      void duplicatePage(id);
+    },
+    [duplicatePage],
+  );
+
+  const handleOpenSearch = useCallback(() => {
+    setPaletteOpen(true);
+  }, []);
+
+  const handleToggleAi = useCallback(() => {
+    window.dispatchEvent(new CustomEvent("pageflow:toggle-ai"));
+  }, []);
+
   return (
     <div className="shell">
       <Sidebar
@@ -595,45 +667,17 @@ export default function App() {
         activeId={activeId}
         workspaceDir={workspaceDir}
         expanded={expanded}
-        onToggleExpanded={(id) =>
-          setExpanded((prev) => {
-            const next = new Set(prev);
-            if (next.has(id)) {
-              next.delete(id);
-            } else {
-              next.add(id);
-            }
-            return next;
-          })
-        }
-        onSelect={(id) => {
-          void selectPage(id);
-        }}
-        onCreate={(parentId) => {
-          void createPage(parentId);
-        }}
-        onRename={(id, title) => queueRename(id, title)}
-        onTrash={(id) => {
-          void trashPage(id);
-        }}
-        onRestore={(id) => {
-          void restorePage(id);
-        }}
-        onMove={(id, parentId, beforeId) => {
-          void movePage(id, parentId, beforeId);
-        }}
-        onFavorite={(id, favorite) => {
-          void setPageFavorite(id, favorite);
-        }}
-        onDuplicate={(id) => {
-          void duplicatePage(id);
-        }}
-        onOpenSearch={() => {
-          setPaletteOpen(true);
-        }}
-        onToggleAi={() => {
-          window.dispatchEvent(new CustomEvent("pageflow:toggle-ai"));
-        }}
+        onToggleExpanded={handleToggleExpanded}
+        onSelect={handleSelect}
+        onCreate={handleCreate}
+        onRename={queueRename}
+        onTrash={handleTrash}
+        onRestore={handleRestore}
+        onMove={handleMove}
+        onFavorite={handleFavorite}
+        onDuplicate={handleDuplicate}
+        onOpenSearch={handleOpenSearch}
+        onToggleAi={handleToggleAi}
       />
       <div className="app__main-column">
         {tabs.length > 0 ? (

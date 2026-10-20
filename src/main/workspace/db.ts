@@ -702,6 +702,44 @@ export class WorkspaceDb {
     this._pageListCache = null;
   }
 
+  createPage(input: NewPageInput): PageMeta {
+    this.invalidatePageListCache();
+    return this.createPageInternal(input);
+  }
+
+  private createPageInternal(input: NewPageInput): PageMeta {
+    return this.createPageOriginal(input);
+  }
+
+  private createPageOriginal(input: NewPageInput): PageMeta {
+    const id = randomUUID();
+    const now = Date.now();
+    const rank = input.parentId
+      ? this.nextRank(input.parentId)
+      : this.nextRootRank();
+    const insertRow = this.db.prepare(
+      `INSERT INTO pages (id, parent_id, title, rank, icon, cover, view, favorite, properties, fields, db_config, doc, text, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)`,
+    );
+    insertRow.run(
+      id,
+      input.parentId,
+      input.title,
+      rank,
+      input.icon ?? null,
+      input.cover ?? null,
+      input.view ?? "doc",
+      "[]",
+      "{}",
+      null,
+      JSON.stringify(EMPTY_DOC),
+      "",
+      now,
+      now,
+    );
+    return this.rowToMeta(this.rowById(id)!);
+  }
+
   createCommentThread(input: NewCommentThreadInput): CommentThread {
     const id = randomUUID();
     const now = Date.now();

@@ -182,7 +182,7 @@ export function BoardView({
     });
     for (const page of children) {
       const val = (page.fields as Record<string, PropertyValue>)[statusProp.id];
-      const key = typeof val === "string" ? val : "";
+      const key = Array.isArray(val) ? val[0] ?? "" : typeof val === "string" ? val : "";
       const group = groupMap.get(key) ?? groupMap.get("__none")!;
       group.pages.push(page);
     }

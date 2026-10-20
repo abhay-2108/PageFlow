@@ -99,6 +99,10 @@ function extractTextNodes(
     return [];
   }
 
+  if (node.type === "br") {
+    return [{ type: "hardBreak" }];
+  }
+
   const result: NonNullable<TipTapDocument["content"]> = [];
   if (Array.isArray(node.content)) {
     for (const child of node.content) {
@@ -298,6 +302,17 @@ function markdownToSimpleHtml(markdown: string): string {
       html.push(`<li>${inlineMdToHtml(trimmed.replace(/^\d+\.\s+/, ""))}</li>`);
     } else if (/^(---+|\*\*\*+)$/.test(trimmed)) {
       html.push("<hr>");
+    } else if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      const cells = trimmed.slice(1, -1).split("|").map((c) => c.trim());
+      const isDivider = cells.every((c) => /^:?-+:?$/.test(c));
+      if (isDivider) continue;
+      const cellHtml = cells.map((c) => `<td>${inlineMdToHtml(c)}</td>`).join("");
+      html.push(`<table><tr>${cellHtml}</tr></table>`);
+    } else if (/!\[([^\]]*)\]\(([^)]+)\)/.test(trimmed)) {
+      const match = /!\[([^\]]*)\]\(([^)]+)\)/.exec(trimmed);
+      if (match) {
+        html.push(`<p><img src="${match[2]}" alt="${match[1]}"></p>`);
+      }
     } else {
       if (inList) {
         html.push(`</${listType}>`);
