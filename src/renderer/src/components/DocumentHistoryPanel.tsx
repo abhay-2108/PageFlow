@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { getVersionsForDoc, deleteVersion, restoreVersion } from "../../../shared/history";
 import type { DocVersion } from "../../../shared/history";
+import { useFocusTrap } from "../lib/a11y";
 import type * as Y from "yjs";
 
 interface DocumentHistoryPanelProps {
@@ -16,11 +17,19 @@ export function DocumentHistoryPanel({
   onRestored,
   onClose,
 }: DocumentHistoryPanelProps) {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  useFocusTrap(panelRef, true, onClose);
+
   const [versions, setVersions] = useState<DocVersion[]>(() => getVersionsForDoc(pageId));
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [confirmRestore, setConfirmRestore] = useState<string | null>(null);
 
   const handleRestore = (version: DocVersion) => {
     if (!doc) return;
+    if (confirmRestore !== version.id) {
+      setConfirmRestore(version.id);
+      return;
+    }
     restoreVersion(version, doc);
     onRestored();
     onClose();
@@ -43,16 +52,23 @@ export function DocumentHistoryPanel({
   };
 
   return (
-    <div className="history-panel" role="dialog" aria-label="Document history">
+    <div
+      ref={panelRef}
+      className="history-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Document version history"
+      tabIndex={-1}
+    >
       <div className="history-panel__header">
         <h2 className="history-panel__title">Version History</h2>
         <button
           type="button"
           className="history-panel__close"
           onClick={onClose}
-          aria-label="Close history"
+          aria-label="Close version history"
         >
-          x
+          ✕
         </button>
       </div>
       <div className="history-panel__list">
@@ -71,7 +87,7 @@ export function DocumentHistoryPanel({
                   className="history-panel__restore"
                   onClick={() => handleRestore(version)}
                 >
-                  Restore
+                  {confirmRestore === version.id ? "Confirm restore?" : "Restore"}
                 </button>
                 {confirmDelete === version.id ? (
                   <>
@@ -94,7 +110,10 @@ export function DocumentHistoryPanel({
                   <button
                     type="button"
                     className="history-panel__delete"
-                    onClick={() => setConfirmDelete(version.id)}
+                    onClick={() => {
+                      setConfirmDelete(version.id);
+                      setConfirmRestore(null);
+                    }}
                   >
                     Delete
                   </button>

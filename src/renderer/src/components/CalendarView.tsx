@@ -120,14 +120,24 @@ export function CalendarView({
           return (
             <div
               key={dateKey}
+              role="button"
+              tabIndex={0}
+              aria-label={`Date ${dateKey}`}
               className={isToday ? "pg-calendar-cell pg-calendar-cell--today" : "pg-calendar-cell"}
               onClick={() => onCreatePage?.(dateKey)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onCreatePage?.(dateKey);
+                }
+              }}
             >
               <div className="pg-calendar-date-number">{day}</div>
               <div className="pg-calendar-events">
                 {items.map((item) => (
-                  <div
+                  <button
                     key={item.id}
+                    type="button"
                     className="pg-calendar-item"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -138,7 +148,7 @@ export function CalendarView({
                     <span className="pg-calendar-item-title">
                       {item.title.trim().length > 0 ? item.title : BRAND.empty.untitled}
                     </span>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>

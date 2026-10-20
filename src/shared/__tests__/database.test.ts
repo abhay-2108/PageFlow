@@ -167,6 +167,8 @@ describe("value normalization", () => {
     expect(normalizeValue("email", " test@example.com ")).toBe("test@example.com");
     expect(normalizeValue("phone", " +1-555-0199 ")).toBe("+1-555-0199");
     expect(normalizeValue("status", " Done ")).toBe("Done");
+    expect(normalizeValue("ai_summary", "  Executive summary  ")).toBe("Executive summary");
+    expect(normalizeValue("ai_autofill", "  Tag 1, Tag 2  ")).toBe("Tag 1, Tag 2");
     expect(normalizeValue("formula", "1+1")).toBeNull();
   });
 });

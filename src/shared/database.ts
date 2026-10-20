@@ -13,7 +13,9 @@ export type PropertyType =
   | "relation"
   | "rollup"
   | "created_time"
-  | "last_edited_time";
+  | "last_edited_time"
+  | "ai_summary"
+  | "ai_autofill";
 
 export const SELECT_COLORS = [
   "gray",
@@ -77,6 +79,7 @@ export interface PropertyDef {
   relationPropId?: string;
   rollupPropId?: string;
   rollupOp?: RollupOp;
+  aiPrompt?: string;
 }
 
 export type PropertyValue = string | number | boolean | string[] | null;
@@ -99,6 +102,8 @@ export const PROPERTY_TYPE_LABELS: Record<PropertyType, string> = {
   rollup: "Rollup",
   created_time: "Created time",
   last_edited_time: "Last edited time",
+  ai_summary: "AI Summary",
+  ai_autofill: "AI Autofill",
 };
 
 export function isPropertyType(value: string): value is PropertyType {
@@ -243,7 +248,9 @@ export function normalizeValue(type: PropertyType, value: unknown): PropertyValu
     case "url":
     case "email":
     case "phone":
-    case "status": {
+    case "status":
+    case "ai_summary":
+    case "ai_autofill": {
       if (typeof value !== "string") {
         return null;
       }
@@ -311,6 +318,8 @@ export function valueToText(type: PropertyType, value: PropertyValue): string {
     case "email":
     case "phone":
     case "status":
+    case "ai_summary":
+    case "ai_autofill":
       return typeof value === "string" ? value : "";
     case "number":
       return typeof value === "number" ? String(value) : "";
@@ -346,6 +355,8 @@ export function coerceValue(
     case "url":
     case "email":
     case "phone":
+    case "ai_summary":
+    case "ai_autofill":
     case "number":
     case "date":
       return normalizeValue(to, asText);

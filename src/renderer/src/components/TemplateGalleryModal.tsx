@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   TEMPLATE_CATEGORIES,
   getAllTemplates,
   type PageTemplate,
   type TemplateCategory,
 } from "../../../shared/templates";
+import { useFocusTrap } from "../lib/a11y";
 
 interface TemplateGalleryModalProps {
   onSelect: (template: PageTemplate) => void;
@@ -12,6 +14,9 @@ interface TemplateGalleryModalProps {
 }
 
 export function TemplateGalleryModal({ onSelect, onClose }: TemplateGalleryModalProps) {
+  const modalRef = useRef<HTMLDivElement | null>(null);
+  useFocusTrap(modalRef, true, onClose);
+
   const [activeCategory, setActiveCategory] = useState<TemplateCategory | "all">("all");
   const [search, setSearch] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<PageTemplate | null>(() => {
@@ -28,12 +33,15 @@ export function TemplateGalleryModal({ onSelect, onClose }: TemplateGalleryModal
     return matchesCategory && matchesSearch;
   });
 
-  return (
+  return createPortal(
     <div className="pg-modal-overlay" onClick={onClose}>
       <div
+        ref={modalRef}
         className="pg-template-gallery"
         role="dialog"
+        aria-modal="true"
         aria-label="Template Gallery"
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="pg-template-gallery__header">
@@ -71,7 +79,8 @@ export function TemplateGalleryModal({ onSelect, onClose }: TemplateGalleryModal
                   className={activeCategory === "all" ? "pg-nav-item pg-nav-item--active" : "pg-nav-item"}
                   onClick={() => setActiveCategory("all")}
                 >
-                  All Templates
+                  <span className="pg-nav-item__icon">🗂️</span>
+                  <span>All Templates</span>
                 </button>
               </li>
               {TEMPLATE_CATEGORIES.map((cat) => (
@@ -83,7 +92,8 @@ export function TemplateGalleryModal({ onSelect, onClose }: TemplateGalleryModal
                     }
                     onClick={() => setActiveCategory(cat.id)}
                   >
-                    {cat.label}
+                    <span className="pg-nav-item__icon">{cat.icon}</span>
+                    <span>{cat.label}</span>
                   </button>
                 </li>
               ))}
@@ -95,8 +105,9 @@ export function TemplateGalleryModal({ onSelect, onClose }: TemplateGalleryModal
             {filtered.map((item) => {
               const isSelected = selectedTemplate?.id === item.id;
               return (
-                <div
+                <button
                   key={item.id}
+                  type="button"
                   className={
                     isSelected
                       ? "pg-template-card pg-template-card--selected"
@@ -109,7 +120,7 @@ export function TemplateGalleryModal({ onSelect, onClose }: TemplateGalleryModal
                     <h4 className="pg-template-card__name">{item.name}</h4>
                     <p className="pg-template-card__desc">{item.description}</p>
                   </div>
-                </div>
+                </button>
               );
             })}
             {filtered.length === 0 ? (
@@ -153,6 +164,7 @@ export function TemplateGalleryModal({ onSelect, onClose }: TemplateGalleryModal
           ) : null}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

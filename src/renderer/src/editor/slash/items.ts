@@ -44,6 +44,49 @@ export const slashItems: SlashItem[] = [
     },
   },
   {
+    id: "ai_summary",
+    title: "AI Summary",
+    aliases: ["summary", "ai-summary", "tldr"],
+    hint: "Generate an executive summary of this page",
+    run: (editor, range) => {
+      replaceBlock(editor, range).run();
+      inlineAi.openAtCursor(editor);
+      void inlineAi.generate("summarize");
+    },
+  },
+  {
+    id: "ai_action_items",
+    title: "AI Action Items",
+    aliases: ["action-items", "todo-ai", "tasks-ai", "checklist-ai"],
+    hint: "Extract concrete checklist of to-dos",
+    run: (editor, range) => {
+      replaceBlock(editor, range).run();
+      inlineAi.openAtCursor(editor);
+      void inlineAi.generate("action_items");
+    },
+  },
+  {
+    id: "ai_translate",
+    title: "AI Translate",
+    aliases: ["translate", "ai-translate", "language"],
+    hint: "Translate document content into 14+ languages",
+    run: (editor, range) => {
+      replaceBlock(editor, range).run();
+      inlineAi.openAtCursor(editor);
+    },
+  },
+  {
+    id: "ai_brainstorm",
+    title: "AI Brainstorm",
+    aliases: ["brainstorm", "ideas", "ai-ideas"],
+    hint: "Brainstorm ideas, angles, and technical considerations",
+    run: (editor, range) => {
+      replaceBlock(editor, range).run();
+      inlineAi.openAtCursor(editor);
+      void inlineAi.generate("brainstorm");
+    },
+  },
+  {
     id: "text",
     title: "Text",
     aliases: ["p", "paragraph"],

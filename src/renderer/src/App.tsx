@@ -86,10 +86,15 @@ export default function App() {
   );
 
   const refreshLists = useCallback(async () => {
-    const [nextPages, nextTrash] = await Promise.all([api.pages.list(), api.pages.listTrash()]);
-    setPages(nextPages);
-    setTrash(nextTrash);
-    return nextPages;
+    try {
+      const [nextPages, nextTrash] = await Promise.all([api.pages.list(), api.pages.listTrash()]);
+      setPages(nextPages);
+      setTrash(nextTrash);
+      return nextPages;
+    } catch (err) {
+      console.error("[PageFlow] Failed to refresh page lists:", err);
+      return [];
+    }
   }, [api]);
 
   const openPage = useCallback(
@@ -106,33 +111,41 @@ export default function App() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const [info, nextPages, nextTrash] = await Promise.all([
-        api.workspace.info(),
-        api.pages.list(),
-        api.pages.listTrash(),
-      ]);
-      if (cancelled) {
-        return;
-      }
-      setWorkspaceDir(info.dir);
-      setPages(nextPages);
-      setTrash(nextTrash);
-      setLoading(false);
-      await session.init({
-        userName: info.userName,
-        onRemoteMeta: () => {
-          void refreshLists();
-        },
-      });
-      if (!cancelled) {
-        setSessionReady(true);
-      }
-      const first = childrenOf(nextPages, null)[0] ?? nextPages[0];
-      if (first) {
-        const initialTabId = crypto.randomUUID();
-        setTabs([{ id: initialTabId, pageId: first.id }]);
-        setActiveTabId(initialTabId);
-        await openPage(first.id);
+      try {
+        const [info, nextPages, nextTrash] = await Promise.all([
+          api.workspace.info(),
+          api.pages.list(),
+          api.pages.listTrash(),
+        ]);
+        if (cancelled) {
+          return;
+        }
+        setWorkspaceDir(info.dir);
+        setPages(nextPages);
+        setTrash(nextTrash);
+        setLoading(false);
+        await session.init({
+          userName: info.userName,
+          onRemoteMeta: () => {
+            void refreshLists();
+          },
+        });
+        if (!cancelled) {
+          setSessionReady(true);
+        }
+        const first = childrenOf(nextPages, null)[0] ?? nextPages[0];
+        if (first) {
+          const initialTabId = crypto.randomUUID();
+          setTabs([{ id: initialTabId, pageId: first.id }]);
+          setActiveTabId(initialTabId);
+          await openPage(first.id);
+        }
+      } catch (err) {
+        console.error("[PageFlow] Failed to initialize workspace:", err);
+        if (!cancelled) {
+          setLoading(false);
+          setToast({ message: "Failed to load workspace. Please try again.", type: "error" });
+        }
       }
     })();
     return () => {
@@ -261,6 +274,7 @@ export default function App() {
       }
       setToast({
         message: `Moved "${label && label.length > 0 ? label : BRAND.empty.untitled}" to Trash`,
+        type: "info",
         actionLabel: "Undo",
         onAction: () => {
           void api.pages
@@ -277,6 +291,7 @@ export default function App() {
     async (id: string) => {
       await api.pages.restore(id);
       await refreshLists();
+      setToast({ message: "Page restored from Trash", type: "success" });
     },
     [api, refreshLists],
   );
@@ -294,9 +309,10 @@ export default function App() {
         await refreshLists();
         setToast({
           message: `Duplicated "${label && label.length > 0 ? label : BRAND.empty.untitled}"`,
+          type: "success",
         });
       } catch {
-        setToast({ message: "Could not duplicate that page." });
+        setToast({ message: "Could not duplicate that page.", type: "error" });
       }
     },
     [api, flushRename, flushSave, pages, refreshLists],
@@ -306,9 +322,9 @@ export default function App() {
     async (id: string) => {
       try {
         await navigator.clipboard.writeText(`pagegrove://page/${id}`);
-        setToast({ message: "Page link copied" });
+        setToast({ message: "Page link copied", type: "success" });
       } catch {
-        setToast({ message: "Could not copy the link." });
+        setToast({ message: "Could not copy the link.", type: "error" });
       }
     },
     [],
@@ -332,7 +348,7 @@ export default function App() {
         }
         await refreshLists();
       } catch {
-        setToast({ message: "Could not move that page." });
+        setToast({ message: "Could not move that page.", type: "error" });
       }
     },
     [api, flushRename, flushSave, refreshLists],
@@ -344,7 +360,7 @@ export default function App() {
         const meta = await api.pages.setIcon(id, icon);
         applyMetaUpdate(meta);
       } catch {
-        setToast({ message: "Could not update the page icon." });
+        setToast({ message: "Could not update the page icon.", type: "error" });
       }
     },
     [api, applyMetaUpdate],
@@ -356,7 +372,7 @@ export default function App() {
         const meta = await api.pages.setCover(id, cover);
         applyMetaUpdate(meta);
       } catch {
-        setToast({ message: "Could not update the page cover." });
+        setToast({ message: "Could not update the page cover.", type: "error" });
       }
     },
     [api, applyMetaUpdate],
@@ -368,7 +384,7 @@ export default function App() {
         const meta = await api.pages.setView(id, view);
         applyMetaUpdate(meta);
       } catch {
-        setToast({ message: "Could not switch the page view." });
+        setToast({ message: "Could not switch the page view.", type: "error" });
       }
     },
     [api, applyMetaUpdate],
@@ -380,7 +396,7 @@ export default function App() {
         const meta = await api.pages.setFavorite(id, favorite);
         applyMetaUpdate(meta);
       } catch {
-        setToast({ message: "Could not update Favorites." });
+        setToast({ message: "Could not update Favorites.", type: "error" });
       }
     },
     [api, applyMetaUpdate],
@@ -438,10 +454,10 @@ export default function App() {
       const markdown = exportMarkdown(doc, activeRecord.meta.title);
       const result = await api.files.exportMarkdown(activeRecord.meta.title, markdown);
       if (result.ok) {
-        setToast({ message: `Exported "${label}" as Markdown` });
+        setToast({ message: `Exported "${label}" as Markdown`, type: "success" });
       }
     } catch {
-      setToast({ message: "Could not export the page." });
+      setToast({ message: "Could not export the page.", type: "error" });
     }
   }, [activeRecord, api, flushSave]);
 
@@ -449,10 +465,10 @@ export default function App() {
     try {
       const result = await api.sync.exportBundle();
       if (result.ok) {
-        setToast({ message: "Sync bundle exported" });
+        setToast({ message: "Sync bundle exported", type: "success" });
       }
     } catch {
-      setToast({ message: "Could not export the sync bundle." });
+      setToast({ message: "Could not export the sync bundle.", type: "error" });
     }
   }, [api]);
 
@@ -461,10 +477,10 @@ export default function App() {
       const result = await api.sync.importBundle();
       if (result.ok) {
         emitWorkspaceChanged();
-        setToast({ message: `Merged ${result.applied} pages from bundle` });
+        setToast({ message: `Merged ${result.applied} pages from bundle`, type: "success" });
       }
     } catch {
-      setToast({ message: "Could not import the sync bundle." });
+      setToast({ message: "Could not import the sync bundle.", type: "error" });
     }
   }, [api]);
 
@@ -659,6 +675,33 @@ export default function App() {
     window.dispatchEvent(new CustomEvent("pageflow:toggle-ai"));
   }, []);
 
+  const handleTabKeyDown = useCallback(
+    (event: React.KeyboardEvent, index: number) => {
+      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+        event.preventDefault();
+        const direction = event.key === "ArrowRight" ? 1 : -1;
+        const nextIndex = (index + direction + tabs.length) % tabs.length;
+        const nextTab = tabs[nextIndex];
+        if (nextTab) {
+          void switchTab(nextTab.id);
+        }
+      } else if (event.key === "Home") {
+        event.preventDefault();
+        const firstTab = tabs[0];
+        if (firstTab) {
+          void switchTab(firstTab.id);
+        }
+      } else if (event.key === "End") {
+        event.preventDefault();
+        const lastTab = tabs[tabs.length - 1];
+        if (lastTab) {
+          void switchTab(lastTab.id);
+        }
+      }
+    },
+    [tabs, switchTab],
+  );
+
   return (
     <div className="shell">
       <Sidebar
@@ -683,7 +726,7 @@ export default function App() {
         {tabs.length > 0 ? (
           <div className="pg-tabs-bar" role="tablist" aria-label="Desktop tabs">
             <div className="pg-tabs-scroll">
-              {tabs.map((tab) => {
+              {tabs.map((tab, index) => {
                 const tabMeta = pages.find((p) => p.id === tab.pageId);
                 const isActive = tab.id === activeTabId;
                 const title = tabMeta?.title?.trim() ? tabMeta.title : BRAND.empty.untitled;
@@ -691,9 +734,13 @@ export default function App() {
                   <div
                     key={tab.id}
                     role="tab"
+                    id={`tab-${tab.id}`}
                     aria-selected={isActive}
+                    aria-controls={`tabpanel-${tab.id}`}
+                    tabIndex={isActive ? 0 : -1}
                     className={isActive ? "pg-tab pg-tab--active" : "pg-tab"}
                     onClick={() => void switchTab(tab.id)}
+                    onKeyDown={(event) => handleTabKeyDown(event, index)}
                   >
                     <span className="pg-tab__icon">{tabMeta?.icon ?? "📄"}</span>
                     <span className="pg-tab__title" title={title}>
@@ -739,10 +786,15 @@ export default function App() {
             />
           ) : null}
           {activeRecord ? (
-            <PageView
-              record={activeRecord}
-              pages={pages}
-              editorEpoch={editorEpoch}
+            <div
+              role="tabpanel"
+              id={`tabpanel-${activeTabId}`}
+              aria-labelledby={`tab-${activeTabId}`}
+            >
+              <PageView
+                record={activeRecord}
+                pages={pages}
+                editorEpoch={editorEpoch}
               onDocChange={(doc) => {
                 latestDocRef.current = { id: activeRecord.meta.id, doc };
                 queueSave(activeRecord.meta.id, doc);
@@ -776,7 +828,8 @@ export default function App() {
               onFavoriteChange={(favorite) => {
                 void setPageFavorite(activeRecord.meta.id, favorite);
               }}
-            />
+              />
+            </div>
           ) : null}
         </div>
       </div>

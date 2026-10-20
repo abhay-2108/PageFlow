@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { AI_ACTION_LABELS, type AiAction } from "../../../../shared/ai";
+import { AI_ACTION_LABELS, SUPPORTED_TRANSLATION_LANGUAGES, type AiAction } from "../../../../shared/ai";
 import { aiModelStore } from "../../lib/aiModels";
 import { ollamaModal } from "../../components/ollamaModalController";
 import { AiMarkdownView } from "../../components/AiMarkdownView";
@@ -10,13 +10,14 @@ const MENU_WIDTH = 560;
 const GAP = 8;
 const VIEWPORT_MARGIN = 16;
 
-const SELECTION_ACTIONS: AiAction[] = ["improve", "fix_spelling", "shorter", "longer", "action_items", "explain"];
-const GENERAL_ACTIONS: AiAction[] = ["continue", "summarize", "action_items", "brainstorm"];
+const SELECTION_ACTIONS: AiAction[] = ["improve", "fix_spelling", "translate", "shorter", "longer", "action_items", "explain"];
+const GENERAL_ACTIONS: AiAction[] = ["continue", "summarize", "action_items", "brainstorm", "translate"];
 
 export function InlineAiMenu() {
   const state = useSyncExternalStore(inlineAi.subscribe, inlineAi.getState, inlineAi.getState);
   const modelState = useSyncExternalStore(aiModelStore.subscribe, aiModelStore.getState, aiModelStore.getState);
   const [showThinking, setShowThinking] = useState(false);
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -92,8 +93,13 @@ export function InlineAiMenu() {
 
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (filteredActions[state.selectedIndex] && !state.query.trim()) {
-        void inlineAi.generate(filteredActions[state.selectedIndex]);
+      const currentAction = filteredActions[state.selectedIndex];
+      if (currentAction === "translate" && !showLanguagePicker) {
+        setShowLanguagePicker(true);
+        return;
+      }
+      if (currentAction && !state.query.trim()) {
+        void inlineAi.generate(currentAction);
       } else if (state.query.trim()) {
         void inlineAi.generate("custom", state.query);
       }
@@ -115,11 +121,16 @@ export function InlineAiMenu() {
           ref={inputRef}
           className="pg-inline-ai__input"
           value={state.query}
-          onChange={(e) => inlineAi.setQuery(e.target.value)}
+          onChange={(e) => {
+            inlineAi.setQuery(e.target.value);
+            if (showLanguagePicker) setShowLanguagePicker(false);
+          }}
           placeholder={
-            state.selectedText
-              ? "Ask PageFlow AI to edit selection or give instructions..."
-              : "Ask PageFlow AI to write anything, or pick an action..."
+            showLanguagePicker
+              ? "Select a target language below..."
+              : state.selectedText
+                ? "Ask PageFlow AI to edit selection or give instructions..."
+                : "Ask PageFlow AI to write anything, or pick an action..."
           }
           disabled={state.loading}
         />
@@ -136,7 +147,13 @@ export function InlineAiMenu() {
           <button
             type="button"
             className="pg-inline-ai__close-btn"
-            onClick={() => inlineAi.close()}
+            onClick={() => {
+              if (showLanguagePicker) {
+                setShowLanguagePicker(false);
+              } else {
+                inlineAi.close();
+              }
+            }}
             title="Close (Esc)"
           >
             ✕
@@ -210,7 +227,7 @@ export function InlineAiMenu() {
               <button
                 type="button"
                 className="pg-inline-ai__btn"
-                onClick={() => inlineAi.generate(state.action ?? "custom")}
+                onClick={() => inlineAi.generate(state.action ?? "custom", undefined, state.targetLanguage)}
               >
                 Try Again
               </button>
@@ -223,6 +240,38 @@ export function InlineAiMenu() {
               </button>
             </div>
           ) : null}
+        </div>
+      ) : showLanguagePicker ? (
+        <div className="pg-inline-ai__menu">
+          <div className="pg-inline-ai__section-label" style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Translate text into:</span>
+            <button
+              type="button"
+              className="pg-btn pg-btn--secondary"
+              style={{ padding: "1px 6px", fontSize: "11px" }}
+              onClick={() => setShowLanguagePicker(false)}
+            >
+              ← Back to Actions
+            </button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "4px", padding: "4px 8px" }}>
+            {SUPPORTED_TRANSLATION_LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                type="button"
+                className="pg-inline-ai__item"
+                style={{ borderRadius: "4px", padding: "6px 10px" }}
+                onClick={() => {
+                  setShowLanguagePicker(false);
+                  void inlineAi.generate("translate", undefined, lang.name);
+                }}
+              >
+                <span className="pg-inline-ai__item-icon">🌐</span>
+                <span className="pg-inline-ai__item-title">{lang.name}</span>
+                <span className="pg-inline-ai__item-hint" style={{ opacity: 0.65 }}>{lang.native}</span>
+              </button>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="pg-inline-ai__menu">
@@ -238,7 +287,13 @@ export function InlineAiMenu() {
                 type="button"
                 className={`pg-inline-ai__item ${isSelected ? "pg-inline-ai__item--active" : ""}`}
                 onMouseEnter={() => inlineAi.setIndex(idx)}
-                onClick={() => inlineAi.generate(action)}
+                onClick={() => {
+                  if (action === "translate") {
+                    setShowLanguagePicker(true);
+                  } else {
+                    void inlineAi.generate(action);
+                  }
+                }}
               >
                 <span className="pg-inline-ai__item-icon">{meta.icon}</span>
                 <span className="pg-inline-ai__item-title">{meta.title}</span>

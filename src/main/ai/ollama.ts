@@ -156,7 +156,7 @@ export class OllamaService {
     }
 
     const systemPrompt = input.systemPrompt || buildSystemPrompt();
-    const userPrompt = buildActionPrompt(input.action, input.prompt, input.context);
+    const userPrompt = buildActionPrompt(input.action, input.prompt, input.context, input.targetLanguage);
 
     const body = {
       model: modelToUse,

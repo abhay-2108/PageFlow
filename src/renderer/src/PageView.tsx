@@ -23,7 +23,9 @@ import { session } from "./lib/session";
 import { activeEditor } from "./editor/activeEditor";
 import { renderMarkdownToHtml } from "./components/AiMarkdownView";
 import { TemplateGalleryModal } from "./components/TemplateGalleryModal";
+import { DocumentHistoryPanel } from "./components/DocumentHistoryPanel";
 import { saveCustomTemplate, type PageTemplate } from "../../shared/templates";
+import { useMenuKeyboardNav } from "./lib/a11y";
 
 export interface PageViewProps {
   record: PageRecord;
@@ -70,6 +72,7 @@ export function PageView({
   const [threads, setThreads] = useState<CommentThread[]>([]);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [draftQuote, setDraftQuote] = useState<string | null>(null);
   const [draftBody, setDraftBody] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
@@ -84,6 +87,15 @@ export function PageView({
     () => (localStorage.getItem("pageflow_theme") as "system" | "light" | "dark") ?? "system",
   );
   const [isLocked, setIsLocked] = useState(false);
+  const [confirmTrash, setConfirmTrash] = useState(false);
+
+  const optionsMenuNav = useMenuKeyboardNav<HTMLDivElement>({
+    onEscape: () => setOptionsOpen(false),
+  });
+
+  const crumbsMenuNav = useMenuKeyboardNav<HTMLDivElement>({
+    onEscape: () => setCrumbsMenuOpen(false),
+  });
 
   const handleToggleAiDrawer = useCallback(async () => {
     if (!aiDrawerOpen) {
@@ -201,7 +213,7 @@ export function PageView({
     } else {
       document.documentElement.removeAttribute("data-theme");
     }
-    localStorage.setItem("pg_theme", theme);
+    localStorage.setItem("pageflow_theme", theme);
   }, [theme]);
 
   useEffect(() => {
@@ -409,6 +421,7 @@ export function PageView({
         cover ? "page--has-cover" : "",
         fullWidth ? "page--full-width" : "",
         smallText ? "page--small-text" : "",
+        view === "table" ? "page--table-mode" : "",
         fontStyle === "serif"
           ? "page--font-serif"
           : fontStyle === "mono"
@@ -439,8 +452,12 @@ export function PageView({
                 </button>
                 {crumbsMenuOpen ? (
                   <div
+                    ref={crumbsMenuNav.menuRef}
                     className="menu-popover crumbs-menu"
                     role="menu"
+                    tabIndex={-1}
+                    aria-activedescendant={crumbsMenuNav.activeDescendantId}
+                    onKeyDown={crumbsMenuNav.handleKeyDown}
                     onMouseDown={(event) => event.stopPropagation()}
                   >
                     {collapsedCrumbs.map((hidden) => (
@@ -520,7 +537,14 @@ export function PageView({
             …
           </button>
           {optionsOpen ? (
-            <div className="menu-popover menu-popover--anchored pg-page-options-menu" role="menu">
+            <div
+              ref={optionsMenuNav.menuRef}
+              className="menu-popover menu-popover--anchored pg-page-options-menu"
+              role="menu"
+              tabIndex={-1}
+              aria-activedescendant={optionsMenuNav.activeDescendantId}
+              onKeyDown={optionsMenuNav.handleKeyDown}
+            >
               <div className="pg-menu-section-title">Style</div>
               <div className="pg-font-picker" role="group" aria-label="Font style">
                 <button
@@ -530,7 +554,7 @@ export function PageView({
                   }
                   onClick={() => {
                     setFontStyle("sans");
-                    localStorage.setItem("pg_font_style", "sans");
+                    localStorage.setItem("pageflow_font_style", "sans");
                   }}
                 >
                   <span className="pg-font-preview" style={{ fontFamily: "var(--pg-font)" }}>
@@ -545,7 +569,7 @@ export function PageView({
                   }
                   onClick={() => {
                     setFontStyle("serif");
-                    localStorage.setItem("pg_font_style", "serif");
+                    localStorage.setItem("pageflow_font_style", "serif");
                   }}
                 >
                   <span className="pg-font-preview" style={{ fontFamily: "Georgia, serif" }}>
@@ -560,7 +584,7 @@ export function PageView({
                   }
                   onClick={() => {
                     setFontStyle("mono");
-                    localStorage.setItem("pg_font_style", "mono");
+                    localStorage.setItem("pageflow_font_style", "mono");
                   }}
                 >
                   <span className="pg-font-preview" style={{ fontFamily: "var(--pg-font-mono)" }}>
@@ -572,12 +596,15 @@ export function PageView({
 
               <div className="pg-menu-divider" />
 
-              <div
+              <button
+                type="button"
                 className="pg-menu-toggle-row"
+                role="menuitem"
+                aria-pressed={smallText}
                 onClick={() => {
                   setSmallText((prev) => {
                     const next = !prev;
-                    localStorage.setItem("pg_small_text", String(next));
+                    localStorage.setItem("pageflow_small_text", String(next));
                     return next;
                   });
                 }}
@@ -586,14 +613,17 @@ export function PageView({
                 <span className={smallText ? "pg-switch pg-switch--on" : "pg-switch"}>
                   <span className="pg-switch__knob" />
                 </span>
-              </div>
+              </button>
 
-              <div
+              <button
+                type="button"
                 className="pg-menu-toggle-row"
+                role="menuitem"
+                aria-pressed={fullWidth}
                 onClick={() => {
                   setFullWidth((prev) => {
                     const next = !prev;
-                    localStorage.setItem("pg_full_width", String(next));
+                    localStorage.setItem("pageflow_full_width", String(next));
                     return next;
                   });
                 }}
@@ -602,10 +632,13 @@ export function PageView({
                 <span className={fullWidth ? "pg-switch pg-switch--on" : "pg-switch"}>
                   <span className="pg-switch__knob" />
                 </span>
-              </div>
+              </button>
 
-              <div
+              <button
+                type="button"
                 className="pg-menu-toggle-row"
+                role="menuitem"
+                aria-pressed={isLocked}
                 onClick={() => {
                   setIsLocked((prev) => !prev);
                 }}
@@ -614,7 +647,7 @@ export function PageView({
                 <span className={isLocked ? "pg-switch pg-switch--on" : "pg-switch"}>
                   <span className="pg-switch__knob" />
                 </span>
-              </div>
+              </button>
 
               <div className="pg-menu-divider" />
 
@@ -708,13 +741,29 @@ export function PageView({
               <button
                 type="button"
                 role="menuitem"
-                className="menu-popover__danger"
                 onClick={() => {
+                  setOptionsOpen(false);
+                  setHistoryOpen(true);
+                }}
+              >
+                🕒 Version history
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className="menu-popover__danger"
+                style={confirmTrash ? { background: "var(--pg-danger, #ef4444)", color: "#fff" } : undefined}
+                onClick={() => {
+                  if (!confirmTrash) {
+                    setConfirmTrash(true);
+                    return;
+                  }
+                  setConfirmTrash(false);
                   setOptionsOpen(false);
                   onTrashPage(record.meta.id);
                 }}
               >
-                Move to trash
+                {confirmTrash ? "Click again to confirm" : "Move to trash"}
               </button>
             </div>
           ) : null}
@@ -936,7 +985,7 @@ export function PageView({
               aria-label="Close comments"
               onClick={() => setCommentsOpen(false)}
             >
-              ×
+              ✕
             </button>
           </div>
           {draftQuote !== null ? (
@@ -997,12 +1046,27 @@ export function PageView({
           ) : null}
         </aside>
       ) : null}
+      {historyOpen ? (
+        <div className="pg-modal-overlay" onClick={() => setHistoryOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <DocumentHistoryPanel
+              pageId={record.meta.id}
+              doc={null}
+              onRestored={() => {
+                setHistoryOpen(false);
+              }}
+              onClose={() => setHistoryOpen(false)}
+            />
+          </div>
+        </div>
+      ) : null}
       <AiAssistantDrawer
         open={aiDrawerOpen}
         onClose={() => setAiDrawerOpen(false)}
         pageTitle={displayTitle}
         pageId={record.meta.id}
         onInsertContent={handleInsertAiContent}
+        onOpenPage={onOpenPage}
       />
     </main>
   );

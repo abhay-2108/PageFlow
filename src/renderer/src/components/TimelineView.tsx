@@ -121,18 +121,23 @@ export function TimelineView({ pages, properties, onOpenPage, onCreatePage }: Ti
 
               return (
                 <div key={page.id} className="pg-timeline-row">
-                  <div className="pg-timeline-item-col" onClick={() => onOpenPage(page.id)}>
+                  <button
+                    type="button"
+                    className="pg-timeline-item-col"
+                    onClick={() => onOpenPage(page.id)}
+                  >
                     {page.icon ? <span className="pg-timeline-icon">{page.icon} </span> : null}
                     <span className="pg-timeline-title">
                       {page.title.trim().length > 0 ? page.title : BRAND.empty.untitled}
                     </span>
-                  </div>
+                  </button>
                   <div className="pg-timeline-days-col pg-timeline-grid-track">
                     {timelineDays.map((_, i) => (
                       <div key={i} className="pg-timeline-grid-cell" />
                     ))}
                     {startDayIdx >= 0 ? (
-                      <div
+                      <button
+                        type="button"
                         className="pg-timeline-bar"
                         style={{
                           left: `calc(${(startDayIdx / 28) * 100}% + 2px)`,
@@ -141,7 +146,7 @@ export function TimelineView({ pages, properties, onOpenPage, onCreatePage }: Ti
                         onClick={() => onOpenPage(page.id)}
                       >
                         {page.title.trim().length > 0 ? page.title : BRAND.empty.untitled}
-                      </div>
+                      </button>
                     ) : null}
                   </div>
                 </div>

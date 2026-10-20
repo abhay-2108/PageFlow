@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/abhay-2108/PageFlow/releases"><img src="https://img.shields.io/badge/DOWNLOAD_.EXE-v0.1.0_LATEST-007acc?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows .EXE" /></a>
-  <a href="https://github.com/abhay-2108/PageFlow/releases"><img src="https://img.shields.io/badge/TESTS-83_PASSED-10b981?style=for-the-badge&logo=githubactions&logoColor=white" alt="Tests 83 Passed" /></a>
+  <a href="https://github.com/abhay-2108/PageFlow/releases"><img src="https://img.shields.io/badge/DOWNLOAD_.EXE-v0.2.0_LATEST-007acc?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows .EXE" /></a>
+  <a href="https://github.com/abhay-2108/PageFlow/releases"><img src="https://img.shields.io/badge/TESTS-113_PASSED-10b981?style=for-the-badge&logo=githubactions&logoColor=white" alt="Tests 113 Passed" /></a>
   <a href="#tech-stack"><img src="https://img.shields.io/badge/RUNTIME-ELECTRON_33_%2B_REACT_18-8b5cf6?style=for-the-badge&logo=electron&logoColor=white" alt="Runtime Electron 33" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/LICENSE-MIT_PERMISSIVE-475569?style=for-the-badge" alt="MIT License" /></a>
 </p>

@@ -4,6 +4,7 @@ import { BRAND, searchNoResults } from "../../../shared/brand";
 import { isDescendant } from "../../../shared/tree";
 import type { PageMeta, SearchHit } from "../../../shared/types";
 import { getApi } from "../lib/api";
+import { useMenuKeyboardNav } from "../lib/a11y";
 import { SessionPanel } from "./SessionPanel";
 
 interface MenuState {
@@ -274,9 +275,17 @@ export function Sidebar(props: SidebarProps) {
   const [favoritesOpen, setFavoritesOpen] = useState(true);
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [confirmTrashId, setConfirmTrashId] = useState<string | null>(null);
+  const [confirmRestoreId, setConfirmRestoreId] = useState<string | null>(null);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropHint, setDropHint] = useState<DropHint | null>(null);
   const [rootHint, setRootHint] = useState(false);
+
+  const menuNav = useMenuKeyboardNav<HTMLDivElement>({
+    onEscape: () => setMenu(null),
+  });
 
   const childrenMap = useMemo(() => {
     const map = new Map<string | null, PageMeta[]>();
@@ -310,15 +319,29 @@ export function Sidebar(props: SidebarProps) {
     const trimmed = query.trim();
     if (trimmed.length === 0) {
       setHits(null);
+      setIsSearching(false);
+      setSearchError(null);
       return;
     }
     let cancelled = false;
+    setIsSearching(true);
+    setSearchError(null);
     const timer = window.setTimeout(() => {
-      void api.search.query(trimmed).then((results) => {
-        if (!cancelled) {
-          setHits(results);
-        }
-      });
+      void api.search
+        .query(trimmed)
+        .then((results) => {
+          if (!cancelled) {
+            setHits(results);
+            setIsSearching(false);
+          }
+        })
+        .catch((err) => {
+          if (!cancelled) {
+            console.error("[PageFlow] Search error:", err);
+            setSearchError("Failed to search pages.");
+            setIsSearching(false);
+          }
+        });
     }, 150);
     return () => {
       cancelled = true;
@@ -536,7 +559,15 @@ export function Sidebar(props: SidebarProps) {
         />
       </div>
 
-      {hits !== null ? (
+      {isSearching ? (
+        <div className="sidebar__scroll" style={{ padding: "16px", color: "var(--pg-text-muted)", fontSize: "13px" }}>
+          Searching workspace…
+        </div>
+      ) : searchError ? (
+        <div className="sidebar__scroll" style={{ padding: "16px", color: "var(--pg-danger, #ef4444)", fontSize: "13px" }}>
+          {searchError}
+        </div>
+      ) : hits !== null ? (
         <div className="sidebar__scroll">
           {hits.length === 0 ? (
             <p className="search-empty">{searchNoResults(query.trim())}</p>
@@ -681,8 +712,19 @@ export function Sidebar(props: SidebarProps) {
                   <span className="trash-row__title">
                     {page.title.length > 0 ? page.title : BRAND.empty.untitled}
                   </span>
-                  <button type="button" className="ghost-btn ghost-btn--small" onClick={() => onRestore(page.id)}>
-                    Restore
+                  <button
+                    type="button"
+                    className="ghost-btn ghost-btn--small"
+                    onClick={() => {
+                      if (confirmRestoreId !== page.id) {
+                        setConfirmRestoreId(page.id);
+                        return;
+                      }
+                      setConfirmRestoreId(null);
+                      onRestore(page.id);
+                    }}
+                  >
+                    {confirmRestoreId === page.id ? "Confirm restore?" : "Restore"}
                   </button>
                 </li>
               ))}
@@ -701,9 +743,13 @@ export function Sidebar(props: SidebarProps) {
 
       {menu ? (
         <div
+          ref={menuNav.menuRef}
           className="menu-popover"
           style={{ left: menu.x, top: menu.y }}
           role="menu"
+          tabIndex={-1}
+          aria-activedescendant={menuNav.activeDescendantId}
+          onKeyDown={menuNav.handleKeyDown}
           onClick={(event) => event.stopPropagation()}
         >
           {moveMode ? (
@@ -816,12 +862,18 @@ export function Sidebar(props: SidebarProps) {
                 type="button"
                 role="menuitem"
                 className="menu-popover__danger"
+                style={confirmTrashId === menu.id ? { background: "var(--pg-danger, #ef4444)", color: "#fff" } : undefined}
                 onClick={() => {
+                  if (confirmTrashId !== menu.id) {
+                    setConfirmTrashId(menu.id);
+                    return;
+                  }
+                  setConfirmTrashId(null);
                   setMenu(null);
                   onTrash(menu.id);
                 }}
               >
-                Move to trash
+                {confirmTrashId === menu.id ? "Click again to confirm" : "Move to trash"}
               </button>
               <div className="menu-popover__meta">{menuLabel}</div>
             </>

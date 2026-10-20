@@ -4,6 +4,7 @@ import {
   buildSystemPrompt,
   parseThinkingAndContent,
   AI_ACTION_LABELS,
+  SUPPORTED_TRANSLATION_LANGUAGES,
 } from "../ai";
 
 describe("AI Shared Helpers", () => {
@@ -40,9 +41,14 @@ describe("AI Shared Helpers", () => {
     expect(actionItems).toContain("Markdown task list (- [ ] task)");
     expect(actionItems).toContain("Need to update tests and deploy to staging.");
 
-    const custom = buildActionPrompt("custom", "Translate to French", "Hello world");
-    expect(custom).toContain("Translate to French");
+    const custom = buildActionPrompt("custom", "Make this friendlier", "Hello world");
+    expect(custom).toContain("Make this friendlier");
     expect(custom).toContain("Reference Content:\nHello world");
+
+    const translate = buildActionPrompt("translate", "", "Hello world", "Spanish");
+    expect(translate).toContain("Translate the following text accurately");
+    expect(translate).toContain("Spanish");
+    expect(translate).toContain("Hello world");
   });
 
   it("includes all action labels with titles and icons", () => {
@@ -50,6 +56,14 @@ describe("AI Shared Helpers", () => {
     expect(AI_ACTION_LABELS.summarize.icon).toBe("≡");
     expect(AI_ACTION_LABELS.action_items.icon).toBe("☑");
     expect(AI_ACTION_LABELS.improve.icon).toBe("✦");
+    expect(AI_ACTION_LABELS.translate.icon).toBe("🌐");
+  });
+
+  it("exports supported translation languages", () => {
+    expect(SUPPORTED_TRANSLATION_LANGUAGES.length).toBeGreaterThanOrEqual(14);
+    expect(SUPPORTED_TRANSLATION_LANGUAGES.some((l) => l.name === "Spanish")).toBe(true);
+    expect(SUPPORTED_TRANSLATION_LANGUAGES.some((l) => l.name === "Japanese")).toBe(true);
+    expect(SUPPORTED_TRANSLATION_LANGUAGES.some((l) => l.name === "Hindi")).toBe(true);
   });
 
   it("builds system prompt prohibiting conversational fluff", () => {

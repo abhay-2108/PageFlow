@@ -103,7 +103,7 @@ export function SessionPanel() {
                 onClick={startSession}
                 disabled={busy}
               >
-                Start a session
+                {busy ? "Starting session…" : "Start a session"}
               </button>
               <p className="session__hint">Or join one with a code from a friend on your network.</p>
               <div className="session__join">
@@ -177,14 +177,20 @@ export function SessionPanel() {
 
           <div className="session__fallback">
             <button type="button" className="session__link" onClick={() => void exportBundle()} disabled={busy}>
-              Export .sync
+              {busy ? "Exporting…" : "Export .sync"}
             </button>
             <button type="button" className="session__link" onClick={() => void importBundle()} disabled={busy}>
-              Import .sync
+              {busy ? "Importing…" : "Import .sync"}
             </button>
           </div>
 
-          {message ? <p className="session__message">{message}</p> : null}
+          {busy ? (
+            <p className="session__message" style={{ color: "var(--pg-text-muted)" }}>
+              ⏳ Processing session update…
+            </p>
+          ) : message ? (
+            <p className="session__message">{message}</p>
+          ) : null}
         </div>
       ) : null}
     </div>

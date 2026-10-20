@@ -4,6 +4,8 @@ import { getApi } from "../lib/api";
 import { aiModelStore, formatAiError, isOllamaOfflineError } from "../lib/aiModels";
 import { ollamaModal } from "./ollamaModalController";
 import { AiMarkdownView } from "./AiMarkdownView";
+import { importMarkdown } from "../lib/import";
+import type { PageMeta } from "../../../shared/types";
 
 export interface AiAssistantDrawerProps {
   open: boolean;
@@ -11,6 +13,7 @@ export interface AiAssistantDrawerProps {
   pageTitle: string;
   pageId: string;
   onInsertContent?: (markdownText: string) => void;
+  onOpenPage?: (pageId: string) => void;
 }
 
 interface ChatMessage {
@@ -27,10 +30,18 @@ interface PromptCard {
   title: string;
   desc: string;
   prompt: string;
-  action?: "summarize" | "action_items" | "brainstorm" | "explain";
+  action?: "summarize" | "action_items" | "brainstorm" | "explain" | "create_page";
 }
 
 const PROMPT_CARDS: PromptCard[] = [
+  {
+    id: "create_page",
+    icon: "📄",
+    title: "Create new page",
+    desc: "Generate a new subpage with tailored content",
+    prompt: "Create a new page titled '<Page Title>' about <topic> with comprehensive structured sections, key details, and next steps.",
+    action: "create_page",
+  },
   {
     id: "summarize",
     icon: "📋",
@@ -63,7 +74,46 @@ const PROMPT_CARDS: PromptCard[] = [
     prompt: "Explain the core concepts and architecture of this document in clear, concise points.",
     action: "explain",
   },
+  {
+    id: "workspace_qna",
+    icon: "🌐",
+    title: "Search workspace",
+    desc: "Query facts across all notes and databases",
+    prompt: "Search across the entire workspace knowledge base and summarize the main projects, status updates, and open questions.",
+  },
+  {
+    id: "translate",
+    icon: "🗺",
+    title: "Translate page",
+    desc: "Translate this document into another language",
+    prompt: "Translate this document into Spanish, preserving all markdown formatting and code blocks.",
+  },
 ];
+
+function extractPageTitle(content: string, userPrompt?: string): string {
+  const match = content.match(/^#\s+(.+)$/m);
+  if (match && match[1]) {
+    return match[1].trim();
+  }
+  if (userPrompt) {
+    const promptMatch = userPrompt.match(
+      /(?:create|add|make|build)(?:\s+a)?(?:\s+new)?\s+page\s+(?:called|titled|for|about)?\s*["']?([^"'\n.,]+)["']?/i,
+    );
+    if (promptMatch && promptMatch[1]) {
+      return promptMatch[1].trim();
+    }
+  }
+  const firstLine = content.trim().split("\n")[0] ?? "";
+  const cleaned = firstLine.replace(/^[#*-\s]+/, "").trim();
+  return cleaned.length > 0 ? (cleaned.length > 36 ? `${cleaned.slice(0, 36)}…` : cleaned) : "New Page";
+}
+
+function hasPageIntent(content: string, userPrompt?: string): boolean {
+  if (userPrompt && /(?:create|add|make|build)\s+(?:a\s+)?(?:new\s+)?page/i.test(userPrompt)) {
+    return true;
+  }
+  return /^#\s+.+/m.test(content);
+}
 
 export function AiAssistantDrawer({
   open,
@@ -71,9 +121,10 @@ export function AiAssistantDrawer({
   pageTitle,
   pageId,
   onInsertContent,
+  onOpenPage,
 }: AiAssistantDrawerProps) {
   const modelState = useSyncExternalStore(aiModelStore.subscribe, aiModelStore.getState, aiModelStore.getState);
-  const [includeContext, setIncludeContext] = useState<boolean>(true);
+  const [contextScope, setContextScope] = useState<"this_page" | "workspace" | "none">("this_page");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -105,12 +156,49 @@ export function AiAssistantDrawer({
     }
   };
 
+  const handleCreatePage = async (text: string, userPrompt?: string) => {
+    try {
+      setLoading(true);
+      const api = getApi();
+      const title = extractPageTitle(text, userPrompt);
+      const firstHeadingMatch = text.match(/^#\s+(.+)$/m);
+      let bodyText = text;
+      if (firstHeadingMatch) {
+        bodyText = text.replace(/^#\s+.+\n*/m, "").trim();
+      }
+
+      const newPageMeta = await api.pages.create({
+        parentId: pageId || null,
+        title,
+      });
+
+      if (bodyText) {
+        const doc = importMarkdown(bodyText);
+        await api.pages.updateDoc(newPageMeta.id, doc);
+      }
+
+      if (onOpenPage) {
+        onOpenPage(newPageMeta.id);
+        onClose();
+      }
+    } catch (err) {
+      console.error("Failed to create page from AI content:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSend = async (
     customPrompt?: string,
-    action?: "summarize" | "action_items" | "brainstorm" | "explain",
+    action?: "summarize" | "action_items" | "brainstorm" | "explain" | "create_page",
   ) => {
     const promptToSend = customPrompt ?? input;
     if (!promptToSend.trim() || loading) return;
+
+    let resolvedAction = action;
+    if (!resolvedAction && /(?:create|add|make|build)\s+(?:a\s+)?(?:new\s+)?page/i.test(promptToSend)) {
+      resolvedAction = "create_page";
+    }
 
     if (!modelState.available) {
       ollamaModal.open();
@@ -157,7 +245,45 @@ export function AiAssistantDrawer({
 
     try {
       let docContext = "";
-      if (includeContext && pageId) {
+      let customSystemPrompt: string | undefined = undefined;
+
+      if (contextScope === "workspace") {
+        const allPages = await api.pages.list();
+        const queryTerms = promptToSend.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+        const scoredPages: { page: PageMeta; score: number }[] = [];
+
+        for (const p of allPages) {
+          let score = 0;
+          const titleLower = p.title.toLowerCase();
+          for (const term of queryTerms) {
+            if (titleLower.includes(term)) score += 5;
+          }
+          scoredPages.push({ page: p, score });
+        }
+
+        scoredPages.sort((a, b) => b.score - a.score || b.page.updatedAt - a.page.updatedAt);
+        const topPages = scoredPages.slice(0, 5);
+
+        const snippets: string[] = [];
+        for (const { page: wpPage } of topPages) {
+          try {
+            const full = await api.pages.get(wpPage.id);
+            if (full?.doc) {
+              const text = extractDocText(full.doc).slice(0, 1000);
+              snippets.push(`### Document: "${wpPage.title || "Untitled"}" (ID: ${wpPage.id})\n${text}`);
+            }
+          } catch {}
+        }
+
+        docContext = snippets.length > 0 ? snippets.join("\n\n---\n\n") : "No workspace pages found.";
+        customSystemPrompt = [
+          "You are PageFlow AI Universal Workspace Assistant.",
+          "You have access to notes and documents from across the user's entire workspace.",
+          "Always answer questions thoroughly using facts from the provided workspace documents.",
+          "Cite the source document title using bold markdown like **[Document Title]** whenever you state a fact or detail from it.",
+          "If the answer is not contained in the provided workspace documents, synthesize an answer clearly and note that it was not directly found in the indexed pages.",
+        ].join("\n");
+      } else if (contextScope === "this_page" && pageId) {
         const page = await api.pages.get(pageId);
         if (page?.doc) {
           docContext = extractDocText(page.doc);
@@ -166,9 +292,10 @@ export function AiAssistantDrawer({
 
       const res = await api.ai.generate({
         prompt: promptToSend,
-        action: action ?? "custom",
+        action: resolvedAction ?? "custom",
         context: docContext,
-        pageTitle,
+        pageTitle: contextScope === "this_page" ? pageTitle : "Workspace Knowledge Base",
+        systemPrompt: customSystemPrompt,
         model: aiModelStore.getModelToUse(),
       });
 
@@ -350,20 +477,44 @@ export function AiAssistantDrawer({
           ) : null}
         </div>
 
-        <label
-          className={`pg-ai-drawer__context-toggle ${includeContext ? "pg-ai-drawer__context-toggle--active" : ""}`}
-          title={includeContext ? "Document content is sent to AI" : "Document context disabled"}
-        >
-          <input
-            type="checkbox"
-            checked={includeContext}
-            onChange={(e) => setIncludeContext(e.target.checked)}
-          />
-          <span className="pg-ai-drawer__context-icon">📄</span>
-          <span className="pg-ai-drawer__context-text" title={pageTitle || "Untitled"}>
-            {pageTitle ? (pageTitle.length > 18 ? `${pageTitle.slice(0, 18)}…` : pageTitle) : "Page"}
-          </span>
-        </label>
+        <div className="pg-ai-drawer__scope-selector" role="group" aria-label="Context scope">
+          <button
+            type="button"
+            className={
+              contextScope === "this_page"
+                ? "pg-ai-scope-btn pg-ai-scope-btn--active"
+                : "pg-ai-scope-btn"
+            }
+            onClick={() => setContextScope("this_page")}
+            title={`Use active page (${pageTitle || "Untitled"}) as context`}
+          >
+            📄 Page
+          </button>
+          <button
+            type="button"
+            className={
+              contextScope === "workspace"
+                ? "pg-ai-scope-btn pg-ai-scope-btn--active pg-ai-scope-btn--workspace"
+                : "pg-ai-scope-btn"
+            }
+            onClick={() => setContextScope("workspace")}
+            title="Search across all pages in the workspace (Universal Q&A)"
+          >
+            🌐 Workspace
+          </button>
+          <button
+            type="button"
+            className={
+              contextScope === "none"
+                ? "pg-ai-scope-btn pg-ai-scope-btn--active"
+                : "pg-ai-scope-btn"
+            }
+            onClick={() => setContextScope("none")}
+            title="Disable document context"
+          >
+            ✕ Off
+          </button>
+        </div>
       </div>
 
       {/* Offline Alert Banner */}
@@ -478,38 +629,76 @@ export function AiAssistantDrawer({
               ) : null}
             </div>
 
-            {msg.role === "assistant" && msg.content ? (
-              <div className="pg-ai-drawer__msg-actions">
-                {onInsertContent ? (
-                  <button
-                    type="button"
-                    className="pg-ai-drawer__action-btn pg-ai-drawer__action-btn--primary"
-                    onClick={() => handleInsert(msg.id, msg.content)}
-                    title="Insert content into the active document"
-                  >
-                    {insertedId === msg.id ? "✓ Inserted into Page" : "+ Insert into Page"}
-                  </button>
-                ) : null}
+            {msg.role === "assistant" && msg.content ? (() => {
+              const msgIndex = messages.findIndex((m) => m.id === msg.id);
+              const prevUserMsg = msgIndex > 0 ? messages[msgIndex - 1] : undefined;
+              const userPrompt = prevUserMsg?.role === "user" ? prevUserMsg.content : undefined;
+              const showBanner = hasPageIntent(msg.content, userPrompt);
+              const candidateTitle = extractPageTitle(msg.content, userPrompt);
 
-                <button
-                  type="button"
-                  className="pg-ai-drawer__action-btn"
-                  onClick={() => handleCopy(msg.id, msg.content)}
-                  title="Copy markdown to clipboard"
-                >
-                  {copiedId === msg.id ? "✓ Copied" : "📋 Copy"}
-                </button>
+              return (
+                <>
+                  {showBanner ? (
+                    <div className="pg-ai-drawer__page-banner">
+                      <div className="pg-ai-drawer__page-banner-info">
+                        <span className="pg-ai-drawer__page-banner-icon">📄</span>
+                        <div className="pg-ai-drawer__page-banner-text">
+                          <strong>Page Ready: {candidateTitle}</strong>
+                          <span>Click to create and open this page</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="pg-ai-drawer__page-banner-btn"
+                        onClick={() => handleCreatePage(msg.content, userPrompt)}
+                      >
+                        Create Page →
+                      </button>
+                    </div>
+                  ) : null}
 
-                <button
-                  type="button"
-                  className="pg-ai-drawer__action-btn"
-                  onClick={() => handleRetryLast(msg.id)}
-                  title="Regenerate this response"
-                >
-                  ↻ Retry
-                </button>
-              </div>
-            ) : null}
+                  <div className="pg-ai-drawer__msg-actions">
+                    <button
+                      type="button"
+                      className="pg-ai-drawer__action-btn pg-ai-drawer__action-btn--primary"
+                      onClick={() => handleCreatePage(msg.content, userPrompt)}
+                      title="Create a new subpage with this content"
+                    >
+                      📄 Create as Page
+                    </button>
+
+                    {onInsertContent ? (
+                      <button
+                        type="button"
+                        className="pg-ai-drawer__action-btn"
+                        onClick={() => handleInsert(msg.id, msg.content)}
+                        title="Insert content into the active document"
+                      >
+                        {insertedId === msg.id ? "✓ Inserted into Page" : "+ Insert into Page"}
+                      </button>
+                    ) : null}
+
+                    <button
+                      type="button"
+                      className="pg-ai-drawer__action-btn"
+                      onClick={() => handleCopy(msg.id, msg.content)}
+                      title="Copy markdown to clipboard"
+                    >
+                      {copiedId === msg.id ? "✓ Copied" : "📋 Copy"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="pg-ai-drawer__action-btn"
+                      onClick={() => handleRetryLast(msg.id)}
+                      title="Regenerate this response"
+                    >
+                      ↻ Retry
+                    </button>
+                  </div>
+                </>
+              );
+            })() : null}
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -521,7 +710,13 @@ export function AiAssistantDrawer({
           <textarea
             ref={textareaRef}
             className="pg-ai-drawer__textarea"
-            placeholder="Ask AI anything about this page... (Enter to send, Shift+Enter for newline)"
+            placeholder={
+              contextScope === "workspace"
+                ? "Ask anything across all workspace documents... (Universal Q&A)"
+                : contextScope === "this_page"
+                  ? "Ask AI anything about this page... (Enter to send, Shift+Enter for newline)"
+                  : "Ask AI anything... (Enter to send, Shift+Enter for newline)"
+            }
             rows={2}
             value={input}
             onChange={handleInputChange}

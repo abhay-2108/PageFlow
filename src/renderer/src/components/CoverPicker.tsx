@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { COVER_IDS, isCoverId } from "../../../shared/covers";
 import { getApi } from "../lib/api";
 import { assetUrl } from "../lib/assetUrl";
@@ -32,10 +32,17 @@ export function CoverPicker({ current, onPick, onRemove, onClose }: CoverPickerP
     };
   }, [onClose]);
 
+  const [uploading, setUploading] = useState(false);
+
   const upload = async () => {
-    const result = await getApi().assets.pickImage();
-    if (result.ok && result.src) {
-      onPick(result.src);
+    setUploading(true);
+    try {
+      const result = await getApi().assets.pickImage();
+      if (result.ok && result.src) {
+        onPick(result.src);
+      }
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -69,8 +76,13 @@ export function CoverPicker({ current, onPick, onRemove, onClose }: CoverPickerP
           </button>
         ) : null}
       </div>
-      <button type="button" className="cover-picker__upload" onClick={() => void upload()}>
-        Upload image
+      <button
+        type="button"
+        className="cover-picker__upload"
+        disabled={uploading}
+        onClick={() => void upload()}
+      >
+        {uploading ? "Uploading image…" : "Upload image"}
       </button>
       {current ? (
         <button type="button" className="cover-picker__remove" onClick={onRemove}>

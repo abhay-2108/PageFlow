@@ -33,6 +33,8 @@ import { CalendarView } from "./CalendarView";
 import { TimelineView } from "./TimelineView";
 import { TemplateGalleryModal } from "./TemplateGalleryModal";
 import { SidePeekDrawer } from "./SidePeekDrawer";
+import { extractDocText } from "../../../shared/doc-text";
+import { aiModelStore } from "../lib/aiModels";
 
 const PROPERTY_TYPE_ORDER: PropertyType[] = [
   "text",
@@ -42,6 +44,8 @@ const PROPERTY_TYPE_ORDER: PropertyType[] = [
   "status",
   "date",
   "checkbox",
+  "ai_summary",
+  "ai_autofill",
   "url",
   "email",
   "phone",
@@ -51,6 +55,26 @@ const PROPERTY_TYPE_ORDER: PropertyType[] = [
   "created_time",
   "last_edited_time",
 ];
+
+const PROPERTY_TYPE_ICONS: Record<PropertyType, string> = {
+  text: "Aa",
+  number: "#",
+  select: "▾",
+  multi_select: "▤",
+  status: "⏱",
+  date: "📅",
+  checkbox: "☑",
+  ai_summary: "✦",
+  ai_autofill: "✦",
+  url: "🔗",
+  email: "✉",
+  phone: "📞",
+  formula: "∑",
+  relation: "↗",
+  rollup: "⌕",
+  created_time: "⏱",
+  last_edited_time: "⏱",
+};
 
 export type CalcOp =
   | "none"
@@ -196,18 +220,32 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
   const [editingRelationFor, setEditingRelationFor] = useState<string | null>(null);
   const [columnCalcs, setColumnCalcs] = useState<Record<string, CalcOp>>({});
   const [activeCalcMenu, setActiveCalcMenu] = useState<string | null>(null);
+  const [generatingAiPropId, setGeneratingAiPropId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [confirmDeletePropId, setConfirmDeletePropId] = useState<string | null>(null);
+  const [confirmDeleteView, setConfirmDeleteView] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setLoadError(null);
     void api.pages
       .list()
       .then((listed) => {
         if (!cancelled) {
           setHub(listed.find((page) => page.id === parentId) ?? null);
           setRows(childrenOf(listed, parentId));
+          setLoading(false);
         }
       })
-      .catch(() => undefined);
+      .catch((err) => {
+        if (!cancelled) {
+          console.error("[PageFlow] Failed to load database items:", err);
+          setLoadError("Failed to load database table data.");
+          setLoading(false);
+        }
+      });
     return () => {
       cancelled = true;
     };
@@ -503,8 +541,79 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
     setEditingFormulaFor(null);
   };
 
+  const runAiAutofill = async (rowPage: PageMeta, def: PropertyDef) => {
+    const key = `${rowPage.id}-${def.id}`;
+    if (generatingAiPropId === key) return;
+    setGeneratingAiPropId(key);
+    try {
+      const fullPage = await api.pages.get(rowPage.id);
+      const docText = fullPage?.doc ? extractDocText(fullPage.doc) : "";
+      const modelToUse = aiModelStore.getModelToUse();
+
+      let prompt = def.aiPrompt;
+      let action: "summarize" | "custom" = "custom";
+      if (def.type === "ai_summary") {
+        action = "summarize";
+        prompt = def.aiPrompt || "Summarize the document concisely in 1-2 short sentences.";
+      } else {
+        prompt = def.aiPrompt || "Extract 3-5 keywords or a concise status from this document.";
+      }
+
+      const res = await api.ai.generate({
+        prompt: prompt ?? "Summarize",
+        action,
+        context: `Document Title: ${rowPage.title}\n\nContent:\n${docText.slice(0, 4000)}`,
+        model: modelToUse,
+      });
+
+      if (res && res.text) {
+        const cleanText = res.text.trim().replace(/^["']|["']$/g, "");
+        void commitField(rowPage.id, def, cleanText);
+      }
+    } catch (err) {
+      console.error("[PageFlow] Failed to run AI Autofill:", err);
+    } finally {
+      setGeneratingAiPropId(null);
+    }
+  };
+
   const cellEditor = (page: PageMeta, def: PropertyDef) => {
     const value = page.fields[def.id] ?? null;
+
+    if (def.type === "ai_summary" || def.type === "ai_autofill") {
+      const isGenerating = generatingAiPropId === `${page.id}-${def.id}`;
+      return (
+        <div className="pg-db-ai-cell" onMouseDown={stop}>
+          {value ? (
+            <div className="pg-db-ai-val-wrap">
+              <span className="pg-db-ai-sparkle">✦</span>
+              <span className="pg-db-ai-text" title={String(value)}>
+                {String(value)}
+              </span>
+              <button
+                type="button"
+                className="pg-db-ai-regen-btn"
+                title="Regenerate with Local AI"
+                disabled={isGenerating}
+                onClick={() => void runAiAutofill(page, def)}
+              >
+                {isGenerating ? "…" : "↺"}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="pg-db-ai-gen-btn"
+              disabled={isGenerating}
+              onClick={() => void runAiAutofill(page, def)}
+            >
+              <span className="pg-db-ai-sparkle">✦</span>
+              <span>{isGenerating ? "Generating..." : "Generate"}</span>
+            </button>
+          )}
+        </div>
+      );
+    }
 
     if (def.type === "checkbox") {
       return (
@@ -994,7 +1103,8 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
             setColorOptionFor(null);
           }}
         >
-          {def.name}
+          <span className="pg-db-header-icon">{PROPERTY_TYPE_ICONS[def.type] ?? "•"}</span>
+          <span className="pg-db-header-name">{def.name}</span>
         </button>
         {propMenu === def.id ? (
           <div className="menu-popover pg-db-header-menu" role="menu">
@@ -1156,12 +1266,18 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
               type="button"
               role="menuitem"
               className="menu-popover__danger"
+              style={confirmDeletePropId === def.id ? { background: "var(--pg-danger, #ef4444)", color: "#fff" } : undefined}
               onClick={() => {
+                if (confirmDeletePropId !== def.id) {
+                  setConfirmDeletePropId(def.id);
+                  return;
+                }
+                setConfirmDeletePropId(null);
                 setPropMenu(null);
                 void commitProperties(properties.filter((entry) => entry.id !== def.id));
               }}
             >
-              Delete property
+              {confirmDeletePropId === def.id ? "Click again to confirm" : "Delete property"}
             </button>
           </div>
         ) : null}
@@ -1178,6 +1294,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
     let optionColors: Record<string, string> | undefined;
     let statusGroups: Record<string, StatusGroup> | undefined;
     let formula: string | undefined;
+    let aiPrompt: string | undefined;
 
     if (type === "status") {
       options = DEFAULT_STATUS_OPTIONS.map((o) => o.name);
@@ -1193,6 +1310,10 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
       };
     } else if (type === "formula") {
       formula = 'prop("Name")';
+    } else if (type === "ai_summary") {
+      aiPrompt = "Summarize the page content in 1-2 concise sentences.";
+    } else if (type === "ai_autofill") {
+      aiPrompt = "Extract key takeaways and action items.";
     }
 
     const firstRel = properties.find((p) => p.type === "relation");
@@ -1204,6 +1325,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
       ...(optionColors ? { optionColors } : {}),
       ...(statusGroups ? { statusGroups } : {}),
       ...(formula ? { formula } : {}),
+      ...(aiPrompt ? { aiPrompt } : {}),
       ...(type === "rollup" ? { relationPropId: firstRel?.id, rollupOp: "count" } : {}),
     };
     void commitProperties([...properties, def]);
@@ -1233,187 +1355,243 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
     }
   };
 
+  if (loading && !hub) {
+    return (
+      <div className="pg-children-table-wrap" aria-label="Loading database content">
+        <div className="pg-db-loading-skeleton" style={{ padding: "32px 16px", opacity: 0.6 }}>
+          <div style={{ height: "28px", width: "180px", background: "var(--pg-border)", borderRadius: "4px", marginBottom: "16px" }} />
+          <div style={{ height: "40px", width: "100%", background: "var(--pg-border)", borderRadius: "4px", marginBottom: "8px" }} />
+          <div style={{ height: "40px", width: "100%", background: "var(--pg-border)", borderRadius: "4px", marginBottom: "8px" }} />
+          <div style={{ height: "40px", width: "100%", background: "var(--pg-border)", borderRadius: "4px" }} />
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="pg-children-table-wrap" role="alert" style={{ padding: "48px 16px", textAlign: "center" }}>
+        <p style={{ color: "var(--pg-danger, #ef4444)", marginBottom: "12px", fontSize: "14px" }}>
+          {loadError}
+        </p>
+        <button
+          type="button"
+          className="pg-btn pg-btn--secondary"
+          onClick={() => {
+            setLoading(true);
+            setLoadError(null);
+            void api.pages
+              .list()
+              .then((listed) => {
+                setHub(listed.find((page) => page.id === parentId) ?? null);
+                setRows(childrenOf(listed, parentId));
+                setLoading(false);
+              })
+              .catch(() => {
+                setLoadError("Failed to load database table data.");
+                setLoading(false);
+              });
+          }}
+        >
+          Retry Loading
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="pg-children-table-wrap">
       <div className="pg-db-toolbar">
-        {renamingView ? (
-          <input
-            className="pg-db-rename"
-            aria-label="View name"
-            value={viewName}
-            autoFocus
-            onMouseDown={stop}
-            onChange={(event) => setViewName(event.target.value)}
-            onBlur={commitViewName}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.currentTarget.blur();
-              }
-              if (event.key === "Escape") {
-                setRenamingView(false);
-              }
-            }}
-          />
-        ) : (
-          <>
-            <select
-              className="pg-db-select pg-db-view-select"
-              aria-label="Database view"
-              value={activeView.id}
+        <div className="pg-db-toolbar__left">
+          {renamingView ? (
+            <input
+              className="pg-db-rename"
+              aria-label="View name"
+              value={viewName}
+              autoFocus
               onMouseDown={stop}
-              onChange={(event) => switchView(event.target.value)}
-            >
-              {activeConfig.views.map((view) => (
-                <option key={view.id} value={view.id}>
-                  {view.name} (
-                  {view.layout === "gallery" ? "Gallery" : view.layout === "board" ? "Board" : "Table"})
-                </option>
-              ))}
-            </select>
-            <div className="page__view-toggle" role="group" aria-label="Layout toggle">
-              <button
-                type="button"
-                className={
-                  currentLayout === "table"
-                    ? "page__view-btn page__view-btn--active"
-                    : "page__view-btn"
+              onChange={(event) => setViewName(event.target.value)}
+              onBlur={commitViewName}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.currentTarget.blur();
                 }
-                aria-pressed={currentLayout === "table"}
-                onClick={() => toggleLayout("table")}
-              >
-                Table
-              </button>
-              <button
-                type="button"
-                className={
-                  currentLayout === "board"
-                    ? "page__view-btn page__view-btn--active"
-                    : "page__view-btn"
+                if (event.key === "Escape") {
+                  setRenamingView(false);
                 }
-                aria-pressed={currentLayout === "board"}
-                onClick={() => toggleLayout("board")}
+              }}
+            />
+          ) : (
+            <>
+              <select
+                className="pg-db-select pg-db-view-select"
+                aria-label="Database view"
+                value={activeView.id}
+                onMouseDown={stop}
+                onChange={(event) => switchView(event.target.value)}
               >
-                Board
-              </button>
-              <button
-                type="button"
-                className={
-                  currentLayout === "gallery"
-                    ? "page__view-btn page__view-btn--active"
-                    : "page__view-btn"
-                }
-                aria-pressed={currentLayout === "gallery"}
-                onClick={() => toggleLayout("gallery")}
-              >
-                Gallery
-              </button>
-              <button
-                type="button"
-                className={
-                  currentLayout === "calendar"
-                    ? "page__view-btn page__view-btn--active"
-                    : "page__view-btn"
-                }
-                aria-pressed={currentLayout === "calendar"}
-                onClick={() => toggleLayout("calendar")}
-              >
-                Calendar
-              </button>
-              <button
-                type="button"
-                className={
-                  currentLayout === "timeline"
-                    ? "page__view-btn page__view-btn--active"
-                    : "page__view-btn"
-                }
-                aria-pressed={currentLayout === "timeline"}
-                onClick={() => toggleLayout("timeline")}
-              >
-                Timeline
-              </button>
-            </div>
-            <button
-              type="button"
-              className="pg-db-tool"
-              aria-label="Add view"
-              onMouseDown={stop}
-              onClick={() => addView(currentLayout)}
-            >
-              + View
-            </button>
-            <button
-              type="button"
-              className="pg-db-tool"
-              aria-label="View options"
-              aria-expanded={viewMenuOpen}
-              onMouseDown={stop}
-              onClick={() => setViewMenuOpen((open) => !open)}
-            >
-              …
-            </button>
-            {viewMenuOpen ? (
-              <div className="menu-popover pg-db-tool-menu" role="menu" onMouseDown={stop}>
+                {activeConfig.views.map((view) => (
+                  <option key={view.id} value={view.id}>
+                    {view.name} (
+                    {view.layout === "gallery" ? "Gallery" : view.layout === "board" ? "Board" : "Table"})
+                  </option>
+                ))}
+              </select>
+              <div className="page__view-toggle" role="group" aria-label="Layout toggle">
                 <button
                   type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setViewMenuOpen(false);
-                    setViewName(activeView.name);
-                    setRenamingView(true);
-                  }}
+                  className={
+                    currentLayout === "table"
+                      ? "page__view-btn page__view-btn--active"
+                      : "page__view-btn"
+                  }
+                  aria-pressed={currentLayout === "table"}
+                  onClick={() => toggleLayout("table")}
                 >
-                  Rename view
+                  <span className="pg-view-tab-icon">⊞</span> Table
                 </button>
                 <button
                   type="button"
-                  role="menuitem"
-                  className="menu-popover__danger"
-                  disabled={activeConfig.views.length <= 1}
-                  onClick={deleteView}
+                  className={
+                    currentLayout === "board"
+                      ? "page__view-btn page__view-btn--active"
+                      : "page__view-btn"
+                  }
+                  aria-pressed={currentLayout === "board"}
+                  onClick={() => toggleLayout("board")}
                 >
-                  Delete view
+                  <span className="pg-view-tab-icon">▦</span> Board
+                </button>
+                <button
+                  type="button"
+                  className={
+                    currentLayout === "gallery"
+                      ? "page__view-btn page__view-btn--active"
+                      : "page__view-btn"
+                  }
+                  aria-pressed={currentLayout === "gallery"}
+                  onClick={() => toggleLayout("gallery")}
+                >
+                  <span className="pg-view-tab-icon">◫</span> Gallery
+                </button>
+                <button
+                  type="button"
+                  className={
+                    currentLayout === "calendar"
+                      ? "page__view-btn page__view-btn--active"
+                      : "page__view-btn"
+                  }
+                  aria-pressed={currentLayout === "calendar"}
+                  onClick={() => toggleLayout("calendar")}
+                >
+                  <span className="pg-view-tab-icon">📅</span> Calendar
+                </button>
+                <button
+                  type="button"
+                  className={
+                    currentLayout === "timeline"
+                      ? "page__view-btn page__view-btn--active"
+                      : "page__view-btn"
+                  }
+                  aria-pressed={currentLayout === "timeline"}
+                  onClick={() => toggleLayout("timeline")}
+                >
+                  <span className="pg-view-tab-icon">⏱</span> Timeline
                 </button>
               </div>
-            ) : null}
-          </>
-        )}
-        <button
-          type="button"
-          className="pg-db-tool"
-          aria-expanded={toolMenu === "sort"}
-          onMouseDown={stop}
-          onClick={() => setToolMenu(toolMenu === "sort" ? null : "sort")}
-        >
-          Sort{activeView.sorts.length > 0 ? ` (${activeView.sorts.length})` : ""}
-        </button>
-        <button
-          type="button"
-          className="pg-db-tool"
-          aria-expanded={toolMenu === "filter"}
-          onMouseDown={stop}
-          onClick={() => setToolMenu(toolMenu === "filter" ? null : "filter")}
-        >
-          Filter{activeView.filters.length > 0 ? ` (${activeView.filters.length})` : ""}
-        </button>
-        {currentLayout === "board" ? (
+              <button
+                type="button"
+                className="pg-db-tool"
+                aria-label="Add view"
+                onMouseDown={stop}
+                onClick={() => addView(currentLayout)}
+              >
+                + View
+              </button>
+              <button
+                type="button"
+                className="pg-db-tool"
+                aria-label="View options"
+                aria-expanded={viewMenuOpen}
+                onMouseDown={stop}
+                onClick={() => setViewMenuOpen((open) => !open)}
+              >
+                …
+              </button>
+              {viewMenuOpen ? (
+                <div className="menu-popover pg-db-tool-menu" role="menu" onMouseDown={stop}>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setViewMenuOpen(false);
+                      setViewName(activeView.name);
+                      setRenamingView(true);
+                    }}
+                  >
+                    Rename view
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="menu-popover__danger"
+                    disabled={activeConfig.views.length <= 1}
+                    style={confirmDeleteView ? { background: "var(--pg-danger, #ef4444)", color: "#fff" } : undefined}
+                    onClick={() => {
+                      if (!confirmDeleteView) {
+                        setConfirmDeleteView(true);
+                        return;
+                      }
+                      setConfirmDeleteView(false);
+                      deleteView();
+                    }}
+                  >
+                    {confirmDeleteView ? "Click again to confirm" : "Delete view"}
+                  </button>
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+        <div className="pg-db-toolbar__right">
           <button
             type="button"
             className="pg-db-tool"
-            aria-expanded={toolMenu === "group"}
+            aria-expanded={toolMenu === "sort"}
             onMouseDown={stop}
-            onClick={() => setToolMenu(toolMenu === "group" ? null : "group")}
+            onClick={() => setToolMenu(toolMenu === "sort" ? null : "sort")}
           >
-            Group: {groupProp ? groupProp.name : "None"}
+            Sort{activeView.sorts.length > 0 ? ` (${activeView.sorts.length})` : ""}
           </button>
-        ) : null}
-        <button
-          type="button"
-          className="pg-db-tool"
-          onMouseDown={stop}
-          onClick={() => setTemplatePickerOpen(true)}
-        >
-          📑 Template
-        </button>
+          <button
+            type="button"
+            className="pg-db-tool"
+            aria-expanded={toolMenu === "filter"}
+            onMouseDown={stop}
+            onClick={() => setToolMenu(toolMenu === "filter" ? null : "filter")}
+          >
+            Filter{activeView.filters.length > 0 ? ` (${activeView.filters.length})` : ""}
+          </button>
+          {currentLayout === "board" ? (
+            <button
+              type="button"
+              className="pg-db-tool"
+              aria-expanded={toolMenu === "group"}
+              onMouseDown={stop}
+              onClick={() => setToolMenu(toolMenu === "group" ? null : "group")}
+            >
+              Group: {groupProp ? groupProp.name : "None"}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="pg-db-tool"
+            onMouseDown={stop}
+            onClick={() => setTemplatePickerOpen(true)}
+          >
+            📑 Template
+          </button>
+        </div>
         {toolMenu === "sort" ? (
           <div className="menu-popover pg-db-tool-menu" role="menu" onMouseDown={stop}>
             {properties.length === 0 ? (
@@ -1569,9 +1747,18 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
                       <div
                         key={card.id}
                         className="pg-board-card"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Open ${rowLabel(card)}`}
                         draggable
                         onDragStart={(event) => handleCardDragStart(event, card.id)}
                         onClick={() => onOpenPage(card.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            onOpenPage(card.id);
+                          }
+                        }}
                       >
                         <div className="pg-board-card-title">
                           {card.icon ? <span>{card.icon}</span> : null}
@@ -1625,7 +1812,16 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
                 <div
                   key={card.id}
                   className="pg-gallery-card"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open ${rowLabel(card)}`}
                   onClick={() => onOpenPage(card.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onOpenPage(card.id);
+                    }
+                  }}
                 >
                   <div
                     className={
@@ -1729,13 +1925,19 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
         <table className="pg-children-table" aria-label="Subpages">
           <thead>
             <tr>
-              <th>Name</th>
+              <th className="pg-db-th pg-db-th--name">
+                <span className="pg-db-header-icon">Aa</span>
+                <span className="pg-db-header-name">Name</span>
+              </th>
               {properties.map((def) => (
-                <th key={def.id} className="pg-db-th">
+                <th key={def.id} className="pg-db-th" data-type={def.type}>
                   {headerMenu(def)}
                 </th>
               ))}
-              <th>Updated</th>
+              <th className="pg-db-th pg-db-th--updated">
+                <span className="pg-db-header-icon">⏱</span>
+                <span className="pg-db-header-name">Updated</span>
+              </th>
               <th className="pg-db-th pg-db-th--add">
                 <span className="pg-db-header-wrap" onMouseDown={stop}>
                   <button
@@ -1780,25 +1982,27 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
             {visibleRows.map((page) => (
               <tr key={page.id} data-page-id={page.id} className="pg-db-row">
                 <td className="pg-db-name-cell">
-                  <button
-                    type="button"
-                    className="pg-children-table__open"
-                    onClick={() => onOpenPage(page.id)}
-                  >
-                    {page.icon ? <span className="pg-children-table__icon">{page.icon}</span> : null}
-                    <span className="pg-children-table__title">{rowLabel(page)}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="pg-db-peek-btn"
-                    title="Open in side peek"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPeekPageId(page.id);
-                    }}
-                  >
-                    🔍 Peek
-                  </button>
+                  <div className="pg-db-name-cell__inner">
+                    <button
+                      type="button"
+                      className="pg-children-table__open"
+                      onClick={() => onOpenPage(page.id)}
+                    >
+                      {page.icon ? <span className="pg-children-table__icon">{page.icon}</span> : null}
+                      <span className="pg-children-table__title">{rowLabel(page)}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="pg-db-peek-btn"
+                      title="Open in side peek"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPeekPageId(page.id);
+                      }}
+                    >
+                      🔍 Peek
+                    </button>
+                  </div>
                 </td>
                 {properties.map((def) => (
                   <td key={def.id} className="pg-db-cell" data-type={def.type}>
@@ -1873,7 +2077,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
 
       {editingFormulaFor ? (
         <div className="pg-modal-backdrop" onMouseDown={() => setEditingFormulaFor(null)}>
-          <div className="pg-formula-modal" onMouseDown={stop}>
+          <div className="pg-formula-modal" role="dialog" aria-modal="true" aria-label="Edit Formula" onMouseDown={stop}>
             <div className="pg-formula-modal__header">
               <h3 className="pg-formula-modal__title">Edit Formula</h3>
               <button
@@ -1976,7 +2180,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
 
       {editingRollupFor ? (
         <div className="pg-modal-backdrop" onMouseDown={() => setEditingRollupFor(null)}>
-          <div className="pg-formula-modal" onMouseDown={stop}>
+          <div className="pg-formula-modal" role="dialog" aria-modal="true" aria-label="Configure Rollup" onMouseDown={stop}>
             <div className="pg-formula-modal__header">
               <h3 className="pg-formula-modal__title">Configure Rollup</h3>
               <button
@@ -2093,7 +2297,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
 
       {editingRelationFor ? (
         <div className="pg-modal-backdrop" onMouseDown={() => setEditingRelationFor(null)}>
-          <div className="pg-formula-modal" onMouseDown={stop}>
+          <div className="pg-formula-modal" role="dialog" aria-modal="true" aria-label="Configure Relation" onMouseDown={stop}>
             <div className="pg-formula-modal__header">
               <h3 className="pg-formula-modal__title">Configure Relation</h3>
               <button

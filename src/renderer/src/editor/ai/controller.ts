@@ -14,6 +14,7 @@ export interface InlineAiState {
   selectedText: string;
   query: string;
   action: AiAction | null;
+  targetLanguage?: string;
   loading: boolean;
   result: string;
   thinking: string;
@@ -31,6 +32,7 @@ const INITIAL_STATE: InlineAiState = {
   selectedText: "",
   query: "",
   action: null,
+  targetLanguage: undefined,
   loading: false,
   result: "",
   thinking: "",
@@ -121,7 +123,11 @@ class InlineAiController {
     this.emit();
   }
 
-  public async generate(action: AiAction = "custom", customPrompt?: string): Promise<void> {
+  public async generate(
+    action: AiAction = "custom",
+    customPrompt?: string,
+    targetLanguage?: string,
+  ): Promise<void> {
     const api = getApi();
     const prompt = customPrompt ?? this.state.query;
     const modelToUse = aiModelStore.getModelToUse();
@@ -129,6 +135,7 @@ class InlineAiController {
     this.state = {
       ...this.state,
       action,
+      targetLanguage,
       loading: true,
       error: null,
       result: "",
@@ -154,6 +161,7 @@ class InlineAiController {
       const res = await api.ai.generate({
         prompt,
         action,
+        targetLanguage,
         context: this.state.selectedText || this.state.editor?.getText() || "",
         model: modelToUse,
       });

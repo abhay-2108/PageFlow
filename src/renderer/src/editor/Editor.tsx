@@ -37,6 +37,8 @@ export function Editor({
   onCommentClick,
 }: EditorProps) {
   const [binding, setBinding] = useState<DocBinding | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const bindingRef = useRef<DocBinding | null>(null);
   const sessionState = useSyncExternalStore(session.subscribe, session.getState, session.getState);
   const status = sessionState.status;
@@ -44,21 +46,29 @@ export function Editor({
   useEffect(() => {
     let cancelled = false;
     setBinding(null);
+    setLoadError(null);
     void (async () => {
-      const previous = bindingRef.current;
-      const carryFrom =
-        previous && !previous.shared && session.isActive() ? previous.doc : null;
-      const next = await session.acquireDoc(pageId, carryFrom);
-      if (cancelled) {
-        return;
+      try {
+        const previous = bindingRef.current;
+        const carryFrom =
+          previous && !previous.shared && session.isActive() ? previous.doc : null;
+        const next = await session.acquireDoc(pageId, carryFrom);
+        if (cancelled) {
+          return;
+        }
+        bindingRef.current = next;
+        setBinding(next);
+      } catch (err) {
+        if (!cancelled) {
+          console.error("[PageFlow] Failed to acquire editor doc:", err);
+          setLoadError("Could not load document content. Please try again.");
+        }
       }
-      bindingRef.current = next;
-      setBinding(next);
     })();
     return () => {
       cancelled = true;
     };
-  }, [pageId, status]);
+  }, [pageId, status, retryCount]);
 
   useEffect(() => {
     if (!binding || binding.shared) {
@@ -114,7 +124,27 @@ export function Editor({
           onCommentRequest={onCommentRequest}
           onCommentClick={onCommentClick}
         />
-      ) : null}
+      ) : loadError ? (
+        <div className="pg-editor-error" role="alert" style={{ padding: "48px 16px", textAlign: "center" }}>
+          <p style={{ color: "var(--pg-danger, #ef4444)", marginBottom: "12px", fontSize: "14px" }}>
+            {loadError}
+          </p>
+          <button
+            type="button"
+            className="pg-btn pg-btn--secondary"
+            onClick={() => setRetryCount((c) => c + 1)}
+          >
+            Retry Loading
+          </button>
+        </div>
+      ) : (
+        <div className="pg-editor-skeleton" aria-label="Loading document" style={{ padding: "24px 0", opacity: 0.6 }}>
+          <div style={{ height: "24px", width: "40%", background: "var(--pg-border)", borderRadius: "4px", marginBottom: "16px" }} />
+          <div style={{ height: "16px", width: "85%", background: "var(--pg-border)", borderRadius: "4px", marginBottom: "12px" }} />
+          <div style={{ height: "16px", width: "65%", background: "var(--pg-border)", borderRadius: "4px", marginBottom: "12px" }} />
+          <div style={{ height: "16px", width: "75%", background: "var(--pg-border)", borderRadius: "4px" }} />
+        </div>
+      )}
       <SlashMenu />
       <MentionMenu />
       <TableBar />
