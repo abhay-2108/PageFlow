@@ -120,8 +120,33 @@ export function PropertyConfigPopover({
               rows={3}
               placeholder="prop(&quot;Status&quot;) == &quot;Done&quot;"
             />
+            <div className="pg-formula-quick-pills" style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "6px" }}>
+              {[
+                'prop("Name")',
+                'if(condition, "yes", "no")',
+                'concat("Prefix: ", prop("Name"))',
+                'format(123)',
+                'toNumber("42")',
+                'round(10.5)',
+              ].map((fn) => (
+                <button
+                  key={fn}
+                  type="button"
+                  className="pg-btn pg-btn--secondary"
+                  style={{ fontSize: "11px", padding: "2px 6px" }}
+                  onClick={() => {
+                    const current = property.formula ?? "";
+                    void setFormula(current ? `${current} + ${fn}` : fn);
+                  }}
+                >
+                  +{fn}
+                </button>
+              ))}
+            </div>
             {property.formula && !validateFormula(property.formula) && (
-              <span className="property-config__error">Invalid formula syntax</span>
+              <span className="property-config__error" style={{ display: "block", marginTop: "4px" }}>
+                Invalid formula syntax
+              </span>
             )}
           </div>
         )}

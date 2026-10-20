@@ -30,6 +30,7 @@ import { getApi } from "../lib/api";
 import { assetUrl } from "../lib/assetUrl";
 import { PropertyConfigPopover } from "./PropertyConfigPopover";
 import { CalendarView } from "./CalendarView";
+import { TimelineView } from "./TimelineView";
 import { TemplateGalleryModal } from "./TemplateGalleryModal";
 
 const PROPERTY_TYPE_ORDER: PropertyType[] = [
@@ -264,7 +265,15 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
     }
     const id = crypto.randomUUID();
     const layoutLabel =
-      layout === "gallery" ? "Gallery" : layout === "board" ? "Board" : layout === "calendar" ? "Calendar" : "Table";
+      layout === "gallery"
+        ? "Gallery"
+        : layout === "board"
+          ? "Board"
+          : layout === "calendar"
+            ? "Calendar"
+            : layout === "timeline"
+              ? "Timeline"
+              : "Table";
     const name = `${layoutLabel} ${activeConfig.views.length + 1}`;
     const next: DatabaseConfig = {
       views: [...activeConfig.views, { id, name, layout, sorts: [], filters: [] }],
@@ -1308,6 +1317,18 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
               >
                 Calendar
               </button>
+              <button
+                type="button"
+                className={
+                  currentLayout === "timeline"
+                    ? "page__view-btn page__view-btn--active"
+                    : "page__view-btn"
+                }
+                aria-pressed={currentLayout === "timeline"}
+                onClick={() => toggleLayout("timeline")}
+              >
+                Timeline
+              </button>
             </div>
             <button
               type="button"
@@ -1684,6 +1705,16 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
         </div>
       ) : currentLayout === "calendar" ? (
         <CalendarView
+          pages={visibleRows}
+          properties={properties}
+          onOpenPage={onOpenPage}
+          onCreatePage={(dateStr) => {
+            const dateDef = properties.find((p) => p.type === "date");
+            void createRow(dateDef && dateStr ? { [dateDef.id]: dateStr } : undefined);
+          }}
+        />
+      ) : currentLayout === "timeline" ? (
+        <TimelineView
           pages={visibleRows}
           properties={properties}
           onOpenPage={onOpenPage}
