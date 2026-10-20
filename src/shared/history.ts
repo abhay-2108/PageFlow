@@ -67,7 +67,13 @@ export function getVersionsForDoc(docId: string): DocVersion[] {
 }
 
 export function restoreVersion(version: DocVersion, targetDoc: Y.Doc): void {
-  Y.applyUpdate(targetDoc, version.snapshot);
+  const tempDoc = new Y.Doc();
+  Y.applyUpdate(tempDoc, version.snapshot);
+  const fullUpdate = Y.encodeStateAsUpdate(tempDoc);
+  targetDoc.transact(() => {
+    Y.applyUpdate(targetDoc, fullUpdate);
+  });
+  tempDoc.destroy();
 }
 
 export function deleteVersion(versionId: string): void {

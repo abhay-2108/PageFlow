@@ -32,6 +32,7 @@ import { PropertyConfigPopover } from "./PropertyConfigPopover";
 import { CalendarView } from "./CalendarView";
 import { TimelineView } from "./TimelineView";
 import { TemplateGalleryModal } from "./TemplateGalleryModal";
+import { SidePeekDrawer } from "./SidePeekDrawer";
 
 const PROPERTY_TYPE_ORDER: PropertyType[] = [
   "text",
@@ -174,6 +175,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
   const [propMenu, setPropMenu] = useState<string | null>(null);
   const [configuringProp, setConfiguringProp] = useState<PropertyDef | null>(null);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+  const [peekPageId, setPeekPageId] = useState<string | null>(null);
   const [renamingProp, setRenamingProp] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [addMenuOpen, setAddMenuOpen] = useState(false);
@@ -1777,7 +1779,7 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
             ) : null}
             {visibleRows.map((page) => (
               <tr key={page.id} data-page-id={page.id} className="pg-db-row">
-                <td>
+                <td className="pg-db-name-cell">
                   <button
                     type="button"
                     className="pg-children-table__open"
@@ -1785,6 +1787,17 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
                   >
                     {page.icon ? <span className="pg-children-table__icon">{page.icon}</span> : null}
                     <span className="pg-children-table__title">{rowLabel(page)}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="pg-db-peek-btn"
+                    title="Open in side peek"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setPeekPageId(page.id);
+                    }}
+                  >
+                    🔍 Peek
                   </button>
                 </td>
                 {properties.map((def) => (
@@ -2180,6 +2193,16 @@ export function ChildrenTable({ parentId, pages, refreshKey, onOpenPage }: Child
             })();
           }}
           onClose={() => setTemplatePickerOpen(false)}
+        />
+      ) : null}
+      {peekPageId ? (
+        <SidePeekDrawer
+          pageId={peekPageId}
+          onClose={() => setPeekPageId(null)}
+          onOpenFullPage={(id) => {
+            setPeekPageId(null);
+            onOpenPage(id);
+          }}
         />
       ) : null}
     </div>

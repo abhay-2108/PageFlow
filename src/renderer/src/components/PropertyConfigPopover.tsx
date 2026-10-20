@@ -20,44 +20,68 @@ export function PropertyConfigPopover({
   const api = getApi();
 
   const update = async (updates: Partial<PropertyDef>) => {
-    const page = await api.pages.get(pageId);
-    if (!page) return;
-    const props = page.meta.properties ?? [];
-    const next = props.map((p) => (p.id === property.id ? { ...p, ...updates } : p));
-    await api.pages.setProperties(pageId, next);
-    onUpdated();
+    try {
+      const page = await api.pages.get(pageId);
+      if (!page) return;
+      const props = page.meta.properties ?? [];
+      const next = props.map((p) => (p.id === property.id ? { ...p, ...updates } : p));
+      await api.pages.setProperties(pageId, next);
+      onUpdated();
+    } catch (err) {
+      console.error("[PageFlow] Failed to update property:", err);
+    }
   };
 
   const deleteProperty = async () => {
-    const page = await api.pages.get(pageId);
-    if (!page) return;
-    const props = page.meta.properties ?? [];
-    const next = props.filter((p) => p.id !== property.id);
-    await api.pages.setProperties(pageId, next);
-    onUpdated();
-    onClose();
+    try {
+      const page = await api.pages.get(pageId);
+      if (!page) return;
+      const props = page.meta.properties ?? [];
+      const next = props.filter((p) => p.id !== property.id);
+      await api.pages.setProperties(pageId, next);
+      onUpdated();
+      onClose();
+    } catch (err) {
+      console.error("[PageFlow] Failed to delete property:", err);
+    }
   };
 
   const addSelectOption = async () => {
-    const options = property.options ?? [];
-    const newOption = `Option ${options.length + 1}`;
-    const nextOptions = [...options, newOption];
-    const color = SELECT_COLORS[options.length % SELECT_COLORS.length] ?? "#6b7280";
-    const nextColors = { ...(property.optionColors ?? {}), [newOption]: color };
-    await update({ options: nextOptions, optionColors: nextColors });
+    try {
+      const options = property.options ?? [];
+      const newOption = `Option ${options.length + 1}`;
+      const nextOptions = [...options, newOption];
+      const color = SELECT_COLORS[options.length % SELECT_COLORS.length] ?? "#6b7280";
+      const nextColors = { ...(property.optionColors ?? {}), [newOption]: color };
+      await update({ options: nextOptions, optionColors: nextColors });
+    } catch (err) {
+      console.error("[PageFlow] Failed to add option:", err);
+    }
   };
 
   const removeSelectOption = async (index: number) => {
-    const options = (property.options ?? []).filter((_, i) => i !== index);
-    await update({ options });
+    try {
+      const options = (property.options ?? []).filter((_, i) => i !== index);
+      await update({ options });
+    } catch (err) {
+      console.error("[PageFlow] Failed to remove option:", err);
+    }
   };
 
   const setFormula = async (formula: string) => {
-    await update({ formula });
+    try {
+      await update({ formula });
+    } catch (err) {
+      console.error("[PageFlow] Failed to set formula:", err);
+    }
   };
 
   const setRollup = async (rollupOp: RollupOp, rollupPropId: string) => {
-    await update({ rollupOp, rollupPropId });
+    try {
+      await update({ rollupOp, rollupPropId });
+    } catch (err) {
+      console.error("[PageFlow] Failed to set rollup:", err);
+    }
   };
 
   return (
@@ -136,7 +160,7 @@ export function PropertyConfigPopover({
                   style={{ fontSize: "11px", padding: "2px 6px" }}
                   onClick={() => {
                     const current = property.formula ?? "";
-                    void setFormula(current ? `${current} + ${fn}` : fn);
+                    void setFormula(current ? `${current}\n${fn}` : fn);
                   }}
                 >
                   +{fn}

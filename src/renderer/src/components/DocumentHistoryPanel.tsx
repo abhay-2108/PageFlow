@@ -16,7 +16,7 @@ export function DocumentHistoryPanel({
   onRestored,
   onClose,
 }: DocumentHistoryPanelProps) {
-  const [versions] = useState<DocVersion[]>(() => getVersionsForDoc(pageId));
+  const [versions, setVersions] = useState<DocVersion[]>(() => getVersionsForDoc(pageId));
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const handleRestore = (version: DocVersion) => {
@@ -28,6 +28,7 @@ export function DocumentHistoryPanel({
 
   const handleDelete = (versionId: string) => {
     deleteVersion(versionId);
+    setVersions(getVersionsForDoc(pageId));
     setConfirmDelete(null);
   };
 

@@ -1,4 +1,6 @@
 import { mergeAttributes, Node } from "@tiptap/core";
+import { ReactNodeViewRenderer } from "@tiptap/react";
+import { PageMentionView } from "./PageMentionView";
 
 export const PageMention = Node.create({
   name: "pageMention",
@@ -42,5 +44,9 @@ export const PageMention = Node.create({
       }),
       `@${label}`,
     ];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(PageMentionView);
   },
 });

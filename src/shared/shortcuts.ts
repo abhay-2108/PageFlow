@@ -58,8 +58,7 @@ export function resetShortcuts(): void {
 
 export function parseShortcut(event: KeyboardEvent): string {
   const parts: string[] = [];
-  if (event.ctrlKey) parts.push("ctrl");
-  if (event.metaKey) parts.push("meta");
+  if (event.ctrlKey || event.metaKey) parts.push("ctrl");
   if (event.altKey) parts.push("alt");
   if (event.shiftKey) parts.push("shift");
   const key = event.key.toLowerCase();

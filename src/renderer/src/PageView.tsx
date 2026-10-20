@@ -75,13 +75,13 @@ export function PageView({
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [showResolved, setShowResolved] = useState(false);
-  const [fullWidth, setFullWidth] = useState(() => localStorage.getItem("pg_full_width") === "true");
-  const [smallText, setSmallText] = useState(() => localStorage.getItem("pg_small_text") === "true");
+  const [fullWidth, setFullWidth] = useState(() => localStorage.getItem("pageflow_full_width") === "true");
+  const [smallText, setSmallText] = useState(() => localStorage.getItem("pageflow_small_text") === "true");
   const [fontStyle, setFontStyle] = useState<"sans" | "serif" | "mono">(
-    () => (localStorage.getItem("pg_font_style") as "sans" | "serif" | "mono") ?? "sans",
+    () => (localStorage.getItem("pageflow_font_style") as "sans" | "serif" | "mono") ?? "sans",
   );
   const [theme, setTheme] = useState<"system" | "light" | "dark">(
-    () => (localStorage.getItem("pg_theme") as "system" | "light" | "dark") ?? "system",
+    () => (localStorage.getItem("pageflow_theme") as "system" | "light" | "dark") ?? "system",
   );
   const [isLocked, setIsLocked] = useState(false);
 

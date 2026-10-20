@@ -115,6 +115,14 @@ export const KeyboardShortcuts = Extension.create({
       "Alt-Shift-ArrowDown": () => this.editor.commands.moveBlockDown(),
       Tab: () => indentList(this.editor, "sink"),
       "Shift-Tab": () => indentList(this.editor, "lift"),
+      // Notion standard shortcuts (evidence from REA facts-editor.json)
+      "Mod-Alt-0": () => this.editor.commands.setParagraph(),
+      "Mod-Alt-1": () => this.editor.commands.setHeading({ level: 1 }),
+      "Mod-Alt-2": () => this.editor.commands.setHeading({ level: 2 }),
+      "Mod-Alt-3": () => this.editor.commands.setHeading({ level: 3 }),
+      "Mod-Alt-4": () => this.editor.commands.toggleTaskList(),
+      "Mod-Alt-5": () => this.editor.commands.toggleBulletList(),
+      "Mod-Alt-6": () => this.editor.commands.toggleOrderedList(),
     };
   },
 });
